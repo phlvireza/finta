@@ -1085,4 +1085,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String reminderDaysBeforeOption(int days) {
     return '$days days before';
   }
+
+  @override
+  String get trends => 'Trends';
+
+  @override
+  String get cashflow => 'Cashflow';
+
+  @override
+  String netCashflowOverMonths(int months, String amount) {
+    return 'Net over last $months months: $amount';
+  }
+
+  @override
+  String get categoryTrend => 'Category trend';
+
+  @override
+  String categoryAboveAverage(String percent, int months) {
+    return '$percent% above your $months-month average';
+  }
+
+  @override
+  String categoryBelowAverage(String percent, int months) {
+    return '$percent% below your $months-month average';
+  }
+
+  @override
+  String get spendingHeatmap => 'Spending heatmap';
+
+  @override
+  String get topMerchantsLast3Months => 'Top merchants (last 3 months)';
+
+  @override
+  String timesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count times',
+      one: '1 time',
+    );
+    return '$_temp0';
+  }
 }

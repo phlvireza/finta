@@ -568,5 +568,38 @@
     "placeholders": {
       "days": { "type": "int" }
     }
+  },
+
+  "trends": "Trends",
+  "cashflow": "Cashflow",
+  "netCashflowOverMonths": "Net over last {months} months: {amount}",
+  "@netCashflowOverMonths": {
+    "placeholders": {
+      "months": { "type": "int" },
+      "amount": { "type": "String" }
+    }
+  },
+  "categoryTrend": "Category trend",
+  "categoryAboveAverage": "{percent}% above your {months}-month average",
+  "@categoryAboveAverage": {
+    "placeholders": {
+      "percent": { "type": "String" },
+      "months": { "type": "int" }
+    }
+  },
+  "categoryBelowAverage": "{percent}% below your {months}-month average",
+  "@categoryBelowAverage": {
+    "placeholders": {
+      "percent": { "type": "String" },
+      "months": { "type": "int" }
+    }
+  },
+  "spendingHeatmap": "Spending heatmap",
+  "topMerchantsLast3Months": "Top merchants (last 3 months)",
+  "timesCount": "{count, plural, =1{1 time} other{{count} times}}",
+  "@timesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
   }
 }

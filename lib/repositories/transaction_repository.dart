@@ -176,6 +176,96 @@ class TransactionRepository {
     }
   }
 
+  /// Income/expense sums grouped by calendar month across [start]..[end] —
+  /// unlike [getMonthlySums], not bound to a single calendar year, so it
+  /// can power a rolling "last 12 months" cashflow chart that spans a
+  /// year boundary.
+  Future<List<Map<String, dynamic>>> getMonthlySumsInRange(
+    DateTime start,
+    DateTime end,
+  ) async {
+    try {
+      final db = await _dbHelper.database;
+      final startStr = start.toIso8601String().substring(0, 10);
+      final endStr = end.toIso8601String().substring(0, 10);
+      return db.rawQuery(
+        "SELECT strftime('%Y-%m', date) as ym, type, SUM(amount) as total "
+        'FROM transactions WHERE date >= ? AND date <= ? AND isTransfer = 0 '
+        "GROUP BY strftime('%Y-%m', date), type ORDER BY ym",
+        [startStr, endStr],
+      );
+    } catch (e) {
+      throw DatabaseException('Failed to get monthly sums in range', cause: e);
+    }
+  }
+
+  /// A single category's spend grouped by calendar month across
+  /// [start]..[end] — powers the category trend chart.
+  Future<List<Map<String, dynamic>>> getCategoryMonthlySums(
+    String categoryId,
+    DateTime start,
+    DateTime end,
+  ) async {
+    try {
+      final db = await _dbHelper.database;
+      final startStr = start.toIso8601String().substring(0, 10);
+      final endStr = end.toIso8601String().substring(0, 10);
+      return db.rawQuery(
+        "SELECT strftime('%Y-%m', date) as ym, SUM(amount) as total FROM transactions "
+        'WHERE categoryId = ? AND date >= ? AND date <= ? AND isTransfer = 0 '
+        "GROUP BY strftime('%Y-%m', date) ORDER BY ym",
+        [categoryId, startStr, endStr],
+      );
+    } catch (e) {
+      throw DatabaseException('Failed to get category monthly sums', cause: e);
+    }
+  }
+
+  /// Expense totals grouped by day across [start]..[end] — powers the
+  /// spending heatmap calendar.
+  Future<List<Map<String, dynamic>>> getDailyExpenseSums(
+    DateTime start,
+    DateTime end,
+  ) async {
+    try {
+      final db = await _dbHelper.database;
+      final startStr = start.toIso8601String().substring(0, 10);
+      final endStr = end.toIso8601String().substring(0, 10);
+      return db.rawQuery(
+        'SELECT date, SUM(amount) as total FROM transactions '
+        "WHERE type = 'expense' AND isTransfer = 0 AND date >= ? AND date <= ? "
+        'GROUP BY date',
+        [startStr, endStr],
+      );
+    } catch (e) {
+      throw DatabaseException('Failed to get daily expense sums', cause: e);
+    }
+  }
+
+  /// The [limit] merchants with the highest total spend of [type] across
+  /// [start]..[end], ranked descending.
+  Future<List<Map<String, dynamic>>> getTopMerchants(
+    String type,
+    DateTime start,
+    DateTime end, {
+    int limit = 10,
+  }) async {
+    try {
+      final db = await _dbHelper.database;
+      final startStr = start.toIso8601String().substring(0, 10);
+      final endStr = end.toIso8601String().substring(0, 10);
+      return db.rawQuery(
+        'SELECT merchant, SUM(amount) as total, COUNT(*) as cnt FROM transactions '
+        "WHERE type = ? AND isTransfer = 0 AND merchant IS NOT NULL AND merchant != '' "
+        'AND date >= ? AND date <= ? '
+        'GROUP BY merchant ORDER BY total DESC LIMIT ?',
+        [type, startStr, endStr, limit],
+      );
+    } catch (e) {
+      throw DatabaseException('Failed to get top merchants', cause: e);
+    }
+  }
+
   Future<void> insert(TransactionModel transaction) async {
     try {
       final db = await _dbHelper.database;

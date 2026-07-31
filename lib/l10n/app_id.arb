@@ -561,5 +561,38 @@
     "placeholders": {
       "days": { "type": "int" }
     }
+  },
+
+  "trends": "Tren",
+  "cashflow": "Arus Kas",
+  "netCashflowOverMonths": "Bersih selama {months} bulan terakhir: {amount}",
+  "@netCashflowOverMonths": {
+    "placeholders": {
+      "months": { "type": "int" },
+      "amount": { "type": "String" }
+    }
+  },
+  "categoryTrend": "Tren kategori",
+  "categoryAboveAverage": "{percent}% di atas rata-rata {months} bulan Anda",
+  "@categoryAboveAverage": {
+    "placeholders": {
+      "percent": { "type": "String" },
+      "months": { "type": "int" }
+    }
+  },
+  "categoryBelowAverage": "{percent}% di bawah rata-rata {months} bulan Anda",
+  "@categoryBelowAverage": {
+    "placeholders": {
+      "percent": { "type": "String" },
+      "months": { "type": "int" }
+    }
+  },
+  "spendingHeatmap": "Peta panas pengeluaran",
+  "topMerchantsLast3Months": "Pedagang teratas (3 bulan terakhir)",
+  "timesCount": "{count, plural, =1{1 kali} other{{count} kali}}",
+  "@timesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
   }
 }

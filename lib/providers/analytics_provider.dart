@@ -31,6 +31,36 @@ class MonthlyData {
   double get net => income - expense;
 }
 
+/// One month in a rolling (not calendar-year-bound) trend series —
+/// [monthStart] is the 1st of that month, so a 12-month window spanning a
+/// year boundary sorts and labels correctly.
+class CashflowMonth {
+  final DateTime monthStart;
+  final double income;
+  final double expense;
+
+  const CashflowMonth({required this.monthStart, required this.income, required this.expense});
+
+  double get net => income - expense;
+}
+
+class MerchantAnalytics {
+  final String merchant;
+  final double total;
+  final int count;
+
+  const MerchantAnalytics({required this.merchant, required this.total, required this.count});
+}
+
+/// One month's total for a single category — the category trend chart's
+/// data point.
+class MonthlyCategoryTotal {
+  final DateTime monthStart;
+  final double total;
+
+  const MonthlyCategoryTotal({required this.monthStart, required this.total});
+}
+
 /// Manages analytics state — category breakdowns, period filtering, yearly stats.
 class AnalyticsProvider extends ChangeNotifier {
   final TransactionRepository _repository;
@@ -42,6 +72,10 @@ class AnalyticsProvider extends ChangeNotifier {
   List<CategoryAnalytics> _incomeBreakdown = [];
   List<MonthlyData> _monthlyData = [];
   List<int> _availableYears = [];
+  List<CashflowMonth> _cashflow = [];
+  List<MonthlyCategoryTotal> _categoryTrend = [];
+  Map<String, double> _dailyExpenses = {};
+  List<MerchantAnalytics> _topMerchants = [];
   double _totalExpense = 0;
   double _totalIncome = 0;
   double _previousTotalExpense = 0;
@@ -54,6 +88,10 @@ class AnalyticsProvider extends ChangeNotifier {
   List<CategoryAnalytics> get incomeBreakdown => _incomeBreakdown;
   List<MonthlyData> get monthlyData => _monthlyData;
   List<int> get availableYears => _availableYears;
+  List<CashflowMonth> get cashflow => _cashflow;
+  List<MonthlyCategoryTotal> get categoryTrend => _categoryTrend;
+  Map<String, double> get dailyExpenses => _dailyExpenses;
+  List<MerchantAnalytics> get topMerchants => _topMerchants;
   double get totalExpense => _totalExpense;
   double get totalIncome => _totalIncome;
   double get previousTotalExpense => _previousTotalExpense;
@@ -200,4 +238,120 @@ class AnalyticsProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  /// Rolling last [months] calendar months of income/expense, ending with
+  /// the current month — unlike [loadYearlyData], never bound to a single
+  /// calendar year, so "last 12 months" always means the last 12 months.
+  Future<void> loadCashflow({int months = 12}) async {
+    try {
+      final now = DateTime.now();
+      final end = DateTime(now.year, now.month + 1, 0);
+      final start = DateTime(now.year, now.month - months + 1, 1);
+      final rows = await _repository.getMonthlySumsInRange(start, end);
+
+      final byMonth = <String, ({double income, double expense})>{};
+      for (var i = 0; i < months; i++) {
+        final m = DateTime(start.year, start.month + i, 1);
+        byMonth[_ymKey(m)] = (income: 0, expense: 0);
+      }
+      for (final row in rows) {
+        final key = row['ym'] as String;
+        final type = row['type'] as String;
+        final total = (row['total'] as num).toDouble();
+        final existing = byMonth[key];
+        if (existing == null) continue;
+        byMonth[key] = type == 'income'
+            ? (income: total, expense: existing.expense)
+            : (income: existing.income, expense: total);
+      }
+
+      _cashflow = byMonth.entries.map((e) {
+        final parts = e.key.split('-');
+        return CashflowMonth(
+          monthStart: DateTime(int.parse(parts[0]), int.parse(parts[1]), 1),
+          income: e.value.income,
+          expense: e.value.expense,
+        );
+      }).toList()
+        ..sort((a, b) => a.monthStart.compareTo(b.monthStart));
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// A single category's spend over the last [months] calendar months.
+  Future<void> loadCategoryTrend(String categoryId, {int months = 6}) async {
+    try {
+      final now = DateTime.now();
+      final end = DateTime(now.year, now.month + 1, 0);
+      final start = DateTime(now.year, now.month - months + 1, 1);
+      final rows = await _repository.getCategoryMonthlySums(categoryId, start, end);
+
+      final byMonth = <String, double>{};
+      for (var i = 0; i < months; i++) {
+        final m = DateTime(start.year, start.month + i, 1);
+        byMonth[_ymKey(m)] = 0;
+      }
+      for (final row in rows) {
+        final key = row['ym'] as String;
+        if (!byMonth.containsKey(key)) continue;
+        byMonth[key] = (row['total'] as num).toDouble();
+      }
+
+      _categoryTrend = byMonth.entries.map((e) {
+        final parts = e.key.split('-');
+        return MonthlyCategoryTotal(
+          monthStart: DateTime(int.parse(parts[0]), int.parse(parts[1]), 1),
+          total: e.value,
+        );
+      }).toList()
+        ..sort((a, b) => a.monthStart.compareTo(b.monthStart));
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// Daily expense totals across [start]..[end], keyed by ISO date string —
+  /// powers the spending heatmap calendar, reloaded whenever it's paged to
+  /// a different month.
+  Future<void> loadDailyExpenses(DateTime start, DateTime end) async {
+    try {
+      final rows = await _repository.getDailyExpenseSums(start, end);
+      _dailyExpenses = {
+        for (final row in rows) row['date'] as String: (row['total'] as num).toDouble(),
+      };
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// The highest-spend merchants of [type] across [start]..[end].
+  Future<void> loadTopMerchants(String type, DateTime start, DateTime end, {int limit = 10}) async {
+    try {
+      final rows = await _repository.getTopMerchants(type, start, end, limit: limit);
+      _topMerchants = rows
+          .map((row) => MerchantAnalytics(
+                merchant: row['merchant'] as String,
+                total: (row['total'] as num).toDouble(),
+                count: row['cnt'] as int,
+              ))
+          .toList();
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  static String _ymKey(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}';
 }

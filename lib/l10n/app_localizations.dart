@@ -2047,6 +2047,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{days} days before'**
   String reminderDaysBeforeOption(int days);
+
+  /// No description provided for @trends.
+  ///
+  /// In en, this message translates to:
+  /// **'Trends'**
+  String get trends;
+
+  /// No description provided for @cashflow.
+  ///
+  /// In en, this message translates to:
+  /// **'Cashflow'**
+  String get cashflow;
+
+  /// No description provided for @netCashflowOverMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'Net over last {months} months: {amount}'**
+  String netCashflowOverMonths(int months, String amount);
+
+  /// No description provided for @categoryTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Category trend'**
+  String get categoryTrend;
+
+  /// No description provided for @categoryAboveAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% above your {months}-month average'**
+  String categoryAboveAverage(String percent, int months);
+
+  /// No description provided for @categoryBelowAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% below your {months}-month average'**
+  String categoryBelowAverage(String percent, int months);
+
+  /// No description provided for @spendingHeatmap.
+  ///
+  /// In en, this message translates to:
+  /// **'Spending heatmap'**
+  String get spendingHeatmap;
+
+  /// No description provided for @topMerchantsLast3Months.
+  ///
+  /// In en, this message translates to:
+  /// **'Top merchants (last 3 months)'**
+  String get topMerchantsLast3Months;
+
+  /// No description provided for @timesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 time} other{{count} times}}'**
+  String timesCount(int count);
 }
 
 class _AppLocalizationsDelegate

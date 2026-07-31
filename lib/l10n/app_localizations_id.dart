@@ -1086,4 +1086,45 @@ class AppLocalizationsId extends AppLocalizations {
   String reminderDaysBeforeOption(int days) {
     return '$days hari sebelumnya';
   }
+
+  @override
+  String get trends => 'Tren';
+
+  @override
+  String get cashflow => 'Arus Kas';
+
+  @override
+  String netCashflowOverMonths(int months, String amount) {
+    return 'Bersih selama $months bulan terakhir: $amount';
+  }
+
+  @override
+  String get categoryTrend => 'Tren kategori';
+
+  @override
+  String categoryAboveAverage(String percent, int months) {
+    return '$percent% di atas rata-rata $months bulan Anda';
+  }
+
+  @override
+  String categoryBelowAverage(String percent, int months) {
+    return '$percent% di bawah rata-rata $months bulan Anda';
+  }
+
+  @override
+  String get spendingHeatmap => 'Peta panas pengeluaran';
+
+  @override
+  String get topMerchantsLast3Months => 'Pedagang teratas (3 bulan terakhir)';
+
+  @override
+  String timesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count kali',
+      one: '1 kali',
+    );
+    return '$_temp0';
+  }
 }

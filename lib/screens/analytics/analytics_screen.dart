@@ -9,6 +9,7 @@ import '../../core/utils/category_rollup.dart';
 import 'widgets/breakdown_chart.dart';
 import 'widgets/category_rank_list.dart';
 import 'widgets/yearly_report.dart';
+import 'widgets/trends_report.dart';
 import '../budgets/widgets/budget_progress_bar.dart';
 import '../transactions/add_transaction_screen.dart';
 import '../transactions/widgets/type_toggle.dart';
@@ -141,11 +142,25 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                               padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
                               child: Card(
                                 margin: EdgeInsets.zero,
-                                child: ListTile(
-                                  leading: const Icon(Icons.bar_chart),
-                                  title: Text(loc.yearlyReport),
-                                  trailing: const Icon(Icons.chevron_right),
-                                  onTap: _openYearlyReport,
+                                clipBehavior: Clip.antiAlias,
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      leading: const Icon(Icons.bar_chart),
+                                      title: Text(loc.yearlyReport),
+                                      trailing: const Icon(Icons.chevron_right),
+                                      onTap: _openYearlyReport,
+                                    ),
+                                    const Divider(height: 1),
+                                    ListTile(
+                                      leading: const Icon(Icons.trending_up),
+                                      title: Text(loc.trends),
+                                      trailing: const Icon(Icons.chevron_right),
+                                      onTap: () => Navigator.of(context).push(
+                                        MaterialPageRoute(builder: (_) => const TrendsReportScreen()),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
