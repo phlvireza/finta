@@ -115,6 +115,67 @@ class AppDateUtils {
     }
   }
 
+  static ({DateTime start, DateTime end}) getQuarterlyPeriod({DateTime? referenceDate}) {
+    final now = referenceDate ?? DateTime.now();
+    final quarterStartMonth = ((now.month - 1) ~/ 3) * 3 + 1;
+    final start = DateTime(now.year, quarterStartMonth, 1);
+    final end = DateTime(now.year, quarterStartMonth + 3, 0);
+    return (start: start, end: end);
+  }
+
+  static ({DateTime start, DateTime end}) getYearlyPeriod({DateTime? referenceDate}) {
+    final now = referenceDate ?? DateTime.now();
+    return (start: DateTime(now.year, 1, 1), end: DateTime(now.year, 12, 31));
+  }
+
+  /// Dispatches to the right "current period" function for a budget's
+  /// [periodType] ('weekly'|'monthly'|'quarterly'|'yearly'). Monthly is
+  /// the only one anchored to [payday] — the others use calendar
+  /// boundaries, since payday-anchoring is specifically a paycheck-cycle
+  /// concept.
+  static ({DateTime start, DateTime end}) getCurrentPeriodFor(String periodType, int payday) {
+    switch (periodType) {
+      case 'weekly':
+        return getWeeklyPeriod();
+      case 'quarterly':
+        return getQuarterlyPeriod();
+      case 'yearly':
+        return getYearlyPeriod();
+      case 'monthly':
+      default:
+        return getCurrentPeriod(payday);
+    }
+  }
+
+  /// Steps [current] back one period for the given [periodType] — the
+  /// budget-period counterpart to [getPreviousPeriod], which only knows
+  /// about the fixed payday-anchored monthly period.
+  static ({DateTime start, DateTime end}) getPreviousPeriodFor(
+    String periodType,
+    ({DateTime start, DateTime end}) current,
+    int payday,
+  ) {
+    switch (periodType) {
+      case 'weekly':
+        return (
+          start: current.start.subtract(const Duration(days: 7)),
+          end: current.end.subtract(const Duration(days: 7)),
+        );
+      case 'quarterly':
+        final start = DateTime(current.start.year, current.start.month - 3, 1);
+        final end = DateTime(start.year, start.month + 3, 0);
+        return (start: start, end: end);
+      case 'yearly':
+        return (
+          start: DateTime(current.start.year - 1, 1, 1),
+          end: DateTime(current.start.year - 1, 12, 31),
+        );
+      case 'monthly':
+      default:
+        return getPreviousPeriod(current);
+    }
+  }
+
   static ({DateTime start, DateTime end}) getPreviousPeriod(({DateTime start, DateTime end}) current) {
     // Inclusive day count: a payday-anchored monthly period is always
     // 28 (Feb, non-leap) to 31 days long. Weekly (7) and biweekly (13-16)

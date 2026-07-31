@@ -7,6 +7,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/number_utils.dart';
 import '../../../core/utils/date_utils.dart';
+import '../../../core/utils/budget_display.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../budgets/widgets/budget_pace_bar.dart';
 
@@ -80,20 +81,24 @@ class _BudgetItem extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final categories = context.watch<CategoryProvider>();
     final settings = context.watch<SettingsProvider>();
-    final category = categories.getCategoryById(status.budget.categoryId);
-
-    if (category == null) return const SizedBox.shrink();
+    final loc = AppLocalizations.of(context)!;
+    final display = resolveBudgetDisplay(
+      budget: status.budget,
+      categories: categories,
+      loc: loc,
+      fallbackColor: theme.colorScheme.primary,
+    );
 
     final barColor = AppColors.budgetBarColor(
       isExceeded: status.isExceeded,
       isWarning: status.isWarning,
-      categoryColor: category.colorValue,
+      categoryColor: display.color,
       isDark: isDark,
     );
 
     final ratio = status.ratio.clamp(0.0, 1.0);
     final timeElapsed = AppDateUtils.periodElapsedFraction(
-      AppDateUtils.getCurrentPeriod(settings.payday),
+      AppDateUtils.getCurrentPeriodFor(status.budget.period, settings.payday),
     );
 
     return Padding(
@@ -109,11 +114,11 @@ class _BudgetItem extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(category.iconData, size: 18, color: category.colorValue),
+                Icon(display.icon, size: 18, color: display.color),
                 const SizedBox(width: AppConstants.spacingSm),
                 Expanded(
                   child: Text(
-                    category.name,
+                    display.title,
                     style: theme.textTheme.titleSmall,
                   ),
                 ),
@@ -121,7 +126,7 @@ class _BudgetItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '${NumberUtils.formatCurrency(status.spent, symbol: settings.currencySymbol)} / ${NumberUtils.formatCurrency(status.budget.amount, symbol: settings.currencySymbol)}',
+                      '${NumberUtils.formatCurrency(status.spent, symbol: settings.currencySymbol)} / ${NumberUtils.formatCurrency(status.effectiveAmount, symbol: settings.currencySymbol)}',
                       style: theme.textTheme.labelSmall,
                     ),
                     if (status.isExceeded)

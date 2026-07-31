@@ -57,6 +57,89 @@ class Migrations {
     });
   }
 
+  /// v3 → v4: budget system upgrade — period length, rollover, and
+  /// group/overall scope. `budgets.categoryId UNIQUE` can't be relaxed
+  /// with ALTER TABLE, so this is the one legitimate 12-step table
+  /// rebuild in the codebase: every existing row is copied into the new
+  /// shape (as a 'category'-scoped, 'monthly', no-rollover budget — i.e.
+  /// unchanged behavior) before the old table is dropped, so nothing is
+  /// lost and no existing budget's numbers move.
+  static Future<void> v4(Database db) async {
+    await db.transaction((txn) async {
+      final existing = await txn.query('budgets');
+
+      await txn.execute(createBudgetsTableTemp);
+      await txn.execute(createBudgetCategoriesTable);
+
+      final batch = txn.batch();
+      for (final row in existing) {
+        batch.insert('budgets_new', {
+          'id': row['id'],
+          'name': null,
+          'amount': row['amount'],
+          'period': 'monthly',
+          'rolloverMode': 'none',
+          'scope': 'category',
+          'isActive': row['isActive'],
+          'createdAt': row['createdAt'],
+          'updatedAt': row['updatedAt'],
+        });
+        batch.insert('budget_categories', {
+          'budgetId': row['id'],
+          'categoryId': row['categoryId'],
+        });
+      }
+      await batch.commit(noResult: true);
+
+      await txn.execute('DROP TABLE budgets');
+      await txn.execute('ALTER TABLE budgets_new RENAME TO budgets');
+    });
+  }
+
+  /// Used by [v4]: the new budgets table is built under a temporary name
+  /// during the rebuild (the live `budgets` table can't be replaced until
+  /// its data is copied out), then renamed. [createBudgetsTable] below is
+  /// the same shape under the real name, for fresh installs.
+  static const String createBudgetsTableTemp = '''
+    CREATE TABLE budgets_new (
+      id TEXT PRIMARY KEY,
+      name TEXT,
+      amount REAL NOT NULL,
+      period TEXT NOT NULL DEFAULT 'monthly',
+      rolloverMode TEXT NOT NULL DEFAULT 'none',
+      scope TEXT NOT NULL DEFAULT 'category',
+      isActive INTEGER NOT NULL DEFAULT 1,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    )
+  ''';
+
+  /// Shared by `DatabaseHelper._onCreate` (fresh installs) — same shape as
+  /// [createBudgetsTableTemp], under the real table name.
+  static const String createBudgetsTable = '''
+    CREATE TABLE budgets (
+      id TEXT PRIMARY KEY,
+      name TEXT,
+      amount REAL NOT NULL,
+      period TEXT NOT NULL DEFAULT 'monthly',
+      rolloverMode TEXT NOT NULL DEFAULT 'none',
+      scope TEXT NOT NULL DEFAULT 'category',
+      isActive INTEGER NOT NULL DEFAULT 1,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    )
+  ''';
+
+  static const String createBudgetCategoriesTable = '''
+    CREATE TABLE budget_categories (
+      budgetId TEXT NOT NULL,
+      categoryId TEXT NOT NULL,
+      PRIMARY KEY (budgetId, categoryId),
+      FOREIGN KEY (budgetId) REFERENCES budgets(id) ON DELETE CASCADE,
+      FOREIGN KEY (categoryId) REFERENCES categories(id)
+    )
+  ''';
+
   /// Shared by `DatabaseHelper._onCreate` (fresh installs) and [v3]
   /// (upgrades) so both paths converge on an identical `accounts` schema.
   static const String createAccountsTable = '''

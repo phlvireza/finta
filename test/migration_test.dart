@@ -232,4 +232,62 @@ void main() {
       await db.close();
     },
   );
+
+  test(
+    'migrating a populated v3 database to v4 rebuilds budgets with the new '
+    'scope/period/rollover shape, preserving every row and its category link',
+    () async {
+      final db = await databaseFactoryFfi.openDatabase(
+        ':memory:',
+        options: OpenDatabaseOptions(version: 1, onCreate: _createV1Schema),
+      );
+      await db.insert('categories', {
+        'id': 'cat1',
+        'name': 'Food',
+        'type': 'expense',
+        'icon': 'restaurant',
+        'color': '#C87941',
+        'isDefault': 0,
+        'sortOrder': 0,
+        'createdAt': '2026-01-01T00:00:00.000',
+      });
+      // Insert directly into the original v1-shaped budgets table (the
+      // schema Migrations.v4 actually receives before it runs).
+      await db.insert('budgets', {
+        'id': 'budget1',
+        'categoryId': 'cat1',
+        'amount': 500000,
+        'isActive': 1,
+        'createdAt': '2026-01-01T00:00:00.000',
+        'updatedAt': '2026-01-01T00:00:00.000',
+      });
+
+      // Replay the real upgrade path: v2 -> v3 -> v4, in order.
+      await Migrations.v2(db);
+      await Migrations.v3(db);
+      await Migrations.v4(db);
+
+      final budgets = await db.query('budgets');
+      expect(budgets, hasLength(1), reason: 'the existing budget row must survive the rebuild');
+      expect(budgets.first['id'], 'budget1');
+      expect(budgets.first['amount'], 500000);
+      expect(budgets.first['isActive'], 1);
+      // New columns default to today's behavior — nothing changes for an
+      // existing user until they opt into the new budget shape.
+      expect(budgets.first['period'], 'monthly');
+      expect(budgets.first['rolloverMode'], 'none');
+      expect(budgets.first['scope'], 'category');
+      expect(budgets.first['name'], isNull);
+      // The old categoryId column must be gone from the rebuilt table —
+      // category membership now lives only in budget_categories.
+      expect(budgets.first.containsKey('categoryId'), isFalse);
+
+      final links = await db.query('budget_categories');
+      expect(links, hasLength(1));
+      expect(links.first['budgetId'], 'budget1');
+      expect(links.first['categoryId'], 'cat1');
+
+      await db.close();
+    },
+  );
 }

@@ -666,4 +666,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get showSubcategories => 'Show sub-categories';
+
+  @override
+  String get overallBudget => 'Overall Budget';
+
+  @override
+  String get groupBudget => 'Group Budget';
+
+  @override
+  String get budgetScope => 'Budget covers';
+
+  @override
+  String get budgetScopeCategory => 'One category';
+
+  @override
+  String get budgetScopeGroup => 'Group of categories';
+
+  @override
+  String get budgetScopeOverall => 'Everything';
+
+  @override
+  String get budgetName => 'Budget name';
+
+  @override
+  String get budgetNameOptional => 'Budget name (optional)';
+
+  @override
+  String get budgetPeriod => 'Period';
+
+  @override
+  String get budgetRollover => 'Rollover';
+
+  @override
+  String get budgetRolloverExplanation =>
+      'Carry unspent (or overspent) budget into the next period.';
+
+  @override
+  String get rolloverNone => 'Off';
+
+  @override
+  String get rolloverPositiveOnly => 'Unspent only';
+
+  @override
+  String get rolloverFull => 'Unspent or overspent';
+
+  @override
+  String get selectAtLeastTwoCategories => 'Select at least two categories';
+
+  @override
+  String rolledOverPositive(String amount) {
+    return '$amount rolled over from last period';
+  }
+
+  @override
+  String rolledOverNegative(String amount) {
+    return '$amount over from last period';
+  }
 }

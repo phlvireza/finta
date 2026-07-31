@@ -1339,6 +1339,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show sub-categories'**
   String get showSubcategories;
+
+  /// No description provided for @overallBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall Budget'**
+  String get overallBudget;
+
+  /// No description provided for @groupBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Group Budget'**
+  String get groupBudget;
+
+  /// No description provided for @budgetScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget covers'**
+  String get budgetScope;
+
+  /// No description provided for @budgetScopeCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'One category'**
+  String get budgetScopeCategory;
+
+  /// No description provided for @budgetScopeGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Group of categories'**
+  String get budgetScopeGroup;
+
+  /// No description provided for @budgetScopeOverall.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything'**
+  String get budgetScopeOverall;
+
+  /// No description provided for @budgetName.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget name'**
+  String get budgetName;
+
+  /// No description provided for @budgetNameOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget name (optional)'**
+  String get budgetNameOptional;
+
+  /// No description provided for @budgetPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Period'**
+  String get budgetPeriod;
+
+  /// No description provided for @budgetRollover.
+  ///
+  /// In en, this message translates to:
+  /// **'Rollover'**
+  String get budgetRollover;
+
+  /// No description provided for @budgetRolloverExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Carry unspent (or overspent) budget into the next period.'**
+  String get budgetRolloverExplanation;
+
+  /// No description provided for @rolloverNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get rolloverNone;
+
+  /// No description provided for @rolloverPositiveOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Unspent only'**
+  String get rolloverPositiveOnly;
+
+  /// No description provided for @rolloverFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Unspent or overspent'**
+  String get rolloverFull;
+
+  /// No description provided for @selectAtLeastTwoCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least two categories'**
+  String get selectAtLeastTwoCategories;
+
+  /// No description provided for @rolledOverPositive.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} rolled over from last period'**
+  String rolledOverPositive(String amount);
+
+  /// No description provided for @rolledOverNegative.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} over from last period'**
+  String rolledOverNegative(String amount);
 }
 
 class _AppLocalizationsDelegate

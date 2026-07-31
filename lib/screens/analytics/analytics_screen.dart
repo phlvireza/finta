@@ -303,7 +303,6 @@ class _BudgetPerformanceSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final budgetProvider = context.watch<BudgetProvider>();
-    final categories = context.watch<CategoryProvider>();
     final settings = context.watch<SettingsProvider>();
     final loc = AppLocalizations.of(context)!;
     final statuses = budgetProvider.budgetStatuses.values.toList();
@@ -320,15 +319,13 @@ class _BudgetPerformanceSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
       child: Column(
         children: statuses.map((status) {
-          final category = categories.getCategoryById(status.budget.categoryId);
-          if (category == null) return const SizedBox.shrink();
           return Padding(
             padding: const EdgeInsets.only(bottom: AppConstants.spacingMd),
             child: BudgetProgressBar(
-              category: category,
               status: status,
               symbol: settings.currencySymbol,
               useDecimals: settings.currencyUseDecimals,
+              payday: settings.payday,
             ),
           );
         }).toList(),

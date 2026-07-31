@@ -8,6 +8,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import '../../core/utils/number_utils.dart';
+import '../../core/utils/budget_display.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/confirm_dialog.dart';
 import 'widgets/budget_form.dart';
@@ -57,10 +58,15 @@ class ManageBudgetsScreen extends StatelessWidget {
                   return _BudgetChart(budgetProvider: budgetProvider, settings: settings);
                 }
                 final budget = budgets[index - 1];
-                final category = categories.getCategoryById(budget.categoryId);
-                final status = budgetProvider.getStatusForCategory(budget.categoryId);
+                final status = budgetProvider.budgetStatuses[budget.id];
+                final display = resolveBudgetDisplay(
+                  budget: budget,
+                  categories: categories,
+                  loc: loc,
+                  fallbackColor: theme.colorScheme.primary,
+                );
 
-                if (category == null || status == null) {
+                if (status == null) {
                   return const SizedBox.shrink();
                 }
 
@@ -71,7 +77,7 @@ class ManageBudgetsScreen extends StatelessWidget {
                     extentRatio: 0.25,
                     children: [
                       SlidableAction(
-                        onPressed: (_) => _deleteBudget(context, budget.id, category.name),
+                        onPressed: (_) => _deleteBudget(context, budget.id, display.title),
                         backgroundColor: theme.colorScheme.error,
                         foregroundColor: theme.colorScheme.onError,
                         icon: Icons.delete,
@@ -87,10 +93,10 @@ class ManageBudgetsScreen extends StatelessWidget {
                         vertical: AppConstants.spacingMd,
                       ),
                       child: BudgetProgressBar(
-                        category: category,
                         status: status,
                         symbol: settings.currencySymbol,
                         useDecimals: settings.currencyUseDecimals,
+                        payday: settings.payday,
                       ),
                     ),
                   ),
@@ -157,11 +163,11 @@ class _BudgetChart extends StatelessWidget {
     
     double totalBudget = 0;
     double totalSpent = 0;
-    
+
     for (var b in budgetProvider.activeBudgets) {
-      totalBudget += b.amount;
-      final status = budgetProvider.getStatusForCategory(b.categoryId);
+      final status = budgetProvider.budgetStatuses[b.id];
       if (status != null) {
+        totalBudget += status.effectiveAmount;
         totalSpent += status.spent;
       }
     }

@@ -308,5 +308,33 @@
   "parentCategoryOptional": "Kategori induk (opsional)",
   "noneTopLevel": "Tidak ada — kategori tingkat atas",
   "groupSubcategories": "Gabungkan sub-kategori",
-  "showSubcategories": "Tampilkan sub-kategori"
+  "showSubcategories": "Tampilkan sub-kategori",
+
+  "overallBudget": "Anggaran Keseluruhan",
+  "groupBudget": "Anggaran Grup",
+  "budgetScope": "Anggaran mencakup",
+  "budgetScopeCategory": "Satu kategori",
+  "budgetScopeGroup": "Grup kategori",
+  "budgetScopeOverall": "Semuanya",
+  "budgetName": "Nama anggaran",
+  "budgetNameOptional": "Nama anggaran (opsional)",
+  "budgetPeriod": "Periode",
+  "budgetRollover": "Rollover",
+  "budgetRolloverExplanation": "Bawa sisa (atau kelebihan) anggaran ke periode berikutnya.",
+  "rolloverNone": "Mati",
+  "rolloverPositiveOnly": "Hanya sisa",
+  "rolloverFull": "Sisa atau kelebihan",
+  "selectAtLeastTwoCategories": "Pilih minimal dua kategori",
+  "rolledOverPositive": "{amount} dibawa dari periode lalu",
+  "@rolledOverPositive": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "rolledOverNegative": "Kelebihan {amount} dari periode lalu",
+  "@rolledOverNegative": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  }
 }

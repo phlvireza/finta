@@ -1,28 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../models/category_model.dart';
 import '../../../providers/budget_provider.dart';
-import '../../../providers/settings_provider.dart';
+import '../../../providers/category_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/number_utils.dart';
 import '../../../core/utils/date_utils.dart';
+import '../../../core/utils/budget_display.dart';
 import '../../../l10n/app_localizations.dart';
 import 'budget_pace_bar.dart';
 
-/// Progress bar visualizing budget usage.
+/// Progress bar visualizing budget usage — works for any scope
+/// (category/group/overall) and any period length, via
+/// [resolveBudgetDisplay] and [AppDateUtils.getCurrentPeriodFor].
 class BudgetProgressBar extends StatelessWidget {
-  final CategoryModel category;
   final BudgetStatus status;
   final String symbol;
   final bool useDecimals;
+  final int payday;
 
   const BudgetProgressBar({
     super.key,
-    required this.category,
     required this.status,
     required this.symbol,
     required this.useDecimals,
+    required this.payday,
   });
 
   @override
@@ -30,19 +32,24 @@ class BudgetProgressBar extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final loc = AppLocalizations.of(context)!;
-    final settings = context.watch<SettingsProvider>();
+    final categories = context.watch<CategoryProvider>();
+    final display = resolveBudgetDisplay(
+      budget: status.budget,
+      categories: categories,
+      loc: loc,
+      fallbackColor: theme.colorScheme.primary,
+    );
 
     final barColor = AppColors.budgetBarColor(
       isExceeded: status.isExceeded,
       isWarning: status.isWarning,
-      categoryColor: category.colorValue,
+      categoryColor: display.color,
       isDark: isDark,
     );
 
     final ratio = status.ratio.clamp(0.0, 1.0);
-    final timeElapsed = AppDateUtils.periodElapsedFraction(
-      AppDateUtils.getCurrentPeriod(settings.payday),
-    );
+    final period = AppDateUtils.getCurrentPeriodFor(status.budget.period, payday);
+    final timeElapsed = AppDateUtils.periodElapsedFraction(period);
     final pace = budgetPaceFor(status.ratio, timeElapsed);
     final paceLabel = switch (pace) {
       BudgetPace.ahead => loc.paceAhead,
@@ -66,14 +73,14 @@ class BudgetProgressBar extends StatelessWidget {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: category.colorValue.withValues(alpha: 0.12),
+                  color: display.color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(AppConstants.radiusSm),
                 ),
-                child: Icon(category.iconData, size: 16, color: category.colorValue),
+                child: Icon(display.icon, size: 16, color: display.color),
               ),
               const SizedBox(width: AppConstants.spacingMd),
               Expanded(
-                child: Text(category.name, style: theme.textTheme.titleMedium),
+                child: Text(display.title, style: theme.textTheme.titleMedium),
               ),
               Text(
                 '${NumberUtils.formatPercentage(ratio)} ${loc.used}',
@@ -126,6 +133,19 @@ class BudgetProgressBar extends StatelessWidget {
               ),
             ],
           ),
+          if (status.budget.hasRollover && status.rolloverAmount != 0) ...[
+            const SizedBox(height: AppConstants.spacingXs),
+            Text(
+              status.rolloverAmount > 0
+                  ? loc.rolledOverPositive(
+                      NumberUtils.formatCurrency(status.rolloverAmount, symbol: symbol, useDecimals: useDecimals),
+                    )
+                  : loc.rolledOverNegative(
+                      NumberUtils.formatCurrency(-status.rolloverAmount, symbol: symbol, useDecimals: useDecimals),
+                    ),
+              style: theme.textTheme.labelSmall?.copyWith(color: theme.textTheme.bodySmall?.color),
+            ),
+          ],
         ],
       ),
     );

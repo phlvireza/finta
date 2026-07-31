@@ -315,5 +315,33 @@
   "parentCategoryOptional": "Parent category (optional)",
   "noneTopLevel": "None — top-level category",
   "groupSubcategories": "Group sub-categories",
-  "showSubcategories": "Show sub-categories"
+  "showSubcategories": "Show sub-categories",
+
+  "overallBudget": "Overall Budget",
+  "groupBudget": "Group Budget",
+  "budgetScope": "Budget covers",
+  "budgetScopeCategory": "One category",
+  "budgetScopeGroup": "Group of categories",
+  "budgetScopeOverall": "Everything",
+  "budgetName": "Budget name",
+  "budgetNameOptional": "Budget name (optional)",
+  "budgetPeriod": "Period",
+  "budgetRollover": "Rollover",
+  "budgetRolloverExplanation": "Carry unspent (or overspent) budget into the next period.",
+  "rolloverNone": "Off",
+  "rolloverPositiveOnly": "Unspent only",
+  "rolloverFull": "Unspent or overspent",
+  "selectAtLeastTwoCategories": "Select at least two categories",
+  "rolledOverPositive": "{amount} rolled over from last period",
+  "@rolledOverPositive": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "rolledOverNegative": "{amount} over from last period",
+  "@rolledOverNegative": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  }
 }

@@ -136,6 +136,30 @@ class TransactionRepository {
     }
   }
 
+  /// Sum of expense spend across several categories in one range — used
+  /// by group/rollover budgets, which cover more than one category.
+  Future<double> getCategoriesSumByDateRange(
+    List<String> categoryIds,
+    DateTime start,
+    DateTime end,
+  ) async {
+    if (categoryIds.isEmpty) return 0;
+    try {
+      final db = await _dbHelper.database;
+      final startStr = start.toIso8601String().substring(0, 10);
+      final endStr = end.toIso8601String().substring(0, 10);
+      final placeholders = List.filled(categoryIds.length, '?').join(',');
+      final result = await db.rawQuery(
+        'SELECT COALESCE(SUM(amount), 0) as total FROM transactions '
+        'WHERE categoryId IN ($placeholders) AND date >= ? AND date <= ? AND isTransfer = 0',
+        [...categoryIds, startStr, endStr],
+      );
+      return (result.first['total'] as num).toDouble();
+    } catch (e) {
+      throw DatabaseException('Failed to get categories sum by date range', cause: e);
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getMonthlySums(int year) async {
     try {
       final db = await _dbHelper.database;

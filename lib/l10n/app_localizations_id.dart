@@ -667,4 +667,60 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get showSubcategories => 'Tampilkan sub-kategori';
+
+  @override
+  String get overallBudget => 'Anggaran Keseluruhan';
+
+  @override
+  String get groupBudget => 'Anggaran Grup';
+
+  @override
+  String get budgetScope => 'Anggaran mencakup';
+
+  @override
+  String get budgetScopeCategory => 'Satu kategori';
+
+  @override
+  String get budgetScopeGroup => 'Grup kategori';
+
+  @override
+  String get budgetScopeOverall => 'Semuanya';
+
+  @override
+  String get budgetName => 'Nama anggaran';
+
+  @override
+  String get budgetNameOptional => 'Nama anggaran (opsional)';
+
+  @override
+  String get budgetPeriod => 'Periode';
+
+  @override
+  String get budgetRollover => 'Rollover';
+
+  @override
+  String get budgetRolloverExplanation =>
+      'Bawa sisa (atau kelebihan) anggaran ke periode berikutnya.';
+
+  @override
+  String get rolloverNone => 'Mati';
+
+  @override
+  String get rolloverPositiveOnly => 'Hanya sisa';
+
+  @override
+  String get rolloverFull => 'Sisa atau kelebihan';
+
+  @override
+  String get selectAtLeastTwoCategories => 'Pilih minimal dua kategori';
+
+  @override
+  String rolledOverPositive(String amount) {
+    return '$amount dibawa dari periode lalu';
+  }
+
+  @override
+  String rolledOverNegative(String amount) {
+    return 'Kelebihan $amount dari periode lalu';
+  }
 }
