@@ -1951,6 +1951,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{owed} owed to you · {owe} you owe'**
   String netDebtSummary(String owed, String owe);
+
+  /// No description provided for @subscriptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscriptions'**
+  String get subscriptions;
+
+  /// No description provided for @noSubscriptionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No subscriptions tracked'**
+  String get noSubscriptionsTitle;
+
+  /// No description provided for @noSubscriptionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark a recurring transaction as a subscription to track its cost and get renewal reminders'**
+  String get noSubscriptionsSubtitle;
+
+  /// No description provided for @subscriptionSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggestions'**
+  String get subscriptionSuggestions;
+
+  /// No description provided for @subscriptionSuggestionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount}/month · seen {count} times'**
+  String subscriptionSuggestionSubtitle(String amount, int count);
+
+  /// No description provided for @yourSubscriptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Your subscriptions'**
+  String get yourSubscriptions;
+
+  /// No description provided for @perMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Per month'**
+  String get perMonth;
+
+  /// No description provided for @perYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Per year'**
+  String get perYear;
+
+  /// No description provided for @dismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get dismiss;
+
+  /// No description provided for @overdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get overdue;
+
+  /// No description provided for @pause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get pause;
+
+  /// No description provided for @resume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get resume;
+
+  /// No description provided for @setReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Set reminder'**
+  String get setReminder;
+
+  /// No description provided for @notASubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Not a subscription'**
+  String get notASubscription;
+
+  /// No description provided for @reminderOff.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminder'**
+  String get reminderOff;
+
+  /// No description provided for @reminderDaysBeforeOption.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days before'**
+  String reminderDaysBeforeOption(int days);
 }
 
 class _AppLocalizationsDelegate

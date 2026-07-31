@@ -210,7 +210,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get active => 'Aktif';
 
   @override
-  String get paused => 'Jeda';
+  String get paused => 'Dijeda';
 
   @override
   String get welcomeToFinta => 'Selamat Datang di Finta';
@@ -1032,5 +1032,58 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String netDebtSummary(String owed, String owe) {
     return '$owed piutang Anda · $owe utang Anda';
+  }
+
+  @override
+  String get subscriptions => 'Langganan';
+
+  @override
+  String get noSubscriptionsTitle => 'Belum ada langganan yang dilacak';
+
+  @override
+  String get noSubscriptionsSubtitle =>
+      'Tandai transaksi berulang sebagai langganan untuk melacak biayanya dan mendapat pengingat perpanjangan';
+
+  @override
+  String get subscriptionSuggestions => 'Saran';
+
+  @override
+  String subscriptionSuggestionSubtitle(String amount, int count) {
+    return '$amount/bulan · terlihat $count kali';
+  }
+
+  @override
+  String get yourSubscriptions => 'Langganan Anda';
+
+  @override
+  String get perMonth => 'Per bulan';
+
+  @override
+  String get perYear => 'Per tahun';
+
+  @override
+  String get dismiss => 'Abaikan';
+
+  @override
+  String get overdue => 'Terlambat';
+
+  @override
+  String get pause => 'Jeda';
+
+  @override
+  String get resume => 'Lanjutkan';
+
+  @override
+  String get setReminder => 'Atur pengingat';
+
+  @override
+  String get notASubscription => 'Bukan langganan';
+
+  @override
+  String get reminderOff => 'Tanpa pengingat';
+
+  @override
+  String reminderDaysBeforeOption(int days) {
+    return '$days hari sebelumnya';
   }
 }

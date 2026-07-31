@@ -9,6 +9,7 @@ import '../providers/account_provider.dart';
 import '../providers/goal_provider.dart';
 import '../providers/debt_provider.dart';
 import '../core/services/recurring_service.dart';
+import '../core/services/notification_service.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/transactions/transaction_history_screen.dart';
@@ -55,6 +56,11 @@ class _FintaAppState extends State<FintaApp> {
     final debts = context.read<DebtProvider>();
 
     await settings.init();
+    if (!mounted) return;
+
+    // No-op outside Android/iOS/macOS; requests notification permission
+    // up front rather than waiting for the first subscription reminder.
+    await NotificationService.instance.init();
     if (!mounted) return;
 
     await categories.loadCategories();

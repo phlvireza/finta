@@ -1032,4 +1032,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String netDebtSummary(String owed, String owe) {
     return '$owed owed to you · $owe you owe';
   }
+
+  @override
+  String get subscriptions => 'Subscriptions';
+
+  @override
+  String get noSubscriptionsTitle => 'No subscriptions tracked';
+
+  @override
+  String get noSubscriptionsSubtitle =>
+      'Mark a recurring transaction as a subscription to track its cost and get renewal reminders';
+
+  @override
+  String get subscriptionSuggestions => 'Suggestions';
+
+  @override
+  String subscriptionSuggestionSubtitle(String amount, int count) {
+    return '$amount/month · seen $count times';
+  }
+
+  @override
+  String get yourSubscriptions => 'Your subscriptions';
+
+  @override
+  String get perMonth => 'Per month';
+
+  @override
+  String get perYear => 'Per year';
+
+  @override
+  String get dismiss => 'Dismiss';
+
+  @override
+  String get overdue => 'Overdue';
+
+  @override
+  String get pause => 'Pause';
+
+  @override
+  String get resume => 'Resume';
+
+  @override
+  String get setReminder => 'Set reminder';
+
+  @override
+  String get notASubscription => 'Not a subscription';
+
+  @override
+  String get reminderOff => 'No reminder';
+
+  @override
+  String reminderDaysBeforeOption(int days) {
+    return '$days days before';
+  }
 }

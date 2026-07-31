@@ -6,6 +6,7 @@ import '../categories/manage_categories_screen.dart';
 import '../recurring/recurring_list_screen.dart';
 import '../goals/goals_list_screen.dart';
 import '../debts/debts_list_screen.dart';
+import '../subscriptions/subscriptions_screen.dart';
 import '../settings/settings_screen.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -58,6 +59,14 @@ class MoreScreen extends StatelessWidget {
                 label: loc.recurring,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const RecurringListScreen()),
+                ),
+              ),
+              const Divider(),
+              _MoreTile(
+                icon: Icons.subscriptions_outlined,
+                label: loc.subscriptions,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SubscriptionsScreen()),
                 ),
               ),
               const Divider(),

@@ -6,15 +6,21 @@ import '../../models/transaction_model.dart';
 import '../../repositories/recurring_repository.dart';
 import '../database/database_helper.dart';
 import '../database/seed_data.dart';
+import 'notification_service.dart';
 
-/// Service that checks for due recurring transactions on app launch
-/// and generates the missing transaction entries.
+/// Service that checks for due recurring transactions on app launch,
+/// generates the missing transaction entries, and keeps subscription
+/// reminder notifications in sync with whatever it just generated.
 class RecurringService {
   final RecurringRepository _recurringRepo;
+  final NotificationService _notificationService;
   static const _uuid = Uuid();
 
-  RecurringService({RecurringRepository? recurringRepo})
-      : _recurringRepo = recurringRepo ?? RecurringRepository();
+  RecurringService({
+    RecurringRepository? recurringRepo,
+    NotificationService? notificationService,
+  })  : _recurringRepo = recurringRepo ?? RecurringRepository(),
+        _notificationService = notificationService ?? NotificationService.instance;
 
   /// Safety cap on occurrences caught up per template in one run — guards
   /// against a runaway loop for a daily template left active for years
@@ -41,6 +47,11 @@ class RecurringService {
     var generatedCount = 0;
 
     for (final recurring in activeRecurring) {
+      // A paused template (e.g. a subscription on hold) keeps its
+      // lastRunDate frozen rather than generating charges for the time it
+      // was off — resuming it moves lastRunDate forward instead of
+      // backfilling the gap (see RecurringProvider.resumeRecurring).
+      if (recurring.isPaused) continue;
       try {
         generatedCount += await _processOne(recurring, todayDate);
       } catch (e) {
@@ -48,7 +59,26 @@ class RecurringService {
       }
     }
 
+    await _rescheduleReminders();
     return generatedCount;
+  }
+
+  /// Re-syncs every subscription's reminder notification against its
+  /// (possibly just-advanced) next occurrence. Re-fetches rather than
+  /// reusing the list above since [_processOne] may have moved
+  /// `lastRunDate` — and therefore `nextOccurrence` — forward.
+  Future<void> _rescheduleReminders() async {
+    if (!_notificationService.isSupported) return;
+    try {
+      final active = await _recurringRepo.getActive();
+      for (final recurring in active) {
+        if (recurring.isSubscription) {
+          await _notificationService.scheduleReminder(recurring);
+        }
+      }
+    } catch (e) {
+      debugPrint('Failed to reschedule subscription reminders: $e');
+    }
   }
 
   Future<int> _processOne(

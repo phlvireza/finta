@@ -354,4 +354,60 @@ void main() {
       await db.close();
     },
   );
+
+  test(
+    'migrating a populated v5 database to v6 adds the subscription columns '
+    'to recurring_transactions, defaulting existing templates to '
+    'not-a-subscription and not-paused',
+    () async {
+      final db = await databaseFactoryFfi.openDatabase(
+        ':memory:',
+        options: OpenDatabaseOptions(version: 1, onCreate: _createV1Schema),
+      );
+      await db.insert('categories', {
+        'id': 'cat1',
+        'name': 'Bills & Utilities',
+        'type': 'expense',
+        'icon': 'receipt_long',
+        'color': '#D4A05A',
+        'isDefault': 0,
+        'sortOrder': 0,
+        'createdAt': '2026-01-01T00:00:00.000',
+      });
+      // Insert directly into the original v1-shaped recurring_transactions
+      // table (the schema Migrations.v6 actually receives before it runs).
+      await db.insert('recurring_transactions', {
+        'id': 'rec1',
+        'type': 'expense',
+        'amount': 150000,
+        'categoryId': 'cat1',
+        'note': 'Internet',
+        'frequency': 'monthly',
+        'startDate': '2026-01-05',
+        'endDate': null,
+        'lastRunDate': '2026-07-05',
+        'isActive': 1,
+        'createdAt': '2026-01-05T00:00:00.000',
+      });
+
+      // Replay the real upgrade path: v2 -> v3 -> v4 -> v5 -> v6, in order.
+      await Migrations.v2(db);
+      await Migrations.v3(db);
+      await Migrations.v4(db);
+      await Migrations.v5(db);
+      await Migrations.v6(db);
+
+      final recurring = await db.query('recurring_transactions', where: "id = 'rec1'");
+      expect(recurring, hasLength(1), reason: 'the existing template must survive the upgrade');
+      expect(recurring.first['note'], 'Internet');
+      expect(recurring.first['merchant'], isNull);
+      // New columns default to today's behavior — an existing recurring
+      // template isn't retroactively treated as a tracked subscription.
+      expect(recurring.first['isSubscription'], 0);
+      expect(recurring.first['isPaused'], 0);
+      expect(recurring.first['reminderDaysBefore'], isNull);
+
+      await db.close();
+    },
+  );
 }

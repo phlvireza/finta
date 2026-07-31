@@ -5,12 +5,16 @@ class RecurringTransactionModel {
   final double amount;
   final String categoryId;
   final String? accountId;
+  final String? merchant;
   final String? note;
   final String frequency; // 'daily', 'weekly', 'biweekly', 'monthly', 'yearly'
   final DateTime startDate;
   final DateTime? endDate;
   final DateTime? lastRunDate;
   final bool isActive;
+  final bool isSubscription;
+  final bool isPaused;
+  final int? reminderDaysBefore;
   final DateTime createdAt;
 
   const RecurringTransactionModel({
@@ -19,12 +23,16 @@ class RecurringTransactionModel {
     required this.amount,
     required this.categoryId,
     this.accountId,
+    this.merchant,
     this.note,
     required this.frequency,
     required this.startDate,
     this.endDate,
     this.lastRunDate,
     required this.isActive,
+    this.isSubscription = false,
+    this.isPaused = false,
+    this.reminderDaysBefore,
     required this.createdAt,
   });
 
@@ -89,6 +97,30 @@ class RecurringTransactionModel {
     );
   }
 
+  /// Roughly how many days a single period of [frequency] spans — used to
+  /// normalize a subscription's cost onto a common monthly/yearly basis.
+  double get approxDaysPerPeriod {
+    switch (frequency) {
+      case 'daily':
+        return 1;
+      case 'weekly':
+        return 7;
+      case 'biweekly':
+        return 14;
+      case 'monthly':
+        return 30.44;
+      case 'yearly':
+        return 365.25;
+      default:
+        return 30.44;
+    }
+  }
+
+  /// This template's cost normalized to an average-per-month figure —
+  /// e.g. a yearly $120 subscription is $10/month here — so subscriptions
+  /// on different billing cycles can be summed and compared meaningfully.
+  double get monthlyEquivalent => amount * 30.44 / approxDaysPerPeriod;
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -96,12 +128,16 @@ class RecurringTransactionModel {
       'amount': amount,
       'categoryId': categoryId,
       'accountId': accountId,
+      'merchant': merchant,
       'note': note,
       'frequency': frequency,
       'startDate': startDate.toIso8601String().substring(0, 10),
       'endDate': endDate?.toIso8601String().substring(0, 10),
       'lastRunDate': lastRunDate?.toIso8601String().substring(0, 10),
       'isActive': isActive ? 1 : 0,
+      'isSubscription': isSubscription ? 1 : 0,
+      'isPaused': isPaused ? 1 : 0,
+      'reminderDaysBefore': reminderDaysBefore,
       'createdAt': createdAt.toIso8601String(),
     };
   }
@@ -113,6 +149,7 @@ class RecurringTransactionModel {
       amount: (map['amount'] as num).toDouble(),
       categoryId: map['categoryId'] as String,
       accountId: map['accountId'] as String?,
+      merchant: map['merchant'] as String?,
       note: map['note'] as String?,
       frequency: map['frequency'] as String,
       startDate: DateTime.parse(map['startDate'] as String),
@@ -123,6 +160,9 @@ class RecurringTransactionModel {
           ? DateTime.parse(map['lastRunDate'] as String)
           : null,
       isActive: (map['isActive'] as int) == 1,
+      isSubscription: (map['isSubscription'] as int?) == 1,
+      isPaused: (map['isPaused'] as int?) == 1,
+      reminderDaysBefore: map['reminderDaysBefore'] as int?,
       createdAt: DateTime.parse(map['createdAt'] as String),
     );
   }
@@ -133,12 +173,17 @@ class RecurringTransactionModel {
     double? amount,
     String? categoryId,
     String? accountId,
+    String? merchant,
     String? note,
     String? frequency,
     DateTime? startDate,
     DateTime? endDate,
     DateTime? lastRunDate,
     bool? isActive,
+    bool? isSubscription,
+    bool? isPaused,
+    int? reminderDaysBefore,
+    bool clearReminder = false,
     DateTime? createdAt,
   }) {
     return RecurringTransactionModel(
@@ -147,12 +192,17 @@ class RecurringTransactionModel {
       amount: amount ?? this.amount,
       categoryId: categoryId ?? this.categoryId,
       accountId: accountId ?? this.accountId,
+      merchant: merchant ?? this.merchant,
       note: note ?? this.note,
       frequency: frequency ?? this.frequency,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       lastRunDate: lastRunDate ?? this.lastRunDate,
       isActive: isActive ?? this.isActive,
+      isSubscription: isSubscription ?? this.isSubscription,
+      isPaused: isPaused ?? this.isPaused,
+      reminderDaysBefore:
+          clearReminder ? null : (reminderDaysBefore ?? this.reminderDaysBefore),
       createdAt: createdAt ?? this.createdAt,
     );
   }

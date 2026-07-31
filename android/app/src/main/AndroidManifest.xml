@@ -42,4 +42,9 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+
+    <!-- Subscription renewal reminders (flutter_local_notifications). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 </manifest>

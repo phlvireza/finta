@@ -109,6 +109,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       String? recurringId = widget.editTransaction?.recurringId;
       final amount = parseFormattedAmount(_amountController.text);
 
+      final trimmedMerchant = _merchant?.trim();
+      final merchant = (trimmedMerchant == null || trimmedMerchant.isEmpty) ? null : trimmedMerchant;
+
       // Create recurring template if new and toggled
       if (widget.editTransaction == null && _isRecurring) {
         final recTx = await recurringProvider.addRecurring(
@@ -116,15 +119,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           amount: amount,
           categoryId: _categoryId!,
           accountId: _accountId,
+          merchant: merchant,
           note: _noteController.text.trim(),
           frequency: _recurringFrequency,
           startDate: _date,
         );
         recurringId = recTx.id;
       }
-
-      final trimmedMerchant = _merchant?.trim();
-      final merchant = (trimmedMerchant == null || trimmedMerchant.isEmpty) ? null : trimmedMerchant;
 
       if (widget.editTransaction != null) {
         // Update existing

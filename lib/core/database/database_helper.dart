@@ -13,7 +13,7 @@ class DatabaseHelper {
   /// branch in [_onUpgrade] backed by a method on [Migrations]. `_onCreate`
   /// must always produce a schema identical to a v1 install that has
   /// replayed every migration — see test/migration_test.dart.
-  static const int dbVersion = 5;
+  static const int dbVersion = 6;
 
   static Database? _database;
 
@@ -51,6 +51,7 @@ class DatabaseHelper {
     if (oldVersion < 3) await Migrations.v3(db);
     if (oldVersion < 4) await Migrations.v4(db);
     if (oldVersion < 5) await Migrations.v5(db);
+    if (oldVersion < 6) await Migrations.v6(db);
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -104,12 +105,16 @@ class DatabaseHelper {
         amount REAL NOT NULL,
         categoryId TEXT NOT NULL,
         accountId TEXT,
+        merchant TEXT,
         note TEXT,
         frequency TEXT NOT NULL,
         startDate TEXT NOT NULL,
         endDate TEXT,
         lastRunDate TEXT,
         isActive INTEGER NOT NULL DEFAULT 1,
+        isSubscription INTEGER NOT NULL DEFAULT 0,
+        isPaused INTEGER NOT NULL DEFAULT 0,
+        reminderDaysBefore INTEGER,
         createdAt TEXT NOT NULL,
         FOREIGN KEY (categoryId) REFERENCES categories(id)
       )

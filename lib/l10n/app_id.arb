@@ -532,5 +532,34 @@
       "owed": { "type": "String" },
       "owe": { "type": "String" }
     }
+  },
+
+  "subscriptions": "Langganan",
+  "noSubscriptionsTitle": "Belum ada langganan yang dilacak",
+  "noSubscriptionsSubtitle": "Tandai transaksi berulang sebagai langganan untuk melacak biayanya dan mendapat pengingat perpanjangan",
+  "subscriptionSuggestions": "Saran",
+  "subscriptionSuggestionSubtitle": "{amount}/bulan · terlihat {count} kali",
+  "@subscriptionSuggestionSubtitle": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "yourSubscriptions": "Langganan Anda",
+  "perMonth": "Per bulan",
+  "perYear": "Per tahun",
+  "dismiss": "Abaikan",
+  "overdue": "Terlambat",
+  "paused": "Dijeda",
+  "pause": "Jeda",
+  "resume": "Lanjutkan",
+  "setReminder": "Atur pengingat",
+  "notASubscription": "Bukan langganan",
+  "reminderOff": "Tanpa pengingat",
+  "reminderDaysBeforeOption": "{days} hari sebelumnya",
+  "@reminderDaysBeforeOption": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
   }
 }

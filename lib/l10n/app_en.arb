@@ -539,5 +539,34 @@
       "owed": { "type": "String" },
       "owe": { "type": "String" }
     }
+  },
+
+  "subscriptions": "Subscriptions",
+  "noSubscriptionsTitle": "No subscriptions tracked",
+  "noSubscriptionsSubtitle": "Mark a recurring transaction as a subscription to track its cost and get renewal reminders",
+  "subscriptionSuggestions": "Suggestions",
+  "subscriptionSuggestionSubtitle": "{amount}/month · seen {count} times",
+  "@subscriptionSuggestionSubtitle": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "yourSubscriptions": "Your subscriptions",
+  "perMonth": "Per month",
+  "perYear": "Per year",
+  "dismiss": "Dismiss",
+  "overdue": "Overdue",
+  "paused": "Paused",
+  "pause": "Pause",
+  "resume": "Resume",
+  "setReminder": "Set reminder",
+  "notASubscription": "Not a subscription",
+  "reminderOff": "No reminder",
+  "reminderDaysBeforeOption": "{days} days before",
+  "@reminderDaysBeforeOption": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
   }
 }

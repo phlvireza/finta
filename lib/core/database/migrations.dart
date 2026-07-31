@@ -117,6 +117,29 @@ class Migrations {
     });
   }
 
+  /// v5 → v6: subscriptions are just recurring templates with a couple of
+  /// extra flags rather than a separate table — `isSubscription` marks one
+  /// for the Subscriptions screen, `isPaused` stops it from generating
+  /// charges without deactivating (and losing) the template the way
+  /// deleting would, and `reminderDaysBefore` (nullable — null means no
+  /// reminder) drives the local-notification schedule. `merchant` lets a
+  /// subscription show a real name ("Netflix") instead of just its
+  /// category.
+  static Future<void> v6(Database db) async {
+    await db.transaction((txn) async {
+      await txn.execute('ALTER TABLE recurring_transactions ADD COLUMN merchant TEXT');
+      await txn.execute(
+        'ALTER TABLE recurring_transactions ADD COLUMN isSubscription INTEGER NOT NULL DEFAULT 0',
+      );
+      await txn.execute(
+        'ALTER TABLE recurring_transactions ADD COLUMN isPaused INTEGER NOT NULL DEFAULT 0',
+      );
+      await txn.execute(
+        'ALTER TABLE recurring_transactions ADD COLUMN reminderDaysBefore INTEGER',
+      );
+    });
+  }
+
   static const String createGoalsTable = '''
     CREATE TABLE goals (
       id TEXT PRIMARY KEY,
