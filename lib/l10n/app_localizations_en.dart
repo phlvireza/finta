@@ -648,4 +648,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String transferIntoAccount(String account) {
     return 'Into $account';
   }
+
+  @override
+  String get merchant => 'Merchant';
+
+  @override
+  String get merchantHint => 'Where did you spend?';
+
+  @override
+  String get parentCategoryOptional => 'Parent category (optional)';
+
+  @override
+  String get noneTopLevel => 'None — top-level category';
+
+  @override
+  String get groupSubcategories => 'Group sub-categories';
+
+  @override
+  String get showSubcategories => 'Show sub-categories';
 }

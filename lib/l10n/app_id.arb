@@ -301,5 +301,12 @@
     "placeholders": {
       "account": { "type": "String" }
     }
-  }
+  },
+
+  "merchant": "Merchant",
+  "merchantHint": "Belanja di mana?",
+  "parentCategoryOptional": "Kategori induk (opsional)",
+  "noneTopLevel": "Tidak ada — kategori tingkat atas",
+  "groupSubcategories": "Gabungkan sub-kategori",
+  "showSubcategories": "Tampilkan sub-kategori"
 }

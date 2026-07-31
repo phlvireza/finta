@@ -50,7 +50,16 @@ class TransactionTile extends StatelessWidget {
     final amountFontSize = dense ? 14.0 : 15.0;
     final recurringIconSize = dense ? 12.0 : 14.0;
 
+    final hasMerchant = !transaction.isTransfer &&
+        transaction.merchant != null &&
+        transaction.merchant!.isNotEmpty;
+    final title = transaction.isTransfer
+        ? loc.transfer
+        : (hasMerchant ? transaction.merchant! : (category?.name ?? loc.unknown));
     final subtitleParts = <String>[
+      // Merchant takes the title slot, so the category becomes part of the
+      // subtitle instead of being redundant with it.
+      if (hasMerchant) (category?.name ?? loc.unknown),
       if (account != null) account.name,
       if (transaction.note != null && transaction.note!.isNotEmpty) transaction.note!,
     ];
@@ -104,7 +113,7 @@ class TransactionTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      transaction.isTransfer ? loc.transfer : (category?.name ?? loc.unknown),
+                      title,
                       style: titleStyle,
                     ),
                     if (subtitleParts.isNotEmpty)

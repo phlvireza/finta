@@ -13,6 +13,7 @@ import '../add_transaction_screen.dart';
 import 'amount_input_field.dart';
 import 'category_picker.dart';
 import 'account_picker.dart';
+import 'merchant_field.dart';
 import 'date_picker_field.dart';
 
 enum _EntryType { expense, income, transfer }
@@ -43,6 +44,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
   String? _categoryId;
   String? _accountId;
   String? _toAccountId;
+  String? _merchant;
   bool _isSaving = false;
   String? _error;
 
@@ -147,11 +149,13 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
           date: _date,
         );
       } else {
+        final trimmedMerchant = _merchant?.trim();
         await txProvider.addTransaction(
           type: _isIncome ? 'income' : 'expense',
           amount: amount,
           categoryId: _categoryId!,
           accountId: _accountId!,
+          merchant: (trimmedMerchant == null || trimmedMerchant.isEmpty) ? null : trimmedMerchant,
           date: _date,
         );
       }
@@ -248,6 +252,15 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                   }),
                 ),
               ] else ...[
+                const SizedBox(height: AppConstants.spacingLg),
+                MerchantField(
+                  initialValue: _merchant,
+                  onChanged: (val) => _merchant = val,
+                  onMerchantDefaults: (categoryId, accountId) => setState(() {
+                    _categoryId = categoryId;
+                    _accountId = accountId;
+                  }),
+                ),
                 const SizedBox(height: AppConstants.spacingLg),
                 CategoryPicker(
                   isIncome: _isIncome,

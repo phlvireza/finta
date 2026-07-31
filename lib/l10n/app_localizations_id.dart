@@ -649,4 +649,22 @@ class AppLocalizationsId extends AppLocalizations {
   String transferIntoAccount(String account) {
     return 'Masuk ke $account';
   }
+
+  @override
+  String get merchant => 'Merchant';
+
+  @override
+  String get merchantHint => 'Belanja di mana?';
+
+  @override
+  String get parentCategoryOptional => 'Kategori induk (opsional)';
+
+  @override
+  String get noneTopLevel => 'Tidak ada — kategori tingkat atas';
+
+  @override
+  String get groupSubcategories => 'Gabungkan sub-kategori';
+
+  @override
+  String get showSubcategories => 'Tampilkan sub-kategori';
 }

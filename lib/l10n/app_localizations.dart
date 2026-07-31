@@ -1303,6 +1303,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Into {account}'**
   String transferIntoAccount(String account);
+
+  /// No description provided for @merchant.
+  ///
+  /// In en, this message translates to:
+  /// **'Merchant'**
+  String get merchant;
+
+  /// No description provided for @merchantHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Where did you spend?'**
+  String get merchantHint;
+
+  /// No description provided for @parentCategoryOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent category (optional)'**
+  String get parentCategoryOptional;
+
+  /// No description provided for @noneTopLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'None — top-level category'**
+  String get noneTopLevel;
+
+  /// No description provided for @groupSubcategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Group sub-categories'**
+  String get groupSubcategories;
+
+  /// No description provided for @showSubcategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Show sub-categories'**
+  String get showSubcategories;
 }
 
 class _AppLocalizationsDelegate

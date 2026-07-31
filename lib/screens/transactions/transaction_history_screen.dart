@@ -5,6 +5,7 @@ import '../../providers/budget_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/analytics_provider.dart';
 import '../../providers/category_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../models/transaction_model.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/date_utils.dart';
@@ -56,7 +57,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     super.dispose();
   }
 
-  List<TransactionModel> _getFilteredTransactions(List<TransactionModel> all) {
+  List<TransactionModel> _getFilteredTransactions(
+    List<TransactionModel> all,
+    CategoryProvider categories,
+    AccountProvider accounts,
+  ) {
     var filtered = all;
 
     if (_filter.type != 'all') {
@@ -77,6 +82,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       filtered = filtered.where((t) => _filter.categoryIds.contains(t.categoryId)).toList();
     }
 
+    if (_filter.accountIds.isNotEmpty) {
+      filtered = filtered.where((t) => _filter.accountIds.contains(t.accountId)).toList();
+    }
+
     if (_filter.minAmount != null) {
       filtered = filtered.where((t) => t.amount >= _filter.minAmount!).toList();
     }
@@ -88,9 +97,17 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       final query = _searchQuery.toLowerCase();
       filtered = filtered.where((t) {
         final note = t.note?.toLowerCase() ?? '';
-        // In a real app we'd also search by category name, but that requires
-        // joining or passing the category provider down. Note is fine for MVP.
-        return note.contains(query);
+        final merchant = t.merchant?.toLowerCase() ?? '';
+        final categoryName = categories.getCategoryById(t.categoryId)?.name.toLowerCase() ?? '';
+        final accountName = accounts.getAccountById(t.accountId)?.name.toLowerCase() ?? '';
+        // Typing a bare number (e.g. "45000") should find that amount
+        // whether or not the user included decimals.
+        final amountString = t.amount.toStringAsFixed(0);
+        return note.contains(query) ||
+            merchant.contains(query) ||
+            categoryName.contains(query) ||
+            accountName.contains(query) ||
+            amountString.contains(query);
       }).toList();
     }
 
@@ -141,14 +158,15 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     final theme = Theme.of(context);
     final txProvider = context.watch<TransactionProvider>();
     final allTransactions = txProvider.allTransactions;
-    
-    final filtered = _getFilteredTransactions(allTransactions);
+    final categories = context.watch<CategoryProvider>();
+    final accounts = context.watch<AccountProvider>();
+
+    final filtered = _getFilteredTransactions(allTransactions, categories, accounts);
     final grouped = txProvider.getGroupedTransactions(filtered);
     final loc = AppLocalizations.of(context)!;
 
     final isCalendarMode = _viewMode == _ViewMode.calendar;
 
-    final categories = context.watch<CategoryProvider>();
     final settings = context.watch<SettingsProvider>();
     final netTotal = filtered.fold<double>(
       0,
@@ -233,7 +251,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                         child: Wrap(
                           spacing: AppConstants.spacingSm,
                           runSpacing: AppConstants.spacingSm,
-                          children: _activeFilterChips(categories),
+                          children: _activeFilterChips(categories, accounts),
                         ),
                       ),
                     if (filtered.isNotEmpty)
@@ -328,7 +346,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     );
   }
 
-  List<Widget> _activeFilterChips(CategoryProvider categories) {
+  List<Widget> _activeFilterChips(CategoryProvider categories, AccountProvider accounts) {
     final loc = AppLocalizations.of(context)!;
     final chips = <Widget>[];
 
@@ -352,6 +370,16 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         onDeleted: () => setState(() {
           final updated = Set<String>.from(_filter.categoryIds)..remove(id);
           _filter = _filter.copyWith(categoryIds: updated);
+        }),
+      ));
+    }
+    for (final id in _filter.accountIds) {
+      final name = accounts.getAccountById(id)?.name ?? loc.unknown;
+      chips.add(InputChip(
+        label: Text(name),
+        onDeleted: () => setState(() {
+          final updated = Set<String>.from(_filter.accountIds)..remove(id);
+          _filter = _filter.copyWith(accountIds: updated);
         }),
       ));
     }

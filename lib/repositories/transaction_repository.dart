@@ -244,4 +244,45 @@ class TransactionRepository {
       throw DatabaseException('Failed to get distinct years', cause: e);
     }
   }
+
+  /// Merchants seen before, ranked by how often they're used — powers the
+  /// entry form's autocomplete. Empty [query] returns the most-used
+  /// merchants overall (a reasonable "recent/frequent" default list).
+  Future<List<String>> getMerchantSuggestions(String query, {int limit = 8}) async {
+    try {
+      final db = await _dbHelper.database;
+      final sanitized = query.replaceAll('%', '').replaceAll('_', '');
+      final maps = await db.rawQuery(
+        'SELECT merchant, COUNT(*) as cnt FROM transactions '
+        "WHERE merchant IS NOT NULL AND merchant != '' AND merchant LIKE ? "
+        'GROUP BY merchant ORDER BY cnt DESC LIMIT ?',
+        ['%$sanitized%', limit],
+      );
+      return maps.map((m) => m['merchant'] as String).toList();
+    } catch (e) {
+      throw DatabaseException('Failed to get merchant suggestions', cause: e);
+    }
+  }
+
+  /// The category and account this merchant is most often paired with —
+  /// used to pre-fill the rest of the form the moment a known merchant is
+  /// picked, the "20 lines of SQL that feel like magic" trick.
+  Future<({String categoryId, String accountId})?> getMerchantDefaults(String merchant) async {
+    try {
+      final db = await _dbHelper.database;
+      final maps = await db.rawQuery(
+        'SELECT categoryId, accountId, COUNT(*) as cnt FROM transactions '
+        'WHERE merchant = ? AND isTransfer = 0 '
+        'GROUP BY categoryId, accountId ORDER BY cnt DESC LIMIT 1',
+        [merchant],
+      );
+      if (maps.isEmpty) return null;
+      return (
+        categoryId: maps.first['categoryId'] as String,
+        accountId: maps.first['accountId'] as String,
+      );
+    } catch (e) {
+      throw DatabaseException('Failed to get merchant defaults', cause: e);
+    }
+  }
 }

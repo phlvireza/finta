@@ -13,6 +13,7 @@ import '../../core/formatters/currency_formatter.dart';
 import 'widgets/amount_input_field.dart';
 import 'widgets/category_picker.dart';
 import 'widgets/account_picker.dart';
+import 'widgets/merchant_field.dart';
 import 'widgets/date_picker_field.dart';
 import 'widgets/recurring_toggle.dart';
 import 'widgets/type_toggle.dart';
@@ -36,6 +37,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   late DateTime _date;
   String? _categoryId;
   String? _accountId;
+  String? _merchant;
 
   bool _isRecurring = false;
   String _recurringFrequency = 'monthly';
@@ -57,6 +59,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     _date = tx?.date ?? DateTime.now();
     _categoryId = tx?.categoryId;
     _accountId = tx?.accountId ?? _mostRecentAccountId();
+    _merchant = tx?.merchant;
 
     if (tx != null && tx.isRecurring) {
       _isRecurring = true;
@@ -120,6 +123,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         recurringId = recTx.id;
       }
 
+      final trimmedMerchant = _merchant?.trim();
+      final merchant = (trimmedMerchant == null || trimmedMerchant.isEmpty) ? null : trimmedMerchant;
+
       if (widget.editTransaction != null) {
         // Update existing
         final updated = widget.editTransaction!.copyWith(
@@ -127,6 +133,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           amount: amount,
           categoryId: _categoryId,
           accountId: _accountId,
+          merchant: merchant,
           date: _date,
           note: _noteController.text.trim(),
         );
@@ -138,6 +145,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           amount: amount,
           categoryId: _categoryId!,
           accountId: _accountId!,
+          merchant: merchant,
           date: _date,
           note: _noteController.text.trim(),
           recurringId: recurringId,
@@ -261,6 +269,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   return null;
                 },
               ),
+
+              // Merchant is the second field — it's what the transaction
+              // list leads with, category is secondary metadata.
+              MerchantField(
+                initialValue: _merchant,
+                onChanged: (val) => _merchant = val,
+                onMerchantDefaults: (categoryId, accountId) => setState(() {
+                  _categoryId = categoryId;
+                  _accountId = accountId;
+                }),
+              ),
+              const SizedBox(height: AppConstants.spacingXxl),
 
               // Date sits right under the amount — it's changed far more
               // often than the note below, so it shouldn't be the field

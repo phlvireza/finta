@@ -410,4 +410,13 @@ class TransactionProvider extends ChangeNotifier {
       rethrow;
     }
   }
+
+  /// Merchants matching [query], most-used first — powers the entry
+  /// form's autocomplete.
+  Future<List<String>> suggestMerchants(String query) => _repository.getMerchantSuggestions(query);
+
+  /// The category/account this merchant is most often paired with, or
+  /// null if it's never been used before.
+  Future<({String categoryId, String accountId})?> getMerchantDefaults(String merchant) =>
+      _repository.getMerchantDefaults(merchant);
 }

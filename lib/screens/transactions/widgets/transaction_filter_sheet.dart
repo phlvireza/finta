@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/category_provider.dart';
+import '../../../providers/account_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -11,6 +12,7 @@ class TransactionFilter {
   final DateTimeRange? dateRange;
   final String type; // 'all' | 'income' | 'expense'
   final Set<String> categoryIds;
+  final Set<String> accountIds;
   final double? minAmount;
   final double? maxAmount;
 
@@ -18,6 +20,7 @@ class TransactionFilter {
     this.dateRange,
     this.type = 'all',
     this.categoryIds = const {},
+    this.accountIds = const {},
     this.minAmount,
     this.maxAmount,
   });
@@ -26,6 +29,7 @@ class TransactionFilter {
       dateRange != null ||
       type != 'all' ||
       categoryIds.isNotEmpty ||
+      accountIds.isNotEmpty ||
       minAmount != null ||
       maxAmount != null;
 
@@ -34,6 +38,7 @@ class TransactionFilter {
     bool clearDateRange = false,
     String? type,
     Set<String>? categoryIds,
+    Set<String>? accountIds,
     double? minAmount,
     bool clearMinAmount = false,
     double? maxAmount,
@@ -43,6 +48,7 @@ class TransactionFilter {
       dateRange: clearDateRange ? null : (dateRange ?? this.dateRange),
       type: type ?? this.type,
       categoryIds: categoryIds ?? this.categoryIds,
+      accountIds: accountIds ?? this.accountIds,
       minAmount: clearMinAmount ? null : (minAmount ?? this.minAmount),
       maxAmount: clearMaxAmount ? null : (maxAmount ?? this.maxAmount),
     );
@@ -167,6 +173,12 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
     setState(() => _filter = _filter.copyWith(categoryIds: updated));
   }
 
+  void _toggleAccount(String id) {
+    final updated = Set<String>.from(_filter.accountIds);
+    if (!updated.add(id)) updated.remove(id);
+    setState(() => _filter = _filter.copyWith(accountIds: updated));
+  }
+
   void _apply() {
     final min = double.tryParse(_minController.text);
     final max = double.tryParse(_maxController.text);
@@ -193,6 +205,7 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
     final categories = context.watch<CategoryProvider>().categories;
+    final accounts = context.watch<AccountProvider>().activeAccounts;
     final preset = _activePreset;
 
     return Padding(
@@ -289,6 +302,23 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                 }).toList(),
               ),
               const SizedBox(height: AppConstants.spacingLg),
+
+              if (accounts.isNotEmpty) ...[
+                Text(loc.account, style: theme.textTheme.titleSmall),
+                const SizedBox(height: AppConstants.spacingSm),
+                Wrap(
+                  spacing: AppConstants.spacingSm,
+                  runSpacing: AppConstants.spacingSm,
+                  children: accounts.map((a) {
+                    return _PresetChip(
+                      label: a.name,
+                      isSelected: _filter.accountIds.contains(a.id),
+                      onTap: () => _toggleAccount(a.id),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: AppConstants.spacingLg),
+              ],
 
               Text(loc.amountRange, style: theme.textTheme.titleSmall),
               const SizedBox(height: AppConstants.spacingSm),

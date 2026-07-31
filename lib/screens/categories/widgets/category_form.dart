@@ -27,6 +27,7 @@ class _CategoryFormState extends State<CategoryForm> {
   final _nameController = TextEditingController();
   String _selectedIcon = 'category';
   String _selectedColor = '#C87941';
+  String? _parentId;
   bool _autoValidate = false;
 
   final List<String> _colorOptions = const [
@@ -41,6 +42,7 @@ class _CategoryFormState extends State<CategoryForm> {
       _nameController.text = widget.categoryToEdit!.name;
       _selectedIcon = widget.categoryToEdit!.icon;
       _selectedColor = widget.categoryToEdit!.color;
+      _parentId = widget.categoryToEdit!.parentId;
     }
   }
 
@@ -64,6 +66,8 @@ class _CategoryFormState extends State<CategoryForm> {
           name: name,
           icon: _selectedIcon,
           color: _selectedColor,
+          parentId: _parentId,
+          clearParentId: _parentId == null,
         );
         await provider.updateCategory(updated);
       } else {
@@ -72,6 +76,7 @@ class _CategoryFormState extends State<CategoryForm> {
           type: widget.isIncome ? 'income' : 'expense',
           icon: _selectedIcon,
           color: _selectedColor,
+          parentId: _parentId,
         );
       }
 
@@ -218,6 +223,51 @@ class _CategoryFormState extends State<CategoryForm> {
                 },
               ),
             ),
+            const SizedBox(height: AppConstants.spacingXxl),
+
+            // Parent category — only 2 levels are allowed, so a category
+            // that already has children of its own can't also become one
+            // (that would make its children grandchildren of its new
+            // parent), and only top-level categories are valid choices.
+            Builder(builder: (context) {
+              final provider = context.watch<CategoryProvider>();
+              final selfId = widget.categoryToEdit?.id;
+              final hasChildren =
+                  selfId != null && provider.categories.any((c) => c.parentId == selfId);
+              if (hasChildren) return const SizedBox.shrink();
+
+              final parentOptions = provider.categories.where((c) =>
+                  c.type == (widget.isIncome ? 'income' : 'expense') &&
+                  c.parentId == null &&
+                  !c.isSystem &&
+                  c.id != selfId);
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(loc.parentCategoryOptional, style: theme.textTheme.labelMedium),
+                  const SizedBox(height: AppConstants.spacingSm),
+                  DropdownButtonFormField<String?>(
+                    initialValue: _parentId,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: theme.colorScheme.surfaceContainerHighest,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    items: [
+                      DropdownMenuItem<String?>(value: null, child: Text(loc.noneTopLevel)),
+                      ...parentOptions.map(
+                        (c) => DropdownMenuItem<String?>(value: c.id, child: Text(c.name)),
+                      ),
+                    ],
+                    onChanged: (val) => setState(() => _parentId = val),
+                  ),
+                ],
+              );
+            }),
             const SizedBox(height: AppConstants.spacingXxxl),
 
             // Save Button

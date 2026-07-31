@@ -241,7 +241,11 @@ class _CategorySearchSheetState extends State<_CategorySearchSheet> {
             ),
             const Divider(),
             
-            // Categories List
+            // Categories List — top-level categories followed immediately
+            // by their own children, indented, rather than a flat
+            // alphabetical/sortOrder mix that scatters a parent from its
+            // sub-categories. Search still matches by name across both
+            // levels, since [filtered] is a flat name-matched list.
             Expanded(
               child: filtered.isEmpty
                   ? Center(
@@ -250,43 +254,69 @@ class _CategorySearchSheetState extends State<_CategorySearchSheet> {
                         style: theme.textTheme.bodyMedium,
                       ),
                     )
-                  : ListView.builder(
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) {
-                        final cat = filtered[index];
-                        final isSelected = cat.id == widget.selectedCategoryId;
-                        return ListTile(
-                          leading: Icon(cat.iconData, color: cat.colorValue),
-                          title: Text(cat.name),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (!cat.isDefault)
-                                IconButton(
-                                  icon: const Icon(Icons.edit, size: 20),
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                  onPressed: () {
-                                    showModalBottomSheet(
-                                      context: context,
-                                      isScrollControlled: true,
-                                      builder: (_) => CategoryForm(
-                                        isIncome: widget.isIncome,
-                                        categoryToEdit: cat,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              if (isSelected)
-                                Icon(Icons.check, color: theme.colorScheme.primary),
-                            ],
-                          ),
-                          onTap: () => widget.onSelected(cat.id),
-                        );
-                      },
+                  : ListView(
+                      children: _buildGroupedTiles(context, filtered, theme, loc),
                     ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  List<Widget> _buildGroupedTiles(
+    BuildContext context,
+    List<CategoryModel> filtered,
+    ThemeData theme,
+    AppLocalizations loc,
+  ) {
+    final filteredIds = filtered.map((c) => c.id).toSet();
+    final topLevel = filtered.where((c) => c.parentId == null || !filteredIds.contains(c.parentId));
+    final tiles = <Widget>[];
+    for (final cat in topLevel) {
+      tiles.add(_categoryTile(context, cat, theme, loc));
+      for (final child in filtered.where((c) => c.parentId == cat.id)) {
+        tiles.add(_categoryTile(context, child, theme, loc, indented: true));
+      }
+    }
+    return tiles;
+  }
+
+  Widget _categoryTile(
+    BuildContext context,
+    CategoryModel cat,
+    ThemeData theme,
+    AppLocalizations loc, {
+    bool indented = false,
+  }) {
+    final isSelected = cat.id == widget.selectedCategoryId;
+    return Padding(
+      padding: EdgeInsets.only(left: indented ? AppConstants.spacingXxxl : 0),
+      child: ListTile(
+        leading: Icon(cat.iconData, color: cat.colorValue),
+        title: Text(cat.name),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!cat.isDefault)
+              IconButton(
+                icon: const Icon(Icons.edit, size: 20),
+                color: theme.colorScheme.onSurfaceVariant,
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (_) => CategoryForm(
+                      isIncome: widget.isIncome,
+                      categoryToEdit: cat,
+                    ),
+                  );
+                },
+              ),
+            if (isSelected) Icon(Icons.check, color: theme.colorScheme.primary),
+          ],
+        ),
+        onTap: () => widget.onSelected(cat.id),
       ),
     );
   }

@@ -308,5 +308,12 @@
     "placeholders": {
       "account": { "type": "String" }
     }
-  }
+  },
+
+  "merchant": "Merchant",
+  "merchantHint": "Where did you spend?",
+  "parentCategoryOptional": "Parent category (optional)",
+  "noneTopLevel": "None — top-level category",
+  "groupSubcategories": "Group sub-categories",
+  "showSubcategories": "Show sub-categories"
 }

@@ -5,6 +5,7 @@ import '../../providers/budget_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/category_rollup.dart';
 import 'widgets/breakdown_chart.dart';
 import 'widgets/category_rank_list.dart';
 import 'widgets/yearly_report.dart';
@@ -29,6 +30,7 @@ class AnalyticsScreen extends StatefulWidget {
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
   bool _isIncome = false;
+  bool _expandSubcategories = false;
 
   @override
   void initState() {
@@ -123,7 +125,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                 incomeLabel: loc.income,
                               ),
                             ),
-                            _BreakdownSection(isIncome: _isIncome),
+                            _BreakdownSection(
+                              isIncome: _isIncome,
+                              expandSubcategories: _expandSubcategories,
+                              onToggleExpand: () => setState(
+                                () => _expandSubcategories = !_expandSubcategories,
+                              ),
+                            ),
                             const SizedBox(height: AppConstants.spacingXxxl),
                             _SectionTitle(loc.budgetPerformance),
                             const _BudgetPerformanceSection(),
@@ -173,15 +181,24 @@ class _SectionTitle extends StatelessWidget {
 
 class _BreakdownSection extends StatelessWidget {
   final bool isIncome;
+  final bool expandSubcategories;
+  final VoidCallback onToggleExpand;
 
-  const _BreakdownSection({required this.isIncome});
+  const _BreakdownSection({
+    required this.isIncome,
+    required this.expandSubcategories,
+    required this.onToggleExpand,
+  });
 
   @override
   Widget build(BuildContext context) {
     final analytics = context.watch<AnalyticsProvider>();
-    final data = isIncome ? analytics.incomeBreakdown : analytics.expenseBreakdown;
-    final total = isIncome ? analytics.totalIncome : analytics.totalExpense;
+    final categories = context.watch<CategoryProvider>();
     final loc = AppLocalizations.of(context)!;
+    final raw = isIncome ? analytics.incomeBreakdown : analytics.expenseBreakdown;
+    final hasSubcategories = raw.any((d) => categories.getCategoryById(d.categoryId)?.isSubcategory == true);
+    final data = expandSubcategories ? raw : rollUpToParents(raw, categories.getCategoryById);
+    final total = isIncome ? analytics.totalIncome : analytics.totalExpense;
 
     if (data.isEmpty) {
       return EmptyState(
@@ -216,6 +233,20 @@ class _BreakdownSection extends StatelessWidget {
             isIncome ? analytics.previousTotalIncome : analytics.previousTotalExpense,
           ),
         ),
+        if (hasSubcategories)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: onToggleExpand,
+                icon: Icon(expandSubcategories ? Icons.unfold_less : Icons.unfold_more, size: 18),
+                label: Text(
+                  expandSubcategories ? loc.groupSubcategories : loc.showSubcategories,
+                ),
+              ),
+            ),
+          ),
         const SizedBox(height: AppConstants.spacingXxxl),
         CategoryRankList(data: data),
       ],

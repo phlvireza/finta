@@ -66,6 +66,7 @@ class CategoryProvider extends ChangeNotifier {
     required String type,
     required String icon,
     required String color,
+    String? parentId,
   }) async {
     try {
       final sortOrder = await _repository.getMaxSortOrder(type);
@@ -76,6 +77,7 @@ class CategoryProvider extends ChangeNotifier {
         icon: icon,
         color: color,
         isDefault: false,
+        parentId: parentId,
         sortOrder: sortOrder,
         createdAt: DateTime.now(),
       );
