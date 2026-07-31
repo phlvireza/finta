@@ -35,6 +35,16 @@ dependencies:
   sqflite_common_ffi: ^2.4.2
   table_calendar: ^3.2.0
 
+  # Backup, restore & import
+  share_plus: ^10.1.4
+  file_picker: ^8.1.7
+  archive: ^3.6.1
+  csv: ^6.0.0
+
+  # Bill reminders
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.9.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
