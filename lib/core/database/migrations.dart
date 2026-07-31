@@ -140,6 +140,31 @@ class Migrations {
     });
   }
 
+  /// v6 → v7: transaction templates ("favorites") for one-tap quick add —
+  /// a saved bundle of type/amount/category/account/merchant/note that
+  /// materializes into a normal transaction the moment it's tapped, dated
+  /// whenever it's used rather than when it was saved.
+  static Future<void> v7(Database db) async {
+    await db.execute(createTemplatesTable);
+  }
+
+  static const String createTemplatesTable = '''
+    CREATE TABLE templates (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL,
+      amount REAL NOT NULL,
+      categoryId TEXT NOT NULL,
+      accountId TEXT NOT NULL,
+      merchant TEXT,
+      note TEXT,
+      sortOrder INTEGER NOT NULL DEFAULT 0,
+      createdAt TEXT NOT NULL,
+      FOREIGN KEY (categoryId) REFERENCES categories(id),
+      FOREIGN KEY (accountId) REFERENCES accounts(id)
+    )
+  ''';
+
   static const String createGoalsTable = '''
     CREATE TABLE goals (
       id TEXT PRIMARY KEY,

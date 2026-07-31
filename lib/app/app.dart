@@ -8,6 +8,7 @@ import '../providers/budget_provider.dart';
 import '../providers/account_provider.dart';
 import '../providers/goal_provider.dart';
 import '../providers/debt_provider.dart';
+import '../providers/template_provider.dart';
 import '../core/services/recurring_service.dart';
 import '../core/services/notification_service.dart';
 import '../screens/onboarding/onboarding_screen.dart';
@@ -54,6 +55,7 @@ class _FintaAppState extends State<FintaApp> {
     final accounts = context.read<AccountProvider>();
     final goals = context.read<GoalProvider>();
     final debts = context.read<DebtProvider>();
+    final templates = context.read<TemplateProvider>();
 
     await settings.init();
     if (!mounted) return;
@@ -69,7 +71,7 @@ class _FintaAppState extends State<FintaApp> {
     await accounts.loadAccounts();
     if (!mounted) return;
 
-    await Future.wait([goals.loadGoals(), debts.loadDebts()]);
+    await Future.wait([goals.loadGoals(), debts.loadDebts(), templates.loadTemplates()]);
     if (!mounted) return;
 
     await recurring.loadRecurringTransactions();

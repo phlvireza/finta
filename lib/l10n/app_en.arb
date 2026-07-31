@@ -601,5 +601,42 @@
     "placeholders": {
       "count": { "type": "int" }
     }
-  }
+  },
+
+  "fillOutFormFirst": "Fill out amount, category, and account first",
+  "saveAsTemplate": "Save as template",
+  "templateName": "Template name",
+  "templateSaved": "Saved \"{name}\" as a template",
+  "@templateSaved": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "deleteTemplate": "Delete template",
+  "confirmDeleteTemplate": "Delete the \"{name}\" template? This won't affect past transactions.",
+  "@confirmDeleteTemplate": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "calculator": "Calculator",
+  "invalidExpression": "Not a valid expression",
+
+  "selectedCount": "{count, plural, =1{1 selected} other{{count} selected}}",
+  "@selectedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "duplicate": "Duplicate",
+  "recategorize": "Recategorize",
+  "confirmBulkDelete": "{count, plural, =1{Delete this transaction?} other{Delete these {count} transactions?}}",
+  "@confirmBulkDelete": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "cannotDuplicateTransfers": "Transfers can't be duplicated — select a regular transaction instead",
+  "cannotRecategorizeTransfers": "Transfers can't be recategorized — select a regular transaction instead",
+  "selectSameTypeToRecategorize": "Select only income or only expense transactions to recategorize together"
 }

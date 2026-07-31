@@ -6,6 +6,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/formatters/currency_formatter.dart';
 import '../../../l10n/app_localizations.dart';
+import 'calculator_sheet.dart';
 
 /// Amount input field with custom formatting and large typography.
 class AmountInputField extends StatelessWidget {
@@ -106,6 +107,19 @@ class AmountInputField extends StatelessWidget {
                         ],
                       ),
                     ),
+                  ),
+                  const SizedBox(width: AppConstants.spacingXs),
+                  IconButton(
+                    icon: Icon(Icons.calculate_outlined, color: color, size: 22),
+                    tooltip: AppLocalizations.of(context)!.calculator,
+                    onPressed: () async {
+                      final result = await CalculatorSheet.show(context, initialValue: controller.text);
+                      if (result == null) return;
+                      final formatted = formatAmount(result, useDecimals: settings.currencyUseDecimals);
+                      controller.text = formatted;
+                      controller.selection = TextSelection.collapsed(offset: formatted.length);
+                      state.didChange(formatted);
+                    },
                   ),
                 ],
               ),

@@ -1126,4 +1126,72 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get fillOutFormFirst => 'Fill out amount, category, and account first';
+
+  @override
+  String get saveAsTemplate => 'Save as template';
+
+  @override
+  String get templateName => 'Template name';
+
+  @override
+  String templateSaved(String name) {
+    return 'Saved \"$name\" as a template';
+  }
+
+  @override
+  String get deleteTemplate => 'Delete template';
+
+  @override
+  String confirmDeleteTemplate(String name) {
+    return 'Delete the \"$name\" template? This won\'t affect past transactions.';
+  }
+
+  @override
+  String get calculator => 'Calculator';
+
+  @override
+  String get invalidExpression => 'Not a valid expression';
+
+  @override
+  String selectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count selected',
+      one: '1 selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get duplicate => 'Duplicate';
+
+  @override
+  String get recategorize => 'Recategorize';
+
+  @override
+  String confirmBulkDelete(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete these $count transactions?',
+      one: 'Delete this transaction?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cannotDuplicateTransfers =>
+      'Transfers can\'t be duplicated — select a regular transaction instead';
+
+  @override
+  String get cannotRecategorizeTransfers =>
+      'Transfers can\'t be recategorized — select a regular transaction instead';
+
+  @override
+  String get selectSameTypeToRecategorize =>
+      'Select only income or only expense transactions to recategorize together';
 }

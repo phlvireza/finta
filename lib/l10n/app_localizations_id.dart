@@ -1127,4 +1127,73 @@ class AppLocalizationsId extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get fillOutFormFirst =>
+      'Isi jumlah, kategori, dan akun terlebih dahulu';
+
+  @override
+  String get saveAsTemplate => 'Simpan sebagai templat';
+
+  @override
+  String get templateName => 'Nama templat';
+
+  @override
+  String templateSaved(String name) {
+    return 'Menyimpan \"$name\" sebagai templat';
+  }
+
+  @override
+  String get deleteTemplate => 'Hapus templat';
+
+  @override
+  String confirmDeleteTemplate(String name) {
+    return 'Hapus templat \"$name\"? Ini tidak akan memengaruhi transaksi sebelumnya.';
+  }
+
+  @override
+  String get calculator => 'Kalkulator';
+
+  @override
+  String get invalidExpression => 'Bukan ekspresi yang valid';
+
+  @override
+  String selectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dipilih',
+      one: '1 dipilih',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get duplicate => 'Duplikat';
+
+  @override
+  String get recategorize => 'Ubah kategori';
+
+  @override
+  String confirmBulkDelete(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Hapus $count transaksi ini?',
+      one: 'Hapus transaksi ini?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cannotDuplicateTransfers =>
+      'Transfer tidak dapat diduplikasi — pilih transaksi biasa sebagai gantinya';
+
+  @override
+  String get cannotRecategorizeTransfers =>
+      'Transfer tidak dapat diubah kategorinya — pilih transaksi biasa sebagai gantinya';
+
+  @override
+  String get selectSameTypeToRecategorize =>
+      'Pilih hanya transaksi pemasukan atau hanya pengeluaran untuk diubah kategorinya bersamaan';
 }

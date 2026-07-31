@@ -13,7 +13,7 @@ class DatabaseHelper {
   /// branch in [_onUpgrade] backed by a method on [Migrations]. `_onCreate`
   /// must always produce a schema identical to a v1 install that has
   /// replayed every migration — see test/migration_test.dart.
-  static const int dbVersion = 6;
+  static const int dbVersion = 7;
 
   static Database? _database;
 
@@ -52,6 +52,7 @@ class DatabaseHelper {
     if (oldVersion < 4) await Migrations.v4(db);
     if (oldVersion < 5) await Migrations.v5(db);
     if (oldVersion < 6) await Migrations.v6(db);
+    if (oldVersion < 7) await Migrations.v7(db);
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -127,6 +128,9 @@ class DatabaseHelper {
     // Goals & debts tables
     await db.execute(Migrations.createGoalsTable);
     await db.execute(Migrations.createDebtsTable);
+
+    // Templates table
+    await db.execute(Migrations.createTemplatesTable);
 
     // Indexes for common queries
     await db.execute(

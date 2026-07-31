@@ -5,10 +5,15 @@ import '../../../providers/budget_provider.dart';
 import '../../../providers/analytics_provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../providers/account_provider.dart';
+import '../../../providers/template_provider.dart';
+import '../../../providers/category_provider.dart';
+import '../../../models/template_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/formatters/currency_formatter.dart';
+import '../../../core/utils/number_utils.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/confirm_dialog.dart';
 import '../add_transaction_screen.dart';
 import 'amount_input_field.dart';
 import 'category_picker.dart';
@@ -178,6 +183,62 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
     }
   }
 
+  /// Materializes a saved template into a transaction dated today and
+  /// closes the sheet — the whole point of a template is skipping the
+  /// rest of the form.
+  Future<void> _useTemplate(TemplateModel template) async {
+    setState(() {
+      _isSaving = true;
+      _error = null;
+    });
+
+    try {
+      final txProvider = context.read<TransactionProvider>();
+      final budgetProvider = context.read<BudgetProvider>();
+      final settings = context.read<SettingsProvider>();
+      final accountProvider = context.read<AccountProvider>();
+
+      await txProvider.addTransaction(
+        type: template.type,
+        amount: template.amount,
+        categoryId: template.categoryId,
+        accountId: template.accountId,
+        merchant: template.merchant,
+        note: template.note,
+        date: DateTime.now(),
+      );
+
+      await txProvider.loadTransactions(payday: settings.payday);
+      await budgetProvider.loadBudgets(payday: settings.payday);
+      await accountProvider.loadAccounts();
+      if (mounted) {
+        await context.read<AnalyticsProvider>().loadForCurrentPeriod(settings.payday);
+      }
+
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+          _error = AppLocalizations.of(context)!.errorFailedToSave;
+        });
+      }
+    }
+  }
+
+  Future<void> _deleteTemplate(BuildContext context, TemplateModel template) async {
+    final loc = AppLocalizations.of(context)!;
+    final confirmed = await ConfirmDialog.show(
+      context,
+      title: loc.deleteTemplate,
+      message: loc.confirmDeleteTemplate(template.name),
+      confirmText: loc.delete,
+    );
+    if (confirmed && context.mounted) {
+      await context.read<TemplateProvider>().deleteTemplate(template.id);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -217,6 +278,10 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                   transferLabel: loc.transfer,
                 ),
               ),
+              if (!_isTransfer) ...[
+                const SizedBox(height: AppConstants.spacingMd),
+                _TemplateChipsRow(onSelected: _useTemplate, onDelete: _deleteTemplate),
+              ],
               AmountInputField(
                 controller: _amountController,
                 isIncome: _isIncome || _isTransfer,
@@ -314,6 +379,67 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Horizontal row of saved one-tap templates ("favorites") — tap to
+/// instantly post today's transaction from it, long-press to delete.
+/// Hidden entirely once there are no templates, rather than showing an
+/// empty-state hint in an already-compact sheet.
+class _TemplateChipsRow extends StatelessWidget {
+  final ValueChanged<TemplateModel> onSelected;
+  final void Function(BuildContext, TemplateModel) onDelete;
+
+  const _TemplateChipsRow({required this.onSelected, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final templates = context.watch<TemplateProvider>().templates;
+    final categories = context.watch<CategoryProvider>();
+    final settings = context.watch<SettingsProvider>();
+
+    if (templates.isEmpty) return const SizedBox.shrink();
+
+    return SizedBox(
+      height: 44,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+        itemCount: templates.length,
+        separatorBuilder: (_, __) => const SizedBox(width: AppConstants.spacingSm),
+        itemBuilder: (context, index) {
+          final template = templates[index];
+          final category = categories.getCategoryById(template.categoryId);
+          return GestureDetector(
+            onTap: () => onSelected(template),
+            onLongPress: () => onDelete(context, template),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingMd),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(AppConstants.radiusFull),
+                border: Border.all(color: theme.colorScheme.outline),
+              ),
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(category?.iconData ?? Icons.category, size: 16, color: category?.colorValue),
+                  const SizedBox(width: 6),
+                  Text(template.name, style: theme.textTheme.labelMedium),
+                  const SizedBox(width: 6),
+                  Text(
+                    NumberUtils.formatCompact(template.amount, symbol: settings.currencySymbol),
+                    style: theme.textTheme.labelSmall?.copyWith(color: theme.textTheme.bodySmall?.color),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

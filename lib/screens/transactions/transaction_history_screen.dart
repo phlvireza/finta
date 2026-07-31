@@ -7,6 +7,7 @@ import '../../providers/analytics_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/account_provider.dart';
 import '../../models/transaction_model.dart';
+import '../../models/category_model.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/utils/number_utils.dart';
@@ -40,6 +41,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   String _searchQuery = '';
   TransactionFilter _filter = const TransactionFilter();
   _ViewMode _viewMode = _ViewMode.list;
+  final Set<String> _selectedIds = {};
+  bool get _selectionMode => _selectedIds.isNotEmpty;
+
   @override
   void initState() {
     super.initState();
@@ -144,13 +148,126 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
     if (confirmed && mounted) {
       await context.read<TransactionProvider>().deleteTransaction(tx.id);
-      
+
       if (mounted) {
         final settings = context.read<SettingsProvider>();
         await context.read<BudgetProvider>().loadBudgets(payday: settings.payday);
         await context.read<AnalyticsProvider>().loadForCurrentPeriod(settings.payday);
       }
     }
+  }
+
+  void _toggleSelection(String id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else {
+        _selectedIds.add(id);
+      }
+    });
+  }
+
+  /// Reloads every provider whose numbers a bulk action could have moved —
+  /// same set [_deleteTransaction] refreshes after a single delete.
+  Future<void> _reloadAfterBulkChange() async {
+    if (!mounted) return;
+    final settings = context.read<SettingsProvider>();
+    await context.read<TransactionProvider>().loadTransactions(payday: settings.payday);
+    if (!mounted) return;
+    await context.read<BudgetProvider>().loadBudgets(payday: settings.payday);
+    if (!mounted) return;
+    await context.read<AnalyticsProvider>().loadForCurrentPeriod(settings.payday);
+    if (!mounted) return;
+    await context.read<AccountProvider>().loadAccounts();
+  }
+
+  Future<void> _bulkDelete() async {
+    final loc = AppLocalizations.of(context)!;
+    final confirmed = await ConfirmDialog.show(
+      context,
+      title: loc.delete,
+      message: loc.confirmBulkDelete(_selectedIds.length),
+      confirmText: loc.delete,
+    );
+    if (!confirmed || !mounted) return;
+
+    final txProvider = context.read<TransactionProvider>();
+    for (final id in _selectedIds.toList()) {
+      await txProvider.deleteTransaction(id);
+    }
+    setState(() => _selectedIds.clear());
+    await _reloadAfterBulkChange();
+  }
+
+  /// Duplicates every selected non-transfer transaction with today's date.
+  /// Transfers are skipped — duplicating one leg of a linked pair would
+  /// desync it, and a duplicate transfer needs its own pair of accounts
+  /// chosen anyway, not a blind copy.
+  Future<void> _bulkDuplicate() async {
+    final loc = AppLocalizations.of(context)!;
+    final txProvider = context.read<TransactionProvider>();
+    final selected = txProvider.allTransactions
+        .where((t) => _selectedIds.contains(t.id) && !t.isTransfer)
+        .toList();
+
+    if (selected.isEmpty) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.cannotDuplicateTransfers)),
+      );
+      return;
+    }
+
+    for (final tx in selected) {
+      await txProvider.addTransaction(
+        type: tx.type,
+        amount: tx.amount,
+        categoryId: tx.categoryId,
+        accountId: tx.accountId,
+        merchant: tx.merchant,
+        note: tx.note,
+        date: DateTime.now(),
+      );
+    }
+    setState(() => _selectedIds.clear());
+    await _reloadAfterBulkChange();
+  }
+
+  /// Recategorizes every selected non-transfer transaction at once.
+  /// Requires them to share a single income/expense type, since the
+  /// category picker itself is type-scoped — mixed selections are asked
+  /// to narrow down rather than silently splitting into two operations.
+  Future<void> _bulkRecategorize() async {
+    final loc = AppLocalizations.of(context)!;
+    final txProvider = context.read<TransactionProvider>();
+    final selected = txProvider.allTransactions
+        .where((t) => _selectedIds.contains(t.id) && !t.isTransfer)
+        .toList();
+
+    if (selected.isEmpty) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.cannotRecategorizeTransfers)),
+      );
+      return;
+    }
+    final isIncome = selected.first.isIncome;
+    if (selected.any((t) => t.isIncome != isIncome)) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.selectSameTypeToRecategorize)),
+      );
+      return;
+    }
+
+    final newCategoryId = await _BulkRecategorizeSheet.show(context, isIncome: isIncome);
+    if (newCategoryId == null || !mounted) return;
+
+    for (final tx in selected) {
+      await txProvider.updateTransaction(tx.copyWith(categoryId: newCategoryId));
+    }
+    setState(() => _selectedIds.clear());
+    await _reloadAfterBulkChange();
   }
 
   @override
@@ -174,7 +291,32 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: _selectionMode
+          ? AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => setState(() => _selectedIds.clear()),
+              ),
+              title: Text(loc.selectedCount(_selectedIds.length)),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.copy_outlined),
+                  tooltip: loc.duplicate,
+                  onPressed: _bulkDuplicate,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.category_outlined),
+                  tooltip: loc.recategorize,
+                  onPressed: _bulkRecategorize,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  tooltip: loc.delete,
+                  onPressed: _bulkDelete,
+                ),
+              ],
+            )
+          : AppBar(
         title: Text(loc.history),
         actions: [
           IconButton(
@@ -318,6 +460,40 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                       child: DateGroupHeader(label: dateLabel, transactions: txList),
                     ),
                     ...txList.map((tx) {
+                      final isSelected = _selectedIds.contains(tx.id);
+                      // Long-press enters (or extends) multi-select on any
+                      // tile, selection mode or not — the same gesture
+                      // Gmail/Photos use, so there's no separate "enter
+                      // selection mode" affordance to discover.
+                      final row = GestureDetector(
+                        onLongPress: () => _toggleSelection(tx.id),
+                        child: Container(
+                          color: isSelected
+                              ? theme.colorScheme.primary.withValues(alpha: 0.08)
+                              : null,
+                          child: Row(
+                            children: [
+                              if (_selectionMode)
+                                Checkbox(
+                                  value: isSelected,
+                                  onChanged: (_) => _toggleSelection(tx.id),
+                                ),
+                              Expanded(
+                                child: TransactionTile(
+                                  transaction: tx,
+                                  onTap: _selectionMode ? () => _toggleSelection(tx.id) : null,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+
+                      // Swipe-to-delete is disabled during multi-select —
+                      // a horizontal drag gesture there would fight with
+                      // the tap-to-toggle interaction on every tile.
+                      if (_selectionMode) return row;
+
                       return Slidable(
                         key: ValueKey(tx.id),
                         endActionPane: ActionPane(
@@ -333,7 +509,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             ),
                           ],
                         ),
-                        child: TransactionTile(transaction: tx),
+                        child: row,
                       );
                     }),
                   ],
@@ -393,5 +569,62 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       ));
     }
     return chips;
+  }
+}
+
+/// Minimal category picker for bulk recategorize — a flat, type-scoped
+/// list with no search or create-new, since this is a one-off action on
+/// an already-selected batch, not the primary entry-form picker.
+class _BulkRecategorizeSheet extends StatelessWidget {
+  final bool isIncome;
+
+  const _BulkRecategorizeSheet({required this.isIncome});
+
+  static Future<String?> show(BuildContext context, {required bool isIncome}) {
+    return showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => _BulkRecategorizeSheet(isIncome: isIncome),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final categories = context.watch<CategoryProvider>();
+    final List<CategoryModel> options =
+        isIncome ? categories.incomeCategories : categories.expenseCategories;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.only(top: AppConstants.spacingLg),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+                child: Text(loc.recategorize, style: Theme.of(context).textTheme.titleLarge),
+              ),
+              const SizedBox(height: AppConstants.spacingSm),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: options.length,
+                  itemBuilder: (context, index) {
+                    final cat = options[index];
+                    return ListTile(
+                      leading: Icon(cat.iconData, color: cat.colorValue),
+                      title: Text(cat.name),
+                      onTap: () => Navigator.of(context).pop(cat.id),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

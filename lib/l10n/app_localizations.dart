@@ -2101,6 +2101,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 time} other{{count} times}}'**
   String timesCount(int count);
+
+  /// No description provided for @fillOutFormFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill out amount, category, and account first'**
+  String get fillOutFormFirst;
+
+  /// No description provided for @saveAsTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as template'**
+  String get saveAsTemplate;
+
+  /// No description provided for @templateName.
+  ///
+  /// In en, this message translates to:
+  /// **'Template name'**
+  String get templateName;
+
+  /// No description provided for @templateSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved \"{name}\" as a template'**
+  String templateSaved(String name);
+
+  /// No description provided for @deleteTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete template'**
+  String get deleteTemplate;
+
+  /// No description provided for @confirmDeleteTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the \"{name}\" template? This won\'t affect past transactions.'**
+  String confirmDeleteTemplate(String name);
+
+  /// No description provided for @calculator.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculator'**
+  String get calculator;
+
+  /// No description provided for @invalidExpression.
+  ///
+  /// In en, this message translates to:
+  /// **'Not a valid expression'**
+  String get invalidExpression;
+
+  /// No description provided for @selectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 selected} other{{count} selected}}'**
+  String selectedCount(int count);
+
+  /// No description provided for @duplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate'**
+  String get duplicate;
+
+  /// No description provided for @recategorize.
+  ///
+  /// In en, this message translates to:
+  /// **'Recategorize'**
+  String get recategorize;
+
+  /// No description provided for @confirmBulkDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Delete this transaction?} other{Delete these {count} transactions?}}'**
+  String confirmBulkDelete(int count);
+
+  /// No description provided for @cannotDuplicateTransfers.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfers can\'t be duplicated — select a regular transaction instead'**
+  String get cannotDuplicateTransfers;
+
+  /// No description provided for @cannotRecategorizeTransfers.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfers can\'t be recategorized — select a regular transaction instead'**
+  String get cannotRecategorizeTransfers;
+
+  /// No description provided for @selectSameTypeToRecategorize.
+  ///
+  /// In en, this message translates to:
+  /// **'Select only income or only expense transactions to recategorize together'**
+  String get selectSameTypeToRecategorize;
 }
 
 class _AppLocalizationsDelegate

@@ -594,5 +594,42 @@
     "placeholders": {
       "count": { "type": "int" }
     }
-  }
+  },
+
+  "fillOutFormFirst": "Isi jumlah, kategori, dan akun terlebih dahulu",
+  "saveAsTemplate": "Simpan sebagai templat",
+  "templateName": "Nama templat",
+  "templateSaved": "Menyimpan \"{name}\" sebagai templat",
+  "@templateSaved": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "deleteTemplate": "Hapus templat",
+  "confirmDeleteTemplate": "Hapus templat \"{name}\"? Ini tidak akan memengaruhi transaksi sebelumnya.",
+  "@confirmDeleteTemplate": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "calculator": "Kalkulator",
+  "invalidExpression": "Bukan ekspresi yang valid",
+
+  "selectedCount": "{count, plural, =1{1 dipilih} other{{count} dipilih}}",
+  "@selectedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "duplicate": "Duplikat",
+  "recategorize": "Ubah kategori",
+  "confirmBulkDelete": "{count, plural, =1{Hapus transaksi ini?} other{Hapus {count} transaksi ini?}}",
+  "@confirmBulkDelete": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "cannotDuplicateTransfers": "Transfer tidak dapat diduplikasi — pilih transaksi biasa sebagai gantinya",
+  "cannotRecategorizeTransfers": "Transfer tidak dapat diubah kategorinya — pilih transaksi biasa sebagai gantinya",
+  "selectSameTypeToRecategorize": "Pilih hanya transaksi pemasukan atau hanya pengeluaran untuk diubah kategorinya bersamaan"
 }
