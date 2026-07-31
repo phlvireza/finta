@@ -6,11 +6,13 @@ import '../../providers/transaction_provider.dart';
 import '../../providers/recurring_provider.dart';
 import '../../providers/budget_provider.dart';
 import '../../providers/settings_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/formatters/currency_formatter.dart';
 import 'widgets/amount_input_field.dart';
 import 'widgets/category_picker.dart';
+import 'widgets/account_picker.dart';
 import 'widgets/date_picker_field.dart';
 import 'widgets/recurring_toggle.dart';
 import 'widgets/type_toggle.dart';
@@ -33,6 +35,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   late TextEditingController _noteController;
   late DateTime _date;
   String? _categoryId;
+  String? _accountId;
 
   bool _isRecurring = false;
   String _recurringFrequency = 'monthly';
@@ -53,10 +56,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     _noteController = TextEditingController(text: tx?.note ?? '');
     _date = tx?.date ?? DateTime.now();
     _categoryId = tx?.categoryId;
+    _accountId = tx?.accountId ?? _mostRecentAccountId();
 
     if (tx != null && tx.isRecurring) {
       _isRecurring = true;
     }
+  }
+
+  /// Defaults the account picker to whatever account the user's most
+  /// recent transaction used — the same "MRU" convenience the category
+  /// picker already gives new entries.
+  String? _mostRecentAccountId() {
+    final recent = context.read<TransactionProvider>().recentTransactions;
+    if (recent.isNotEmpty) return recent.first.accountId;
+    final accounts = context.read<AccountProvider>().activeAccounts;
+    return accounts.isNotEmpty ? accounts.first.id : null;
   }
 
   @override
@@ -98,6 +112,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           type: type,
           amount: amount,
           categoryId: _categoryId!,
+          accountId: _accountId,
           note: _noteController.text.trim(),
           frequency: _recurringFrequency,
           startDate: _date,
@@ -111,6 +126,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           type: type,
           amount: amount,
           categoryId: _categoryId,
+          accountId: _accountId,
           date: _date,
           note: _noteController.text.trim(),
         );
@@ -121,6 +137,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           type: type,
           amount: amount,
           categoryId: _categoryId!,
+          accountId: _accountId!,
           date: _date,
           note: _noteController.text.trim(),
           recurringId: recurringId,
@@ -156,6 +173,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       await budgetProvider.loadBudgets(payday: settings.payday);
       if (mounted) {
         await context.read<AnalyticsProvider>().loadForCurrentPeriod(settings.payday);
+      }
+      if (mounted) {
+        await context.read<AccountProvider>().loadAccounts();
       }
 
       if (mounted) {
@@ -251,6 +271,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   selectedDate: _date,
                   onDateSelected: (date) => setState(() => _date = date),
                 ),
+              ),
+              const SizedBox(height: AppConstants.spacingXxl),
+
+              AccountPicker(
+                label: loc.account,
+                selectedAccountId: _accountId,
+                onAccountSelected: (id) => setState(() => _accountId = id),
+                validator: (val) => val == null ? loc.selectAnAccount : null,
               ),
               const SizedBox(height: AppConstants.spacingXxl),
 

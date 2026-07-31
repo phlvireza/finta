@@ -7,10 +7,12 @@ import 'providers/transaction_provider.dart';
 import 'providers/recurring_provider.dart';
 import 'providers/budget_provider.dart';
 import 'providers/analytics_provider.dart';
+import 'providers/account_provider.dart';
 import 'repositories/transaction_repository.dart';
 import 'repositories/category_repository.dart';
 import 'repositories/recurring_repository.dart';
 import 'repositories/budget_repository.dart';
+import 'repositories/account_repository.dart';
 import 'core/services/recurring_service.dart';
 import 'l10n/app_localizations.dart';
 import 'app/app.dart';
@@ -29,6 +31,7 @@ class FintaRoot extends StatelessWidget {
     final categoryRepo = CategoryRepository();
     final recurringRepo = RecurringRepository();
     final budgetRepo = BudgetRepository();
+    final accountRepo = AccountRepository();
 
     return MultiProvider(
       providers: [
@@ -43,6 +46,7 @@ class FintaRoot extends StatelessWidget {
           ),
         ),
         ChangeNotifierProvider(create: (_) => AnalyticsProvider(repository: transactionRepo)),
+        ChangeNotifierProvider(create: (_) => AccountProvider(repository: accountRepo)),
         Provider<RecurringService>(
           create: (_) => RecurringService(recurringRepo: recurringRepo),
         ),

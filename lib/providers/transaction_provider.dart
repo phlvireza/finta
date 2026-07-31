@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/transaction_model.dart';
 import '../repositories/transaction_repository.dart';
+import '../core/database/seed_data.dart';
 import '../core/utils/date_utils.dart';
 import '../core/constants/app_constants.dart';
 
@@ -166,7 +167,9 @@ class TransactionProvider extends ChangeNotifier {
     required String type,
     required double amount,
     required String categoryId,
+    required String accountId,
     required DateTime date,
+    String? merchant,
     String? note,
     String? recurringId,
   }) async {
@@ -177,6 +180,8 @@ class TransactionProvider extends ChangeNotifier {
         type: type,
         amount: amount,
         categoryId: categoryId,
+        accountId: accountId,
+        merchant: merchant,
         date: date,
         note: note,
         recurringId: recurringId,
@@ -185,25 +190,7 @@ class TransactionProvider extends ChangeNotifier {
       );
 
       await _repository.insert(transaction);
-
-      // Only reflect the new entry in the period-scoped list/totals if its
-      // date actually falls in the currently loaded period — a backdated
-      // or forward-dated transaction must not move numbers for a period
-      // it doesn't belong to.
-      if (_inPeriod(transaction.date)) {
-        _transactions
-          ..add(transaction)
-          ..sort(_byDateDesc);
-        if (transaction.isIncome) {
-          _totalIncome += amount;
-        } else {
-          _totalExpense += amount;
-        }
-      }
-
-      _allTransactions
-        ..add(transaction)
-        ..sort(_byDateDesc);
+      _applyInsert(transaction);
       _recentTransactions = await _repository.getRecent(AppConstants.recentTransactionCount);
 
       notifyListeners();
@@ -211,6 +198,88 @@ class TransactionProvider extends ChangeNotifier {
     } catch (e) {
       rethrow;
     }
+  }
+
+  /// Records a transfer as two linked legs — an expense on [fromAccountId]
+  /// and an income on [toAccountId] — inserted atomically. Both are marked
+  /// `isTransfer` so every income/expense aggregate (dashboard, budgets,
+  /// analytics) ignores them; the account balances still move naturally
+  /// since a plain income/expense sum is exactly what a balance is.
+  Future<void> addTransfer({
+    required String fromAccountId,
+    required String toAccountId,
+    required double amount,
+    required DateTime date,
+    String? note,
+  }) async {
+    if (fromAccountId == toAccountId) {
+      throw ArgumentError('Source and destination accounts must differ');
+    }
+    try {
+      final transferId = _uuid.v4();
+      final now = DateTime.now();
+      final legs = [
+        TransactionModel(
+          id: _uuid.v4(),
+          type: 'expense',
+          amount: amount,
+          categoryId: SeedData.transferCategoryId,
+          accountId: fromAccountId,
+          transferId: transferId,
+          isTransfer: true,
+          date: date,
+          note: note,
+          createdAt: now,
+          updatedAt: now,
+        ),
+        TransactionModel(
+          id: _uuid.v4(),
+          type: 'income',
+          amount: amount,
+          categoryId: SeedData.transferCategoryId,
+          accountId: toAccountId,
+          transferId: transferId,
+          isTransfer: true,
+          date: date,
+          note: note,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      ];
+
+      await _repository.insertBatch(legs);
+      for (final leg in legs) {
+        _applyInsert(leg);
+      }
+      _recentTransactions = await _repository.getRecent(AppConstants.recentTransactionCount);
+
+      notifyListeners();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Shared by [addTransaction] and [addTransfer]: reflects a freshly
+  /// inserted row into the in-memory lists/totals. Transfers must never
+  /// move `_totalIncome`/`_totalExpense` — those mirror the SQL aggregates
+  /// in [loadTransactions], which already exclude `isTransfer` rows.
+  void _applyInsert(TransactionModel transaction) {
+    if (_inPeriod(transaction.date)) {
+      _transactions
+        ..add(transaction)
+        ..sort(_byDateDesc);
+      if (!transaction.isTransfer) {
+        if (transaction.isIncome) {
+          _totalIncome += transaction.amount;
+        } else {
+          _totalExpense += transaction.amount;
+        }
+      }
+    }
+
+    _allTransactions
+      ..add(transaction)
+      ..sort(_byDateDesc);
   }
 
   /// Update an existing transaction.
@@ -230,10 +299,12 @@ class TransactionProvider extends ChangeNotifier {
       // totals by exactly one side of that swap, not both or neither.
       if (oldWasInPeriod) {
         final old = _transactions[index];
-        if (old.isIncome) _totalIncome -= old.amount;
-        if (old.isExpense) _totalExpense -= old.amount;
+        if (!old.isTransfer) {
+          if (old.isIncome) _totalIncome -= old.amount;
+          if (old.isExpense) _totalExpense -= old.amount;
+        }
       }
-      if (newIsInPeriod) {
+      if (newIsInPeriod && !updated.isTransfer) {
         if (updated.isIncome) _totalIncome += updated.amount;
         if (updated.isExpense) _totalExpense += updated.amount;
       }
@@ -260,26 +331,50 @@ class TransactionProvider extends ChangeNotifier {
     }
   }
 
-  /// Delete a transaction.
+  /// Delete a transaction. If it's one leg of a transfer, both legs are
+  /// removed together — a transfer must never end up with only one side
+  /// still posted.
   Future<void> deleteTransaction(String id) async {
     try {
-      await _repository.delete(id);
-
-      final index = _transactions.indexWhere((t) => t.id == id);
-      if (index != -1) {
-        final transaction = _transactions[index];
-        if (transaction.isIncome) _totalIncome -= transaction.amount;
-        if (transaction.isExpense) _totalExpense -= transaction.amount;
-        _transactions.removeAt(index);
+      TransactionModel? target;
+      for (final t in _allTransactions) {
+        if (t.id == id) {
+          target = t;
+          break;
+        }
       }
-      
-      _allTransactions.removeWhere((t) => t.id == id);
+      target ??= await _repository.getById(id);
+      if (target == null) return;
+
+      final transferId = target.transferId;
+      if (transferId != null) {
+        await _repository.deleteTransferPair(transferId);
+        for (final leg
+            in _allTransactions.where((t) => t.transferId == transferId).toList()) {
+          _removeFromMemory(leg);
+        }
+      } else {
+        await _repository.delete(id);
+        _removeFromMemory(target);
+      }
 
       _recentTransactions = await _repository.getRecent(AppConstants.recentTransactionCount);
       notifyListeners();
     } catch (e) {
       rethrow;
     }
+  }
+
+  void _removeFromMemory(TransactionModel transaction) {
+    final index = _transactions.indexWhere((t) => t.id == transaction.id);
+    if (index != -1) {
+      if (!transaction.isTransfer) {
+        if (transaction.isIncome) _totalIncome -= transaction.amount;
+        if (transaction.isExpense) _totalExpense -= transaction.amount;
+      }
+      _transactions.removeAt(index);
+    }
+    _allTransactions.removeWhere((t) => t.id == transaction.id);
   }
 
   /// Search transactions by note content.

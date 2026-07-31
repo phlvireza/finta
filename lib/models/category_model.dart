@@ -9,6 +9,8 @@ class CategoryModel {
   final String color; // Hex color string (e.g. '#C87941')
   final bool isDefault;
   final bool isArchived;
+  final String? parentId;
+  final bool isSystem;
   final int sortOrder;
   final DateTime createdAt;
 
@@ -20,12 +22,15 @@ class CategoryModel {
     required this.color,
     required this.isDefault,
     this.isArchived = false,
+    this.parentId,
+    this.isSystem = false,
     required this.sortOrder,
     required this.createdAt,
   });
 
   bool get isIncome => type == 'income';
   bool get isExpense => type == 'expense';
+  bool get isSubcategory => parentId != null;
 
   /// Parse the hex color string into a Flutter [Color].
   Color get colorValue {
@@ -47,6 +52,8 @@ class CategoryModel {
       'color': color,
       'isDefault': isDefault ? 1 : 0,
       'isArchived': isArchived ? 1 : 0,
+      'parentId': parentId,
+      'isSystem': isSystem ? 1 : 0,
       'sortOrder': sortOrder,
       'createdAt': createdAt.toIso8601String(),
     };
@@ -60,9 +67,11 @@ class CategoryModel {
       icon: map['icon'] as String,
       color: map['color'] as String,
       isDefault: (map['isDefault'] as int) == 1,
-      // Nullable guard: rows written before the isArchived column existed
-      // are read back as null on some drivers rather than the DEFAULT 0.
+      // Nullable guards: rows written before these columns existed are
+      // read back as null on some drivers rather than the DEFAULT.
       isArchived: (map['isArchived'] as int?) == 1,
+      parentId: map['parentId'] as String?,
+      isSystem: (map['isSystem'] as int?) == 1,
       sortOrder: map['sortOrder'] as int,
       createdAt: DateTime.parse(map['createdAt'] as String),
     );
@@ -76,6 +85,8 @@ class CategoryModel {
     String? color,
     bool? isDefault,
     bool? isArchived,
+    String? parentId,
+    bool? isSystem,
     int? sortOrder,
     DateTime? createdAt,
   }) {
@@ -87,6 +98,8 @@ class CategoryModel {
       color: color ?? this.color,
       isDefault: isDefault ?? this.isDefault,
       isArchived: isArchived ?? this.isArchived,
+      parentId: parentId ?? this.parentId,
+      isSystem: isSystem ?? this.isSystem,
       sortOrder: sortOrder ?? this.sortOrder,
       createdAt: createdAt ?? this.createdAt,
     );

@@ -5,6 +5,7 @@ import '../../models/recurring_transaction_model.dart';
 import '../../models/transaction_model.dart';
 import '../../repositories/recurring_repository.dart';
 import '../database/database_helper.dart';
+import '../database/seed_data.dart';
 
 /// Service that checks for due recurring transactions on app launch
 /// and generates the missing transaction entries.
@@ -103,6 +104,10 @@ class RecurringService {
       type: recurring.type,
       amount: recurring.amount,
       categoryId: recurring.categoryId,
+      // Templates created before accounts existed have no accountId —
+      // fall back to the same default account every pre-v3 transaction
+      // was backfilled into, so a catch-up run never fails to post.
+      accountId: recurring.accountId ?? SeedData.defaultAccountId,
       date: date,
       note: recurring.note,
       recurringId: recurring.id,

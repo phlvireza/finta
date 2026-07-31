@@ -5,6 +5,7 @@ import '../providers/category_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/recurring_provider.dart';
 import '../providers/budget_provider.dart';
+import '../providers/account_provider.dart';
 import '../core/services/recurring_service.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
@@ -47,11 +48,15 @@ class _FintaAppState extends State<FintaApp> {
     final recurring = context.read<RecurringProvider>();
     final transactions = context.read<TransactionProvider>();
     final budgets = context.read<BudgetProvider>();
+    final accounts = context.read<AccountProvider>();
 
     await settings.init();
     if (!mounted) return;
 
     await categories.loadCategories();
+    if (!mounted) return;
+
+    await accounts.loadAccounts();
     if (!mounted) return;
 
     await recurring.loadRecurringTransactions();
@@ -66,6 +71,11 @@ class _FintaAppState extends State<FintaApp> {
     if (!mounted) return;
 
     await budgets.loadBudgets(payday: settings.payday);
+    if (!mounted) return;
+
+    // Balances depend on transactions just posted by the recurring
+    // catch-up above, so reload after it — not before.
+    await accounts.loadAccounts();
 
     if (mounted) {
       setState(() => _isInitialized = true);

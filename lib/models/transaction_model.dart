@@ -4,6 +4,10 @@ class TransactionModel {
   final String type; // 'income' or 'expense'
   final double amount;
   final String categoryId;
+  final String accountId;
+  final String? transferId;
+  final bool isTransfer;
+  final String? merchant;
   final DateTime date;
   final String? note;
   final String? recurringId;
@@ -15,6 +19,10 @@ class TransactionModel {
     required this.type,
     required this.amount,
     required this.categoryId,
+    required this.accountId,
+    this.transferId,
+    this.isTransfer = false,
+    this.merchant,
     required this.date,
     this.note,
     this.recurringId,
@@ -32,6 +40,10 @@ class TransactionModel {
       'type': type,
       'amount': amount,
       'categoryId': categoryId,
+      'accountId': accountId,
+      'transferId': transferId,
+      'isTransfer': isTransfer ? 1 : 0,
+      'merchant': merchant,
       'date': date.toIso8601String().substring(0, 10),
       'note': note,
       'recurringId': recurringId,
@@ -46,6 +58,13 @@ class TransactionModel {
       type: map['type'] as String,
       amount: (map['amount'] as num).toDouble(),
       categoryId: map['categoryId'] as String,
+      // Nullable guard: rows written before the accounts migration ran in
+      // the same transaction are backfilled by the ALTER TABLE DEFAULT, but
+      // defend anyway in case a caller queries mid-migration.
+      accountId: map['accountId'] as String? ?? '',
+      transferId: map['transferId'] as String?,
+      isTransfer: (map['isTransfer'] as int?) == 1,
+      merchant: map['merchant'] as String?,
       date: DateTime.parse(map['date'] as String),
       note: map['note'] as String?,
       recurringId: map['recurringId'] as String?,
@@ -59,6 +78,10 @@ class TransactionModel {
     String? type,
     double? amount,
     String? categoryId,
+    String? accountId,
+    String? transferId,
+    bool? isTransfer,
+    String? merchant,
     DateTime? date,
     String? note,
     String? recurringId,
@@ -70,6 +93,10 @@ class TransactionModel {
       type: type ?? this.type,
       amount: amount ?? this.amount,
       categoryId: categoryId ?? this.categoryId,
+      accountId: accountId ?? this.accountId,
+      transferId: transferId ?? this.transferId,
+      isTransfer: isTransfer ?? this.isTransfer,
+      merchant: merchant ?? this.merchant,
       date: date ?? this.date,
       note: note ?? this.note,
       recurringId: recurringId ?? this.recurringId,

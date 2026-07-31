@@ -163,4 +163,73 @@ void main() {
       await db.close();
     },
   );
+
+  test(
+    'migrating a populated v2 database to v3 adds accounts, backfills '
+    'accountId on every existing transaction, and seeds the Transfer '
+    'system category',
+    () async {
+      final db = await databaseFactoryFfi.openDatabase(
+        ':memory:',
+        options: OpenDatabaseOptions(version: 1, onCreate: _createV1Schema),
+      );
+      await db.insert('categories', {
+        'id': 'cat1',
+        'name': 'Coffee',
+        'type': 'expense',
+        'icon': 'local_cafe',
+        'color': '#C87941',
+        'isDefault': 0,
+        'sortOrder': 0,
+        'createdAt': '2026-01-01T00:00:00.000',
+      });
+      await db.insert('transactions', {
+        'id': 'tx1',
+        'type': 'expense',
+        'amount': 45000,
+        'categoryId': 'cat1',
+        'date': '2026-07-01',
+        'note': null,
+        'recurringId': null,
+        'createdAt': '2026-07-01T00:00:00.000',
+        'updatedAt': '2026-07-01T00:00:00.000',
+      });
+
+      // Replay the real upgrade path a v1 install actually takes to reach
+      // v3 — v2 then v3, in order.
+      await Migrations.v2(db);
+      await Migrations.v3(db);
+
+      final accounts = await db.query('accounts');
+      expect(accounts, hasLength(1));
+      expect(accounts.first['id'], 'account_default');
+      expect(accounts.first['name'], 'My Wallet');
+
+      final transactions = await db.query('transactions');
+      expect(transactions, hasLength(1));
+      expect(
+        transactions.first['accountId'],
+        'account_default',
+        reason: 'ALTER TABLE ... DEFAULT should backfill every existing row',
+      );
+      expect(transactions.first['isTransfer'], 0);
+
+      final transferCategory = await db.query(
+        'categories',
+        where: 'id = ?',
+        whereArgs: ['system_transfer'],
+      );
+      expect(transferCategory, hasLength(1));
+      expect(transferCategory.first['isSystem'], 1);
+
+      // The pre-existing category must be untouched aside from the new
+      // nullable/defaulted columns.
+      final coffee = await db.query('categories', where: "id = 'cat1'");
+      expect(coffee.first['name'], 'Coffee');
+      expect(coffee.first['isSystem'], 0);
+      expect(coffee.first['parentId'], isNull);
+
+      await db.close();
+    },
+  );
 }

@@ -536,4 +536,116 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gotIt => 'Got it';
+
+  @override
+  String get accounts => 'Accounts';
+
+  @override
+  String get account => 'Account';
+
+  @override
+  String get manageAccounts => 'Manage Accounts';
+
+  @override
+  String get addAccount => 'Add Account';
+
+  @override
+  String get editAccount => 'Edit Account';
+
+  @override
+  String get accountName => 'Account Name';
+
+  @override
+  String get accountType => 'Account Type';
+
+  @override
+  String get openingBalance => 'Opening Balance';
+
+  @override
+  String get creditLimitOptional => 'Credit Limit (optional)';
+
+  @override
+  String get includeInTotal => 'Include in totals';
+
+  @override
+  String get includeInTotalDescription =>
+      'Counts toward net worth and available cash';
+
+  @override
+  String get netWorth => 'Net Worth';
+
+  @override
+  String get selectAnAccount => 'Select an account';
+
+  @override
+  String get noAccountsYet => 'No accounts yet';
+
+  @override
+  String get noAccountsYetMessage =>
+      'Add an account to start tracking balances across your wallets, banks, and cards';
+
+  @override
+  String get archiveAccount => 'Archive Account';
+
+  @override
+  String confirmArchiveAccountUnused(String name) {
+    return 'Archive \"$name\"? It will be hidden from new entries.';
+  }
+
+  @override
+  String confirmArchiveAccount(String name, int count) {
+    return '\"$name\" is used by $count transaction(s). It will be hidden from new entries but those transactions will keep their account label — nothing is deleted.';
+  }
+
+  @override
+  String amountOwed(String amount) {
+    return '$amount owed';
+  }
+
+  @override
+  String get accountTypeCash => 'Cash';
+
+  @override
+  String get accountTypeBank => 'Bank';
+
+  @override
+  String get accountTypeCreditCard => 'Credit Card';
+
+  @override
+  String get accountTypeEWallet => 'E-Wallet';
+
+  @override
+  String get accountTypeSavings => 'Savings';
+
+  @override
+  String get accountTypeInvestment => 'Investment';
+
+  @override
+  String get transfer => 'Transfer';
+
+  @override
+  String get transferAmount => 'Transfer Amount';
+
+  @override
+  String get fromAccount => 'From';
+
+  @override
+  String get toAccount => 'To';
+
+  @override
+  String get deleteTransfer => 'Delete Transfer';
+
+  @override
+  String get confirmDeleteTransfer =>
+      'Delete this transfer? Both sides of the transfer will be removed.';
+
+  @override
+  String transferOutOf(String account) {
+    return 'Out of $account';
+  }
+
+  @override
+  String transferIntoAccount(String account) {
+    return 'Into $account';
+  }
 }

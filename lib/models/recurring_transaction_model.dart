@@ -4,6 +4,7 @@ class RecurringTransactionModel {
   final String type; // 'income' or 'expense'
   final double amount;
   final String categoryId;
+  final String? accountId;
   final String? note;
   final String frequency; // 'daily', 'weekly', 'biweekly', 'monthly', 'yearly'
   final DateTime startDate;
@@ -17,6 +18,7 @@ class RecurringTransactionModel {
     required this.type,
     required this.amount,
     required this.categoryId,
+    this.accountId,
     this.note,
     required this.frequency,
     required this.startDate,
@@ -93,6 +95,7 @@ class RecurringTransactionModel {
       'type': type,
       'amount': amount,
       'categoryId': categoryId,
+      'accountId': accountId,
       'note': note,
       'frequency': frequency,
       'startDate': startDate.toIso8601String().substring(0, 10),
@@ -109,6 +112,7 @@ class RecurringTransactionModel {
       type: map['type'] as String,
       amount: (map['amount'] as num).toDouble(),
       categoryId: map['categoryId'] as String,
+      accountId: map['accountId'] as String?,
       note: map['note'] as String?,
       frequency: map['frequency'] as String,
       startDate: DateTime.parse(map['startDate'] as String),
@@ -128,6 +132,7 @@ class RecurringTransactionModel {
     String? type,
     double? amount,
     String? categoryId,
+    String? accountId,
     String? note,
     String? frequency,
     DateTime? startDate,
@@ -141,6 +146,7 @@ class RecurringTransactionModel {
       type: type ?? this.type,
       amount: amount ?? this.amount,
       categoryId: categoryId ?? this.categoryId,
+      accountId: accountId ?? this.accountId,
       note: note ?? this.note,
       frequency: frequency ?? this.frequency,
       startDate: startDate ?? this.startDate,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_constants.dart';
+import '../accounts/manage_accounts_screen.dart';
 import '../budgets/manage_budgets_screen.dart';
 import '../categories/manage_categories_screen.dart';
 import '../recurring/recurring_list_screen.dart';
@@ -26,6 +27,14 @@ class MoreScreen extends StatelessWidget {
         children: [
           _MoreCard(
             children: [
+              _MoreTile(
+                icon: Icons.account_balance_wallet_outlined,
+                label: loc.accounts,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ManageAccountsScreen()),
+                ),
+              ),
+              const Divider(),
               _MoreTile(
                 icon: Icons.track_changes,
                 label: loc.budgets,

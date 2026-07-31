@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/budget_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../core/constants/app_constants.dart';
 import 'widgets/balance_card.dart';
+import 'widgets/net_worth_card.dart';
 import 'widgets/summary_row.dart';
 import 'widgets/burn_rate_indicator.dart';
 import 'widgets/budget_overview.dart';
@@ -36,6 +38,7 @@ class DashboardScreen extends StatelessWidget {
           await context
               .read<BudgetProvider>()
               .loadBudgets(payday: settings.payday);
+          await context.read<AccountProvider>().loadAccounts();
         },
         child: Consumer2<TransactionProvider, BudgetProvider>(
           builder: (context, txProvider, budgetProvider, child) {
@@ -69,6 +72,8 @@ class DashboardScreen extends StatelessWidget {
                 AppConstants.fabClearance,
               ),
               children: [
+                const NetWorthCard(),
+                const SizedBox(height: AppConstants.spacingXxxl),
                 const BalanceCard(),
                 const SizedBox(height: AppConstants.spacingLg),
                 const SummaryRow(),

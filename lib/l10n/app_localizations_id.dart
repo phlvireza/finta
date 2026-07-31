@@ -537,4 +537,116 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get gotIt => 'Mengerti';
+
+  @override
+  String get accounts => 'Akun';
+
+  @override
+  String get account => 'Akun';
+
+  @override
+  String get manageAccounts => 'Kelola Akun';
+
+  @override
+  String get addAccount => 'Tambah Akun';
+
+  @override
+  String get editAccount => 'Ubah Akun';
+
+  @override
+  String get accountName => 'Nama Akun';
+
+  @override
+  String get accountType => 'Jenis Akun';
+
+  @override
+  String get openingBalance => 'Saldo Awal';
+
+  @override
+  String get creditLimitOptional => 'Limit Kartu Kredit (opsional)';
+
+  @override
+  String get includeInTotal => 'Sertakan dalam total';
+
+  @override
+  String get includeInTotalDescription =>
+      'Dihitung dalam kekayaan bersih dan kas tersedia';
+
+  @override
+  String get netWorth => 'Kekayaan Bersih';
+
+  @override
+  String get selectAnAccount => 'Pilih akun';
+
+  @override
+  String get noAccountsYet => 'Belum ada akun';
+
+  @override
+  String get noAccountsYetMessage =>
+      'Tambahkan akun untuk mulai melacak saldo di dompet, bank, dan kartu kamu';
+
+  @override
+  String get archiveAccount => 'Arsipkan Akun';
+
+  @override
+  String confirmArchiveAccountUnused(String name) {
+    return 'Arsipkan \"$name\"? Akun ini akan disembunyikan dari entri baru.';
+  }
+
+  @override
+  String confirmArchiveAccount(String name, int count) {
+    return '\"$name\" digunakan oleh $count transaksi. Akun ini akan disembunyikan dari entri baru, tetapi transaksi tersebut akan tetap menyimpan label akunnya — tidak ada yang dihapus.';
+  }
+
+  @override
+  String amountOwed(String amount) {
+    return 'Utang $amount';
+  }
+
+  @override
+  String get accountTypeCash => 'Tunai';
+
+  @override
+  String get accountTypeBank => 'Bank';
+
+  @override
+  String get accountTypeCreditCard => 'Kartu Kredit';
+
+  @override
+  String get accountTypeEWallet => 'E-Wallet';
+
+  @override
+  String get accountTypeSavings => 'Tabungan';
+
+  @override
+  String get accountTypeInvestment => 'Investasi';
+
+  @override
+  String get transfer => 'Transfer';
+
+  @override
+  String get transferAmount => 'Jumlah Transfer';
+
+  @override
+  String get fromAccount => 'Dari';
+
+  @override
+  String get toAccount => 'Ke';
+
+  @override
+  String get deleteTransfer => 'Hapus Transfer';
+
+  @override
+  String get confirmDeleteTransfer =>
+      'Hapus transfer ini? Kedua sisi transfer akan dihapus.';
+
+  @override
+  String transferOutOf(String account) {
+    return 'Keluar dari $account';
+  }
+
+  @override
+  String transferIntoAccount(String account) {
+    return 'Masuk ke $account';
+  }
 }

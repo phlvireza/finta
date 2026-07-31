@@ -87,7 +87,7 @@ class TransactionRepository {
       final endStr = end.toIso8601String().substring(0, 10);
       final result = await db.rawQuery(
         'SELECT COALESCE(SUM(amount), 0) as total FROM transactions '
-        'WHERE type = ? AND date >= ? AND date <= ?',
+        'WHERE type = ? AND date >= ? AND date <= ? AND isTransfer = 0',
         [type, startStr, endStr],
       );
       return (result.first['total'] as num).toDouble();
@@ -107,7 +107,7 @@ class TransactionRepository {
       final endStr = end.toIso8601String().substring(0, 10);
       return db.rawQuery(
         'SELECT categoryId, SUM(amount) as total FROM transactions '
-        'WHERE type = ? AND date >= ? AND date <= ? '
+        'WHERE type = ? AND date >= ? AND date <= ? AND isTransfer = 0 '
         'GROUP BY categoryId ORDER BY total DESC',
         [type, startStr, endStr],
       );
@@ -127,7 +127,7 @@ class TransactionRepository {
       final endStr = end.toIso8601String().substring(0, 10);
       final result = await db.rawQuery(
         'SELECT COALESCE(SUM(amount), 0) as total FROM transactions '
-        'WHERE categoryId = ? AND date >= ? AND date <= ?',
+        'WHERE categoryId = ? AND date >= ? AND date <= ? AND isTransfer = 0',
         [categoryId, startStr, endStr],
       );
       return (result.first['total'] as num).toDouble();
@@ -143,7 +143,7 @@ class TransactionRepository {
       final endStr = '$year-12-31';
       return db.rawQuery(
         "SELECT strftime('%m', date) as month, type, SUM(amount) as total "
-        'FROM transactions WHERE date >= ? AND date <= ? '
+        'FROM transactions WHERE date >= ? AND date <= ? AND isTransfer = 0 '
         "GROUP BY strftime('%m', date), type ORDER BY month",
         [startStr, endStr],
       );
@@ -181,6 +181,35 @@ class TransactionRepository {
       await db.delete('transactions', where: 'id = ?', whereArgs: [id]);
     } catch (e) {
       throw DatabaseException('Failed to delete transaction', cause: e);
+    }
+  }
+
+  /// Insert several transactions atomically — used for a transfer's two
+  /// linked legs, so a crash mid-write can never leave only one side of a
+  /// transfer posted.
+  Future<void> insertBatch(List<TransactionModel> transactions) async {
+    try {
+      final db = await _dbHelper.database;
+      await db.transaction((txn) async {
+        final batch = txn.batch();
+        for (final t in transactions) {
+          batch.insert('transactions', t.toMap());
+        }
+        await batch.commit(noResult: true);
+      });
+    } catch (e) {
+      throw DatabaseException('Failed to insert transaction batch', cause: e);
+    }
+  }
+
+  /// Delete every leg of a transfer together — a transfer must never end
+  /// up with only one of its two linked rows.
+  Future<void> deleteTransferPair(String transferId) async {
+    try {
+      final db = await _dbHelper.database;
+      await db.delete('transactions', where: 'transferId = ?', whereArgs: [transferId]);
+    } catch (e) {
+      throw DatabaseException('Failed to delete transfer', cause: e);
     }
   }
 

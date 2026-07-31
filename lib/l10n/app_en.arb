@@ -247,5 +247,66 @@
   "reports": "Reports",
   "paceInfoTitle": "Spending pace",
   "paceExplanation": "Compares how much of the budget you've spent to how far through the period you are. The tick on the bar marks today — if the colored fill has passed it, you're spending faster than the days are passing (ahead of pace); if it hasn't reached the tick yet, you're spending slower (under pace).",
-  "gotIt": "Got it"
+  "gotIt": "Got it",
+
+  "accounts": "Accounts",
+  "account": "Account",
+  "manageAccounts": "Manage Accounts",
+  "addAccount": "Add Account",
+  "editAccount": "Edit Account",
+  "accountName": "Account Name",
+  "accountType": "Account Type",
+  "openingBalance": "Opening Balance",
+  "creditLimitOptional": "Credit Limit (optional)",
+  "includeInTotal": "Include in totals",
+  "includeInTotalDescription": "Counts toward net worth and available cash",
+  "netWorth": "Net Worth",
+  "selectAnAccount": "Select an account",
+  "noAccountsYet": "No accounts yet",
+  "noAccountsYetMessage": "Add an account to start tracking balances across your wallets, banks, and cards",
+  "archiveAccount": "Archive Account",
+  "confirmArchiveAccountUnused": "Archive \"{name}\"? It will be hidden from new entries.",
+  "@confirmArchiveAccountUnused": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "confirmArchiveAccount": "\"{name}\" is used by {count} transaction(s). It will be hidden from new entries but those transactions will keep their account label — nothing is deleted.",
+  "@confirmArchiveAccount": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "amountOwed": "{amount} owed",
+  "@amountOwed": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "accountTypeCash": "Cash",
+  "accountTypeBank": "Bank",
+  "accountTypeCreditCard": "Credit Card",
+  "accountTypeEWallet": "E-Wallet",
+  "accountTypeSavings": "Savings",
+  "accountTypeInvestment": "Investment",
+
+  "transfer": "Transfer",
+  "transferAmount": "Transfer Amount",
+  "fromAccount": "From",
+  "toAccount": "To",
+  "deleteTransfer": "Delete Transfer",
+  "confirmDeleteTransfer": "Delete this transfer? Both sides of the transfer will be removed.",
+  "transferOutOf": "Out of {account}",
+  "@transferOutOf": {
+    "placeholders": {
+      "account": { "type": "String" }
+    }
+  },
+  "transferIntoAccount": "Into {account}",
+  "@transferIntoAccount": {
+    "placeholders": {
+      "account": { "type": "String" }
+    }
+  }
 }

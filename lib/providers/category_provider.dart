@@ -19,14 +19,15 @@ class CategoryProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  /// Selectable expense categories — excludes archived ones so a user can't
-  /// pick a category they've already removed from active use.
+  /// Selectable expense categories — excludes archived and system-owned
+  /// ones (e.g. the Transfer category) so a user can't pick a category
+  /// they've already removed from active use, or one they never created.
   List<CategoryModel> get expenseCategories =>
-      _categories.where((c) => c.isExpense && !c.isArchived).toList();
+      _categories.where((c) => c.isExpense && !c.isArchived && !c.isSystem).toList();
 
-  /// Selectable income categories — excludes archived ones.
+  /// Selectable income categories — excludes archived and system-owned ones.
   List<CategoryModel> get incomeCategories =>
-      _categories.where((c) => c.isIncome && !c.isArchived).toList();
+      _categories.where((c) => c.isIncome && !c.isArchived && !c.isSystem).toList();
 
   void clearError() {
     _error = null;

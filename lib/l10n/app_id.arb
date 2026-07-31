@@ -240,5 +240,66 @@
   "reports": "Laporan",
   "paceInfoTitle": "Kecepatan belanja",
   "paceExplanation": "Membandingkan seberapa banyak anggaran yang sudah kamu pakai dengan seberapa jauh periode ini sudah berjalan. Garis tegak di batang menandai hari ini — jika warna terisi sudah melewati garis itu, kamu membelanjakan lebih cepat dari waktu yang berjalan (lebih cepat dari perkiraan); jika belum mencapai garis, kamu membelanjakan lebih lambat (lebih lambat dari perkiraan).",
-  "gotIt": "Mengerti"
+  "gotIt": "Mengerti",
+
+  "accounts": "Akun",
+  "account": "Akun",
+  "manageAccounts": "Kelola Akun",
+  "addAccount": "Tambah Akun",
+  "editAccount": "Ubah Akun",
+  "accountName": "Nama Akun",
+  "accountType": "Jenis Akun",
+  "openingBalance": "Saldo Awal",
+  "creditLimitOptional": "Limit Kartu Kredit (opsional)",
+  "includeInTotal": "Sertakan dalam total",
+  "includeInTotalDescription": "Dihitung dalam kekayaan bersih dan kas tersedia",
+  "netWorth": "Kekayaan Bersih",
+  "selectAnAccount": "Pilih akun",
+  "noAccountsYet": "Belum ada akun",
+  "noAccountsYetMessage": "Tambahkan akun untuk mulai melacak saldo di dompet, bank, dan kartu kamu",
+  "archiveAccount": "Arsipkan Akun",
+  "confirmArchiveAccountUnused": "Arsipkan \"{name}\"? Akun ini akan disembunyikan dari entri baru.",
+  "@confirmArchiveAccountUnused": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "confirmArchiveAccount": "\"{name}\" digunakan oleh {count} transaksi. Akun ini akan disembunyikan dari entri baru, tetapi transaksi tersebut akan tetap menyimpan label akunnya — tidak ada yang dihapus.",
+  "@confirmArchiveAccount": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "amountOwed": "Utang {amount}",
+  "@amountOwed": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "accountTypeCash": "Tunai",
+  "accountTypeBank": "Bank",
+  "accountTypeCreditCard": "Kartu Kredit",
+  "accountTypeEWallet": "E-Wallet",
+  "accountTypeSavings": "Tabungan",
+  "accountTypeInvestment": "Investasi",
+
+  "transfer": "Transfer",
+  "transferAmount": "Jumlah Transfer",
+  "fromAccount": "Dari",
+  "toAccount": "Ke",
+  "deleteTransfer": "Hapus Transfer",
+  "confirmDeleteTransfer": "Hapus transfer ini? Kedua sisi transfer akan dihapus.",
+  "transferOutOf": "Keluar dari {account}",
+  "@transferOutOf": {
+    "placeholders": {
+      "account": { "type": "String" }
+    }
+  },
+  "transferIntoAccount": "Masuk ke {account}",
+  "@transferIntoAccount": {
+    "placeholders": {
+      "account": { "type": "String" }
+    }
+  }
 }

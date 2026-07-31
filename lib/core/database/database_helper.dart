@@ -13,7 +13,7 @@ class DatabaseHelper {
   /// branch in [_onUpgrade] backed by a method on [Migrations]. `_onCreate`
   /// must always produce a schema identical to a v1 install that has
   /// replayed every migration — see test/migration_test.dart.
-  static const int dbVersion = 2;
+  static const int dbVersion = 3;
 
   static Database? _database;
 
@@ -46,8 +46,9 @@ class DatabaseHelper {
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     // Sequential, non-exclusive ifs: an install upgrading from v1 straight
-    // to v3 (once it exists) replays v2 then v3 in order — nothing skipped.
+    // to v3 replays v2 then v3 in order — nothing skipped.
     if (oldVersion < 2) await Migrations.v2(db);
+    if (oldVersion < 3) await Migrations.v3(db);
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -61,10 +62,15 @@ class DatabaseHelper {
         color TEXT NOT NULL,
         isDefault INTEGER NOT NULL DEFAULT 0,
         isArchived INTEGER NOT NULL DEFAULT 0,
+        parentId TEXT,
+        isSystem INTEGER NOT NULL DEFAULT 0,
         sortOrder INTEGER NOT NULL DEFAULT 0,
         createdAt TEXT NOT NULL
       )
     ''');
+
+    // Accounts table
+    await db.execute(Migrations.createAccountsTable);
 
     // Transactions table
     await db.execute('''
@@ -73,6 +79,10 @@ class DatabaseHelper {
         type TEXT NOT NULL,
         amount REAL NOT NULL,
         categoryId TEXT NOT NULL,
+        accountId TEXT NOT NULL,
+        transferId TEXT,
+        isTransfer INTEGER NOT NULL DEFAULT 0,
+        merchant TEXT,
         date TEXT NOT NULL,
         note TEXT,
         recurringId TEXT,
@@ -89,6 +99,7 @@ class DatabaseHelper {
         type TEXT NOT NULL,
         amount REAL NOT NULL,
         categoryId TEXT NOT NULL,
+        accountId TEXT,
         note TEXT,
         frequency TEXT NOT NULL,
         startDate TEXT NOT NULL,
@@ -123,10 +134,16 @@ class DatabaseHelper {
     await db.execute(
       'CREATE INDEX idx_transactions_categoryId ON transactions(categoryId)',
     );
+    await db.execute(
+      'CREATE INDEX idx_transactions_accountId ON transactions(accountId)',
+    );
     await Migrations.createRecurringOccurrenceIndex(db);
 
-    // Seed default categories
+    // Seed default categories, the system Transfer category, and the
+    // default account every new install starts with.
     await SeedData.seedCategories(db);
+    await SeedData.seedSystemCategory(db);
+    await SeedData.seedDefaultAccount(db);
   }
 
   /// Close the database (for testing / cleanup).

@@ -1105,6 +1105,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Got it'**
   String get gotIt;
+
+  /// No description provided for @accounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts'**
+  String get accounts;
+
+  /// No description provided for @account.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get account;
+
+  /// No description provided for @manageAccounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Accounts'**
+  String get manageAccounts;
+
+  /// No description provided for @addAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Account'**
+  String get addAccount;
+
+  /// No description provided for @editAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Account'**
+  String get editAccount;
+
+  /// No description provided for @accountName.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Name'**
+  String get accountName;
+
+  /// No description provided for @accountType.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Type'**
+  String get accountType;
+
+  /// No description provided for @openingBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening Balance'**
+  String get openingBalance;
+
+  /// No description provided for @creditLimitOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Limit (optional)'**
+  String get creditLimitOptional;
+
+  /// No description provided for @includeInTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Include in totals'**
+  String get includeInTotal;
+
+  /// No description provided for @includeInTotalDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Counts toward net worth and available cash'**
+  String get includeInTotalDescription;
+
+  /// No description provided for @netWorth.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Worth'**
+  String get netWorth;
+
+  /// No description provided for @selectAnAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Select an account'**
+  String get selectAnAccount;
+
+  /// No description provided for @noAccountsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No accounts yet'**
+  String get noAccountsYet;
+
+  /// No description provided for @noAccountsYetMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an account to start tracking balances across your wallets, banks, and cards'**
+  String get noAccountsYetMessage;
+
+  /// No description provided for @archiveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive Account'**
+  String get archiveAccount;
+
+  /// No description provided for @confirmArchiveAccountUnused.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive \"{name}\"? It will be hidden from new entries.'**
+  String confirmArchiveAccountUnused(String name);
+
+  /// No description provided for @confirmArchiveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{name}\" is used by {count} transaction(s). It will be hidden from new entries but those transactions will keep their account label — nothing is deleted.'**
+  String confirmArchiveAccount(String name, int count);
+
+  /// No description provided for @amountOwed.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} owed'**
+  String amountOwed(String amount);
+
+  /// No description provided for @accountTypeCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get accountTypeCash;
+
+  /// No description provided for @accountTypeBank.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank'**
+  String get accountTypeBank;
+
+  /// No description provided for @accountTypeCreditCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Card'**
+  String get accountTypeCreditCard;
+
+  /// No description provided for @accountTypeEWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'E-Wallet'**
+  String get accountTypeEWallet;
+
+  /// No description provided for @accountTypeSavings.
+  ///
+  /// In en, this message translates to:
+  /// **'Savings'**
+  String get accountTypeSavings;
+
+  /// No description provided for @accountTypeInvestment.
+  ///
+  /// In en, this message translates to:
+  /// **'Investment'**
+  String get accountTypeInvestment;
+
+  /// No description provided for @transfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer'**
+  String get transfer;
+
+  /// No description provided for @transferAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Amount'**
+  String get transferAmount;
+
+  /// No description provided for @fromAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get fromAccount;
+
+  /// No description provided for @toAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get toAccount;
+
+  /// No description provided for @deleteTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Transfer'**
+  String get deleteTransfer;
+
+  /// No description provided for @confirmDeleteTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this transfer? Both sides of the transfer will be removed.'**
+  String get confirmDeleteTransfer;
+
+  /// No description provided for @transferOutOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of {account}'**
+  String transferOutOf(String account);
+
+  /// No description provided for @transferIntoAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Into {account}'**
+  String transferIntoAccount(String account);
 }
 
 class _AppLocalizationsDelegate
