@@ -16,6 +16,7 @@ import 'widgets/goals_debts_teaser.dart';
 import 'widgets/recent_transactions.dart';
 import 'widgets/period_selector.dart';
 import '../../widgets/error_state.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Dashboard — the home screen showing balance, summary, budgets, and recent activity.
 class DashboardScreen extends StatelessWidget {
@@ -49,7 +50,7 @@ class DashboardScreen extends StatelessWidget {
                 children: [
                   SizedBox(height: MediaQuery.of(context).size.height * 0.2),
                   ErrorState(
-                    title: 'Failed to load data',
+                    title: AppLocalizations.of(context)!.errorFailedToLoadData,
                     message: txProvider.error ?? budgetProvider.error,
                     onRetry: () {
                       final settings = context.read<SettingsProvider>();

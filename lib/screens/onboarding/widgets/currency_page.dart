@@ -111,7 +111,7 @@ class CurrencyPage extends StatelessWidget {
             height: 52,
             child: ElevatedButton(
               onPressed: onNext,
-              child: const Text('Continue'),
+              child: Text(loc.continueLabel),
             ),
           ),
         ],

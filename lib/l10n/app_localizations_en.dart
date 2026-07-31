@@ -1274,4 +1274,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String savingsRateLabel(Object percent) {
     return 'Savings rate: $percent';
   }
+
+  @override
+  String get systemDefault => 'System Default';
+
+  @override
+  String get selectPayday => 'Select Payday';
+
+  @override
+  String get errorFailedToExport => 'Failed to export data';
+
+  @override
+  String get selectIcon => 'Select Icon';
+
+  @override
+  String get continueLabel => 'Continue';
+
+  @override
+  String get errorFailedToLoadData => 'Failed to load data';
+
+  @override
+  String confirmDeleteTransactionMessage(String type, String amount) {
+    return 'Are you sure you want to delete this $type of $amount?';
+  }
+
+  @override
+  String paydayDayLabel(int day) {
+    return 'Day $day';
+  }
 }

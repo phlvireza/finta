@@ -1277,4 +1277,32 @@ class AppLocalizationsId extends AppLocalizations {
   String savingsRateLabel(Object percent) {
     return 'Tingkat tabungan: $percent';
   }
+
+  @override
+  String get systemDefault => 'Default Sistem';
+
+  @override
+  String get selectPayday => 'Pilih Tanggal Gajian';
+
+  @override
+  String get errorFailedToExport => 'Gagal mengekspor data';
+
+  @override
+  String get selectIcon => 'Pilih Ikon';
+
+  @override
+  String get continueLabel => 'Lanjutkan';
+
+  @override
+  String get errorFailedToLoadData => 'Gagal memuat data';
+
+  @override
+  String confirmDeleteTransactionMessage(String type, String amount) {
+    return 'Apakah Anda yakin ingin menghapus $type sebesar $amount ini?';
+  }
+
+  @override
+  String paydayDayLabel(int day) {
+    return 'Tanggal $day';
+  }
 }

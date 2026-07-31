@@ -142,7 +142,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     final confirmed = await ConfirmDialog.show(
       context,
       title: loc.delete,
-      message: 'Are you sure you want to delete this $typeName of $formattedAmount?',
+      message: loc.confirmDeleteTransactionMessage(typeName, formattedAmount),
       confirmText: loc.delete,
     );
 
@@ -371,7 +371,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           ? const SkeletonTransactionList()
           : txProvider.error != null
           ? ErrorState(
-              title: 'Failed to load transactions',
+              title: loc.errorFailedToLoadData,
               message: txProvider.error!,
               onRetry: () => txProvider.loadAllTransactions(),
             )

@@ -111,7 +111,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   ? const SkeletonAnalytics()
                   : analytics.error != null
                       ? ErrorState(
-                          title: 'Failed to load analytics',
+                          title: loc.errorFailedToLoadData,
                           message: analytics.error,
                           onRetry: _loadData,
                         )

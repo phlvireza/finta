@@ -148,7 +148,6 @@
   "stop": "Hentikan",
   "skip": "Lewati",
   "trackYourMoney": "Lacak uang Anda,\nbukan stres Anda",
-  "getStarted": "Mulai",
   "chooseYourCurrency": "Pilih mata uang Anda",
   "currencyDisplayOnly": "Ini hanya untuk tampilan — tidak ada konversi",
   "whenDoYouGetPaid": "Kapan Anda gajian?",
@@ -696,5 +695,25 @@
       "amount": { "type": "String" }
     }
   },
-  "savingsRateLabel": "Tingkat tabungan: {percent}"
+  "savingsRateLabel": "Tingkat tabungan: {percent}",
+
+  "systemDefault": "Default Sistem",
+  "selectPayday": "Pilih Tanggal Gajian",
+  "errorFailedToExport": "Gagal mengekspor data",
+  "selectIcon": "Pilih Ikon",
+  "continueLabel": "Lanjutkan",
+  "errorFailedToLoadData": "Gagal memuat data",
+  "confirmDeleteTransactionMessage": "Apakah Anda yakin ingin menghapus {type} sebesar {amount} ini?",
+  "@confirmDeleteTransactionMessage": {
+    "placeholders": {
+      "type": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "paydayDayLabel": "Tanggal {day}",
+  "@paydayDayLabel": {
+    "placeholders": {
+      "day": { "type": "int" }
+    }
+  }
 }

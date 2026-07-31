@@ -54,7 +54,7 @@ class SettingsScreen extends StatelessWidget {
                 leading: const Icon(Icons.palette_outlined),
                 title: Text(loc.theme),
                 trailing: Text(
-                  _themeModeName(settings.themeMode),
+                  _themeModeName(loc, settings.themeMode),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.primary,
                   ),
@@ -78,7 +78,7 @@ class SettingsScreen extends StatelessWidget {
                 leading: const Icon(Icons.calendar_today),
                 title: Text(loc.payday),
                 trailing: Text(
-                  'Day ${settings.payday}',
+                  loc.paydayDayLabel(settings.payday),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.primary,
                   ),
@@ -204,6 +204,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showThemePicker(BuildContext context, SettingsProvider settings) {
+    final loc = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (_) => SafeArea(
@@ -212,7 +213,7 @@ class SettingsScreen extends StatelessWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.brightness_auto),
-              title: const Text('System Default'),
+              title: Text(loc.systemDefault),
               trailing: settings.themeMode == ThemeMode.system
                   ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
                   : null,
@@ -223,7 +224,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.light_mode),
-              title: const Text('Light'),
+              title: Text(loc.light),
               trailing: settings.themeMode == ThemeMode.light
                   ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
                   : null,
@@ -234,7 +235,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.dark_mode),
-              title: const Text('Dark'),
+              title: Text(loc.dark),
               trailing: settings.themeMode == ThemeMode.dark
                   ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
                   : null,
@@ -250,10 +251,11 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showPaydayPicker(BuildContext context, SettingsProvider settings) {
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Select Payday'),
+        title: Text(loc.selectPayday),
         content: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 400),
           child: SizedBox(
@@ -301,10 +303,10 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _exportCsv(BuildContext context) async {
+    final loc = AppLocalizations.of(context)!;
     try {
       final txProvider = context.read<TransactionProvider>();
       final categoryProvider = context.read<CategoryProvider>();
-      final loc = AppLocalizations.of(context)!;
       final transactions = await txProvider.getAllTransactions();
 
       final buffer = StringBuffer();
@@ -334,20 +336,20 @@ class SettingsScreen extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to export data')),
+          SnackBar(content: Text(loc.errorFailedToExport)),
         );
       }
     }
   }
 
-  String _themeModeName(ThemeMode mode) {
+  String _themeModeName(AppLocalizations loc, ThemeMode mode) {
     switch (mode) {
       case ThemeMode.light:
-        return 'Light';
+        return loc.light;
       case ThemeMode.dark:
-        return 'Dark';
+        return loc.dark;
       default:
-        return 'System Default';
+        return loc.systemDefault;
     }
   }
 

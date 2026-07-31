@@ -155,7 +155,6 @@
   "stop": "Stop",
   "skip": "Skip",
   "trackYourMoney": "Track your money,\nnot your stress",
-  "getStarted": "Get Started",
   "chooseYourCurrency": "Choose your currency",
   "currencyDisplayOnly": "This is just for display — no conversion",
   "whenDoYouGetPaid": "When do you get paid?",
@@ -703,5 +702,25 @@
       "amount": { "type": "String" }
     }
   },
-  "savingsRateLabel": "Savings rate: {percent}"
+  "savingsRateLabel": "Savings rate: {percent}",
+
+  "systemDefault": "System Default",
+  "selectPayday": "Select Payday",
+  "errorFailedToExport": "Failed to export data",
+  "selectIcon": "Select Icon",
+  "continueLabel": "Continue",
+  "errorFailedToLoadData": "Failed to load data",
+  "confirmDeleteTransactionMessage": "Are you sure you want to delete this {type} of {amount}?",
+  "@confirmDeleteTransactionMessage": {
+    "placeholders": {
+      "type": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "paydayDayLabel": "Day {day}",
+  "@paydayDayLabel": {
+    "placeholders": {
+      "day": { "type": "int" }
+    }
+  }
 }

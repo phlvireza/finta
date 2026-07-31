@@ -2317,6 +2317,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Savings rate: {percent}'**
   String savingsRateLabel(Object percent);
+
+  /// No description provided for @systemDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'System Default'**
+  String get systemDefault;
+
+  /// No description provided for @selectPayday.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Payday'**
+  String get selectPayday;
+
+  /// No description provided for @errorFailedToExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to export data'**
+  String get errorFailedToExport;
+
+  /// No description provided for @selectIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Icon'**
+  String get selectIcon;
+
+  /// No description provided for @continueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueLabel;
+
+  /// No description provided for @errorFailedToLoadData.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load data'**
+  String get errorFailedToLoadData;
+
+  /// No description provided for @confirmDeleteTransactionMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this {type} of {amount}?'**
+  String confirmDeleteTransactionMessage(String type, String amount);
+
+  /// No description provided for @paydayDayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Day {day}'**
+  String paydayDayLabel(int day);
 }
 
 class _AppLocalizationsDelegate

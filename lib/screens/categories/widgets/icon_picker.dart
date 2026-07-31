@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../models/category_model.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Dialog for selecting an icon from the predefined list.
 class IconPickerDialog extends StatelessWidget {
@@ -9,10 +10,11 @@ class IconPickerDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final icons = CategoryModel.availableIcons.entries.toList();
 
     return AlertDialog(
-      title: const Text('Select Icon'),
+      title: Text(loc.selectIcon),
       content: SizedBox(
         width: double.maxFinite,
         child: GridView.builder(
@@ -42,7 +44,7 @@ class IconPickerDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(loc.cancel),
         ),
       ],
     );
