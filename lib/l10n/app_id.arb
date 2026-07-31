@@ -336,5 +336,76 @@
     "placeholders": {
       "amount": { "type": "String" }
     }
-  }
+  },
+
+  "backupAndRestore": "Cadangkan & Pulihkan",
+  "backupAndRestoreSubtitle": "Cadangkan data Anda, atau impor dari file CSV",
+  "backupSectionTitle": "Cadangan",
+  "createBackup": "Buat cadangan",
+  "createBackupSubtitle": "Simpan salinan lengkap data Anda untuk dibagikan atau disimpan dengan aman",
+  "restoreFromBackup": "Pulihkan dari cadangan",
+  "restoreFromBackupSubtitle": "Ganti data Anda saat ini dengan cadangan yang pernah disimpan",
+  "restore": "Pulihkan",
+  "backupFailed": "Gagal membuat cadangan",
+  "backupIncompatible": "Cadangan ini dibuat dengan versi Finta yang lebih baru dan tidak bisa dipulihkan di sini",
+  "backupInvalidFile": "File itu bukan cadangan Finta yang valid",
+  "restoreBackupTitle": "Pulihkan cadangan ini?",
+  "restoreBackupConfirm": "Ini akan mengganti semua data saat ini dengan cadangan dari {date}. Tindakan ini tidak dapat dibatalkan.",
+  "@restoreBackupConfirm": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "restoreFailed": "Gagal memulihkan cadangan",
+  "restoreCompleteTitle": "Cadangan dipulihkan",
+  "restoreCompleteMessage": "Silakan tutup dan buka kembali Finta untuk menyelesaikan pemuatan data yang dipulihkan.",
+
+  "csvImportSectionTitle": "Impor",
+  "importCsv": "Impor dari CSV",
+  "importCsvSubtitle": "Bawa masuk transaksi dari Finta atau ekspor aplikasi lain",
+  "csvReadFailed": "Gagal membaca file CSV itu",
+  "mapCsvColumns": "Petakan kolom",
+  "reviewImport": "Tinjau impor",
+  "csvRowsFound": "{count} baris ditemukan di file ini",
+  "@csvRowsFound": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "csvColumnDate": "Tanggal",
+  "csvColumnAmount": "Jumlah",
+  "csvColumnType": "Jenis (pemasukan/pengeluaran)",
+  "csvColumnCategory": "Kategori",
+  "csvColumnMerchant": "Pedagang",
+  "csvColumnNote": "Catatan",
+  "csvImportToAccount": "Impor ke akun",
+  "previewImport": "Pratinjau impor",
+  "csvImportSummary": "{ready} siap diimpor, {skipped} dilewati",
+  "@csvImportSummary": {
+    "placeholders": {
+      "ready": { "type": "int" },
+      "skipped": { "type": "int" }
+    }
+  },
+  "csvRowNumber": "Baris {number}",
+  "@csvRowNumber": {
+    "placeholders": {
+      "number": { "type": "int" }
+    }
+  },
+  "csvNoErrors": "Semua baris terlihat baik",
+  "confirmImportCount": "Impor {count} transaksi",
+  "@confirmImportCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "csvImportedCount": "Berhasil mengimpor {count} transaksi",
+  "@csvImportedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "importFailed": "Impor gagal",
+  "importedCategoryName": "Impor"
 }

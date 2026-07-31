@@ -722,4 +722,136 @@ class AppLocalizationsEn extends AppLocalizations {
   String rolledOverNegative(String amount) {
     return '$amount over from last period';
   }
+
+  @override
+  String get backupAndRestore => 'Backup & Restore';
+
+  @override
+  String get backupAndRestoreSubtitle =>
+      'Back up your data, or import from a CSV file';
+
+  @override
+  String get backupSectionTitle => 'Backup';
+
+  @override
+  String get createBackup => 'Create backup';
+
+  @override
+  String get createBackupSubtitle =>
+      'Save a full copy of your data to share or store safely';
+
+  @override
+  String get restoreFromBackup => 'Restore from backup';
+
+  @override
+  String get restoreFromBackupSubtitle =>
+      'Replace your data with a previously saved backup';
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String get backupFailed => 'Failed to create backup';
+
+  @override
+  String get backupIncompatible =>
+      'This backup was made with a newer version of Finta and can\'t be restored here';
+
+  @override
+  String get backupInvalidFile => 'That file isn\'t a valid Finta backup';
+
+  @override
+  String get restoreBackupTitle => 'Restore this backup?';
+
+  @override
+  String restoreBackupConfirm(String date) {
+    return 'This will replace all current data with the backup from $date. This can\'t be undone.';
+  }
+
+  @override
+  String get restoreFailed => 'Failed to restore backup';
+
+  @override
+  String get restoreCompleteTitle => 'Backup restored';
+
+  @override
+  String get restoreCompleteMessage =>
+      'Please close and reopen Finta to finish loading your restored data.';
+
+  @override
+  String get csvImportSectionTitle => 'Import';
+
+  @override
+  String get importCsv => 'Import from CSV';
+
+  @override
+  String get importCsvSubtitle =>
+      'Bring in transactions from Finta or another app\'s export';
+
+  @override
+  String get csvReadFailed => 'Failed to read that CSV file';
+
+  @override
+  String get mapCsvColumns => 'Map columns';
+
+  @override
+  String get reviewImport => 'Review import';
+
+  @override
+  String csvRowsFound(int count) {
+    return '$count rows found in this file';
+  }
+
+  @override
+  String get csvColumnDate => 'Date';
+
+  @override
+  String get csvColumnAmount => 'Amount';
+
+  @override
+  String get csvColumnType => 'Type (income/expense)';
+
+  @override
+  String get csvColumnCategory => 'Category';
+
+  @override
+  String get csvColumnMerchant => 'Merchant';
+
+  @override
+  String get csvColumnNote => 'Note';
+
+  @override
+  String get csvImportToAccount => 'Import into account';
+
+  @override
+  String get previewImport => 'Preview import';
+
+  @override
+  String csvImportSummary(int ready, int skipped) {
+    return '$ready ready to import, $skipped skipped';
+  }
+
+  @override
+  String csvRowNumber(int number) {
+    return 'Row $number';
+  }
+
+  @override
+  String get csvNoErrors => 'Every row looks good';
+
+  @override
+  String confirmImportCount(int count) {
+    return 'Import $count transactions';
+  }
+
+  @override
+  String csvImportedCount(int count) {
+    return 'Imported $count transactions';
+  }
+
+  @override
+  String get importFailed => 'Import failed';
+
+  @override
+  String get importedCategoryName => 'Imported';
 }

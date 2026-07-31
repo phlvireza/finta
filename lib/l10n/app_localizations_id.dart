@@ -723,4 +723,136 @@ class AppLocalizationsId extends AppLocalizations {
   String rolledOverNegative(String amount) {
     return 'Kelebihan $amount dari periode lalu';
   }
+
+  @override
+  String get backupAndRestore => 'Cadangkan & Pulihkan';
+
+  @override
+  String get backupAndRestoreSubtitle =>
+      'Cadangkan data Anda, atau impor dari file CSV';
+
+  @override
+  String get backupSectionTitle => 'Cadangan';
+
+  @override
+  String get createBackup => 'Buat cadangan';
+
+  @override
+  String get createBackupSubtitle =>
+      'Simpan salinan lengkap data Anda untuk dibagikan atau disimpan dengan aman';
+
+  @override
+  String get restoreFromBackup => 'Pulihkan dari cadangan';
+
+  @override
+  String get restoreFromBackupSubtitle =>
+      'Ganti data Anda saat ini dengan cadangan yang pernah disimpan';
+
+  @override
+  String get restore => 'Pulihkan';
+
+  @override
+  String get backupFailed => 'Gagal membuat cadangan';
+
+  @override
+  String get backupIncompatible =>
+      'Cadangan ini dibuat dengan versi Finta yang lebih baru dan tidak bisa dipulihkan di sini';
+
+  @override
+  String get backupInvalidFile => 'File itu bukan cadangan Finta yang valid';
+
+  @override
+  String get restoreBackupTitle => 'Pulihkan cadangan ini?';
+
+  @override
+  String restoreBackupConfirm(String date) {
+    return 'Ini akan mengganti semua data saat ini dengan cadangan dari $date. Tindakan ini tidak dapat dibatalkan.';
+  }
+
+  @override
+  String get restoreFailed => 'Gagal memulihkan cadangan';
+
+  @override
+  String get restoreCompleteTitle => 'Cadangan dipulihkan';
+
+  @override
+  String get restoreCompleteMessage =>
+      'Silakan tutup dan buka kembali Finta untuk menyelesaikan pemuatan data yang dipulihkan.';
+
+  @override
+  String get csvImportSectionTitle => 'Impor';
+
+  @override
+  String get importCsv => 'Impor dari CSV';
+
+  @override
+  String get importCsvSubtitle =>
+      'Bawa masuk transaksi dari Finta atau ekspor aplikasi lain';
+
+  @override
+  String get csvReadFailed => 'Gagal membaca file CSV itu';
+
+  @override
+  String get mapCsvColumns => 'Petakan kolom';
+
+  @override
+  String get reviewImport => 'Tinjau impor';
+
+  @override
+  String csvRowsFound(int count) {
+    return '$count baris ditemukan di file ini';
+  }
+
+  @override
+  String get csvColumnDate => 'Tanggal';
+
+  @override
+  String get csvColumnAmount => 'Jumlah';
+
+  @override
+  String get csvColumnType => 'Jenis (pemasukan/pengeluaran)';
+
+  @override
+  String get csvColumnCategory => 'Kategori';
+
+  @override
+  String get csvColumnMerchant => 'Pedagang';
+
+  @override
+  String get csvColumnNote => 'Catatan';
+
+  @override
+  String get csvImportToAccount => 'Impor ke akun';
+
+  @override
+  String get previewImport => 'Pratinjau impor';
+
+  @override
+  String csvImportSummary(int ready, int skipped) {
+    return '$ready siap diimpor, $skipped dilewati';
+  }
+
+  @override
+  String csvRowNumber(int number) {
+    return 'Baris $number';
+  }
+
+  @override
+  String get csvNoErrors => 'Semua baris terlihat baik';
+
+  @override
+  String confirmImportCount(int count) {
+    return 'Impor $count transaksi';
+  }
+
+  @override
+  String csvImportedCount(int count) {
+    return 'Berhasil mengimpor $count transaksi';
+  }
+
+  @override
+  String get importFailed => 'Impor gagal';
+
+  @override
+  String get importedCategoryName => 'Impor';
 }

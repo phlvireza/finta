@@ -83,6 +83,9 @@ class CategoryRepository {
   /// transaction keeps a resolvable name and icon. Related budgets and
   /// recurring templates are deactivated (never deleted) since a budget or
   /// template for a category you can no longer spend on is meaningless.
+  /// A group/overall budget that merely *includes* this category among
+  /// others is left active — archiving one member shouldn't kill the
+  /// whole budget.
   Future<void> archive(String id) async {
     try {
       final db = await _dbHelper.database;
@@ -93,11 +96,10 @@ class CategoryRepository {
           where: 'id = ?',
           whereArgs: [id],
         );
-        await txn.update(
-          'budgets',
-          {'isActive': 0},
-          where: 'categoryId = ?',
-          whereArgs: [id],
+        await txn.rawUpdate(
+          "UPDATE budgets SET isActive = 0 WHERE scope = 'category' AND id IN "
+          '(SELECT budgetId FROM budget_categories WHERE categoryId = ?)',
+          [id],
         );
         await txn.update(
           'recurring_transactions',
@@ -117,7 +119,18 @@ class CategoryRepository {
     try {
       final db = await _dbHelper.database;
       await db.transaction((txn) async {
-        await txn.delete('budgets', where: 'categoryId = ?', whereArgs: [id]);
+        // Category-scoped budgets that only cover this category are
+        // deleted outright; group/overall budgets just lose this member.
+        final soleBudgets = await txn.rawQuery(
+          "SELECT id FROM budgets WHERE scope = 'category' AND id IN "
+          '(SELECT budgetId FROM budget_categories WHERE categoryId = ?)',
+          [id],
+        );
+        for (final row in soleBudgets) {
+          await txn.delete('budget_categories', where: 'budgetId = ?', whereArgs: [row['id']]);
+          await txn.delete('budgets', where: 'id = ?', whereArgs: [row['id']]);
+        }
+        await txn.delete('budget_categories', where: 'categoryId = ?', whereArgs: [id]);
         await txn.delete('recurring_transactions', where: 'categoryId = ?', whereArgs: [id]);
         await txn.delete('categories', where: 'id = ?', whereArgs: [id]);
       });

@@ -377,6 +377,15 @@ class TransactionProvider extends ChangeNotifier {
     _allTransactions.removeWhere((t) => t.id == transaction.id);
   }
 
+  /// Bulk-inserts transactions from a CSV/backup import. Unlike
+  /// [addTransaction], this doesn't patch in-memory period totals
+  /// incrementally — imported rows can land on arbitrary historical dates —
+  /// so callers must reload (e.g. [loadTransactions]) afterward.
+  Future<void> importTransactions(List<TransactionModel> transactions) async {
+    if (transactions.isEmpty) return;
+    await _repository.insertBatch(transactions);
+  }
+
   /// Search transactions by note content.
   Future<List<TransactionModel>> searchTransactions(String query) async {
     try {

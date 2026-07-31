@@ -343,5 +343,76 @@
     "placeholders": {
       "amount": { "type": "String" }
     }
-  }
+  },
+
+  "backupAndRestore": "Backup & Restore",
+  "backupAndRestoreSubtitle": "Back up your data, or import from a CSV file",
+  "backupSectionTitle": "Backup",
+  "createBackup": "Create backup",
+  "createBackupSubtitle": "Save a full copy of your data to share or store safely",
+  "restoreFromBackup": "Restore from backup",
+  "restoreFromBackupSubtitle": "Replace your data with a previously saved backup",
+  "restore": "Restore",
+  "backupFailed": "Failed to create backup",
+  "backupIncompatible": "This backup was made with a newer version of Finta and can't be restored here",
+  "backupInvalidFile": "That file isn't a valid Finta backup",
+  "restoreBackupTitle": "Restore this backup?",
+  "restoreBackupConfirm": "This will replace all current data with the backup from {date}. This can't be undone.",
+  "@restoreBackupConfirm": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "restoreFailed": "Failed to restore backup",
+  "restoreCompleteTitle": "Backup restored",
+  "restoreCompleteMessage": "Please close and reopen Finta to finish loading your restored data.",
+
+  "csvImportSectionTitle": "Import",
+  "importCsv": "Import from CSV",
+  "importCsvSubtitle": "Bring in transactions from Finta or another app's export",
+  "csvReadFailed": "Failed to read that CSV file",
+  "mapCsvColumns": "Map columns",
+  "reviewImport": "Review import",
+  "csvRowsFound": "{count} rows found in this file",
+  "@csvRowsFound": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "csvColumnDate": "Date",
+  "csvColumnAmount": "Amount",
+  "csvColumnType": "Type (income/expense)",
+  "csvColumnCategory": "Category",
+  "csvColumnMerchant": "Merchant",
+  "csvColumnNote": "Note",
+  "csvImportToAccount": "Import into account",
+  "previewImport": "Preview import",
+  "csvImportSummary": "{ready} ready to import, {skipped} skipped",
+  "@csvImportSummary": {
+    "placeholders": {
+      "ready": { "type": "int" },
+      "skipped": { "type": "int" }
+    }
+  },
+  "csvRowNumber": "Row {number}",
+  "@csvRowNumber": {
+    "placeholders": {
+      "number": { "type": "int" }
+    }
+  },
+  "csvNoErrors": "Every row looks good",
+  "confirmImportCount": "Import {count} transactions",
+  "@confirmImportCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "csvImportedCount": "Imported {count} transactions",
+  "@csvImportedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "importFailed": "Import failed",
+  "importedCategoryName": "Imported"
 }

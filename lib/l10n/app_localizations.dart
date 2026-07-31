@@ -1441,6 +1441,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{amount} over from last period'**
   String rolledOverNegative(String amount);
+
+  /// No description provided for @backupAndRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup & Restore'**
+  String get backupAndRestore;
+
+  /// No description provided for @backupAndRestoreSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up your data, or import from a CSV file'**
+  String get backupAndRestoreSubtitle;
+
+  /// No description provided for @backupSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup'**
+  String get backupSectionTitle;
+
+  /// No description provided for @createBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Create backup'**
+  String get createBackup;
+
+  /// No description provided for @createBackupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save a full copy of your data to share or store safely'**
+  String get createBackupSubtitle;
+
+  /// No description provided for @restoreFromBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from backup'**
+  String get restoreFromBackup;
+
+  /// No description provided for @restoreFromBackupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace your data with a previously saved backup'**
+  String get restoreFromBackupSubtitle;
+
+  /// No description provided for @restore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restore;
+
+  /// No description provided for @backupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create backup'**
+  String get backupFailed;
+
+  /// No description provided for @backupIncompatible.
+  ///
+  /// In en, this message translates to:
+  /// **'This backup was made with a newer version of Finta and can\'t be restored here'**
+  String get backupIncompatible;
+
+  /// No description provided for @backupInvalidFile.
+  ///
+  /// In en, this message translates to:
+  /// **'That file isn\'t a valid Finta backup'**
+  String get backupInvalidFile;
+
+  /// No description provided for @restoreBackupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore this backup?'**
+  String get restoreBackupTitle;
+
+  /// No description provided for @restoreBackupConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This will replace all current data with the backup from {date}. This can\'t be undone.'**
+  String restoreBackupConfirm(String date);
+
+  /// No description provided for @restoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to restore backup'**
+  String get restoreFailed;
+
+  /// No description provided for @restoreCompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup restored'**
+  String get restoreCompleteTitle;
+
+  /// No description provided for @restoreCompleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Please close and reopen Finta to finish loading your restored data.'**
+  String get restoreCompleteMessage;
+
+  /// No description provided for @csvImportSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get csvImportSectionTitle;
+
+  /// No description provided for @importCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from CSV'**
+  String get importCsv;
+
+  /// No description provided for @importCsvSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bring in transactions from Finta or another app\'s export'**
+  String get importCsvSubtitle;
+
+  /// No description provided for @csvReadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to read that CSV file'**
+  String get csvReadFailed;
+
+  /// No description provided for @mapCsvColumns.
+  ///
+  /// In en, this message translates to:
+  /// **'Map columns'**
+  String get mapCsvColumns;
+
+  /// No description provided for @reviewImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Review import'**
+  String get reviewImport;
+
+  /// No description provided for @csvRowsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} rows found in this file'**
+  String csvRowsFound(int count);
+
+  /// No description provided for @csvColumnDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get csvColumnDate;
+
+  /// No description provided for @csvColumnAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get csvColumnAmount;
+
+  /// No description provided for @csvColumnType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type (income/expense)'**
+  String get csvColumnType;
+
+  /// No description provided for @csvColumnCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get csvColumnCategory;
+
+  /// No description provided for @csvColumnMerchant.
+  ///
+  /// In en, this message translates to:
+  /// **'Merchant'**
+  String get csvColumnMerchant;
+
+  /// No description provided for @csvColumnNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get csvColumnNote;
+
+  /// No description provided for @csvImportToAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Import into account'**
+  String get csvImportToAccount;
+
+  /// No description provided for @previewImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview import'**
+  String get previewImport;
+
+  /// No description provided for @csvImportSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{ready} ready to import, {skipped} skipped'**
+  String csvImportSummary(int ready, int skipped);
+
+  /// No description provided for @csvRowNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Row {number}'**
+  String csvRowNumber(int number);
+
+  /// No description provided for @csvNoErrors.
+  ///
+  /// In en, this message translates to:
+  /// **'Every row looks good'**
+  String get csvNoErrors;
+
+  /// No description provided for @confirmImportCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Import {count} transactions'**
+  String confirmImportCount(int count);
+
+  /// No description provided for @csvImportedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported {count} transactions'**
+  String csvImportedCount(int count);
+
+  /// No description provided for @importFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed'**
+  String get importFailed;
+
+  /// No description provided for @importedCategoryName.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported'**
+  String get importedCategoryName;
 }
 
 class _AppLocalizationsDelegate

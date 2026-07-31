@@ -5,8 +5,10 @@ import '../../providers/transaction_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../core/constants/app_constants.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'dart:io';
 import '../../l10n/app_localizations.dart';
+import '../backup/backup_restore_screen.dart';
 
 /// Settings screen — preferences, management links, and CSV export.
 class SettingsScreen extends StatelessWidget {
@@ -97,6 +99,15 @@ class SettingsScreen extends StatelessWidget {
                 title: Text(loc.exportCsv),
                 subtitle: Text(loc.backupYourData),
                 onTap: () => _exportCsv(context),
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.settings_backup_restore),
+                title: Text(loc.backupAndRestore),
+                subtitle: Text(loc.backupAndRestoreSubtitle),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const BackupRestoreScreen()),
+                ),
               ),
             ],
           ),
@@ -318,12 +329,7 @@ class SettingsScreen extends StatelessWidget {
       final file = File('${directory.path}/finta_export_${DateTime.now().millisecondsSinceEpoch}.csv');
       await file.writeAsString(buffer.toString());
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Data exported to ${file.path}')),
-        );
-      }
+      await Share.shareXFiles([XFile(file.path)], subject: 'Finta export');
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
