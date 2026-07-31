@@ -855,4 +855,182 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get importedCategoryName => 'Impor';
+
+  @override
+  String get goals => 'Target';
+
+  @override
+  String get addGoal => 'Tambah target';
+
+  @override
+  String get editGoal => 'Edit target';
+
+  @override
+  String get deleteGoal => 'Hapus target';
+
+  @override
+  String get goalName => 'Nama target';
+
+  @override
+  String get targetAmount => 'Jumlah target';
+
+  @override
+  String get targetDateOptional => 'Tanggal target (opsional)';
+
+  @override
+  String get noDateSet => 'Belum ada tanggal';
+
+  @override
+  String get noGoalsYet => 'Belum ada target';
+
+  @override
+  String get noGoalsYetMessage =>
+      'Tetapkan target tabungan dan pantau kemajuan Anda';
+
+  @override
+  String get contribute => 'Setor';
+
+  @override
+  String contributeToGoal(String name) {
+    return 'Setor ke $name';
+  }
+
+  @override
+  String goalProgressAmount(String current, String target) {
+    return '$current dari $target';
+  }
+
+  @override
+  String get goalComplete => 'Target tercapai!';
+
+  @override
+  String goalTargetDate(String date) {
+    return 'Target: $date';
+  }
+
+  @override
+  String goalProjectedDate(String date) {
+    return 'Perkiraan: $date';
+  }
+
+  @override
+  String confirmDeleteGoal(String name) {
+    return 'Hapus \"$name\"? Tindakan ini tidak dapat dibatalkan.';
+  }
+
+  @override
+  String confirmArchiveGoal(String name, int count) {
+    return '\"$name\" memiliki $count setoran. Target ini akan diarsipkan, bukan dihapus, agar riwayatnya tetap utuh.';
+  }
+
+  @override
+  String get debts => 'Utang Piutang';
+
+  @override
+  String get addDebt => 'Tambah catatan';
+
+  @override
+  String get editDebt => 'Edit catatan';
+
+  @override
+  String get deleteDebt => 'Hapus catatan';
+
+  @override
+  String get debtTypeBorrowed => 'Saya meminjam';
+
+  @override
+  String get debtTypeLent => 'Saya meminjamkan';
+
+  @override
+  String get borrowedFrom => 'Dipinjam dari';
+
+  @override
+  String get lentTo => 'Dipinjamkan ke';
+
+  @override
+  String get principalAmount => 'Jumlah pokok';
+
+  @override
+  String get interestRateOptional => 'Suku bunga (opsional)';
+
+  @override
+  String get dueDateOptional => 'Tanggal jatuh tempo (opsional)';
+
+  @override
+  String get noDebtsYet => 'Belum ada catatan utang piutang';
+
+  @override
+  String get noDebtsYetMessage =>
+      'Catat uang yang Anda pinjamkan atau pinjam dan catat pembayarannya dari waktu ke waktu';
+
+  @override
+  String get owedToYou => 'Piutang Anda';
+
+  @override
+  String get youOwe => 'Utang Anda';
+
+  @override
+  String get debtSettled => 'Lunas';
+
+  @override
+  String debtOutstandingOfPrincipal(String outstanding, String principal) {
+    return '$outstanding dari $principal tersisa';
+  }
+
+  @override
+  String debtDueDate(String date) {
+    return 'Jatuh tempo $date';
+  }
+
+  @override
+  String get logRepaymentAction => 'Catat pembayaran';
+
+  @override
+  String logRepayment(String name) {
+    return 'Catat pembayaran untuk $name';
+  }
+
+  @override
+  String confirmDeleteDebt(String name) {
+    return 'Hapus \"$name\"? Tindakan ini tidak dapat dibatalkan.';
+  }
+
+  @override
+  String confirmArchiveDebt(String name, int count) {
+    return '\"$name\" memiliki $count pembayaran. Catatan ini akan diarsipkan, bukan dihapus, agar riwayatnya tetap utuh.';
+  }
+
+  @override
+  String get payoffCalculator => 'Kalkulator pelunasan';
+
+  @override
+  String payoffOutstandingLabel(String amount) {
+    return 'Sisa: $amount';
+  }
+
+  @override
+  String get monthlyPayment => 'Pembayaran bulanan';
+
+  @override
+  String get payoffNeverAtThisRate =>
+      'Pembayaran ini tidak menutupi bunga — saldo tidak akan pernah lunas';
+
+  @override
+  String payoffMonthsEstimate(int months) {
+    String _temp0 = intl.Intl.pluralLogic(
+      months,
+      locale: localeName,
+      other: 'Lunas dalam $months bulan',
+      one: 'Lunas dalam 1 bulan',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get goalsAndDebts => 'Target & Utang Piutang';
+
+  @override
+  String netDebtSummary(String owed, String owe) {
+    return '$owed piutang Anda · $owe utang Anda';
+  }
 }

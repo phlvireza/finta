@@ -172,6 +172,8 @@ class TransactionProvider extends ChangeNotifier {
     String? merchant,
     String? note,
     String? recurringId,
+    String? goalId,
+    String? debtId,
   }) async {
     try {
       final now = DateTime.now();
@@ -185,6 +187,8 @@ class TransactionProvider extends ChangeNotifier {
         date: date,
         note: note,
         recurringId: recurringId,
+        goalId: goalId,
+        debtId: debtId,
         createdAt: now,
         updatedAt: now,
       );

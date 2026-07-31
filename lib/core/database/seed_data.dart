@@ -19,6 +19,14 @@ class SeedData {
   /// user-facing category picker.
   static const String transferCategoryId = 'system_transfer';
 
+  /// Well-known ids for the default categories a goal contribution or debt
+  /// repayment is filed under (see [seedGoalDebtCategories]) — fixed
+  /// constants so [GoalProvider]/[DebtProvider] can reference them without
+  /// a lookup-by-name.
+  static const String savingsGoalsCategoryId = 'default_savings_goals';
+  static const String debtPaymentsCategoryId = 'default_debt_payments';
+  static const String debtRepaymentsCategoryId = 'default_debt_repayments';
+
   static Future<void> seedCategories(Database db) async {
     final now = DateTime.now().toIso8601String();
     final batch = db.batch();
@@ -92,6 +100,46 @@ class SeedData {
       'sortOrder': -1,
       'createdAt': DateTime.now().toIso8601String(),
     });
+  }
+
+  /// Seeds the default categories a goal contribution or debt repayment
+  /// transaction is filed under. Ordinary (non-system) categories — unlike
+  /// the Transfer category, there's real value in seeing "Savings & Goals"
+  /// or "Debt Payments" show up in a normal category breakdown.
+  static Future<void> seedGoalDebtCategories(DatabaseExecutor db) async {
+    final now = DateTime.now().toIso8601String();
+    final batch = db.batch();
+    batch.insert('categories', {
+      'id': savingsGoalsCategoryId,
+      'name': 'Savings & Goals',
+      'type': 'expense',
+      'icon': 'savings',
+      'color': '#5B8C5A',
+      'isDefault': 1,
+      'sortOrder': 100,
+      'createdAt': now,
+    });
+    batch.insert('categories', {
+      'id': debtPaymentsCategoryId,
+      'name': 'Debt Payments',
+      'type': 'expense',
+      'icon': 'attach_money',
+      'color': '#C2665A',
+      'isDefault': 1,
+      'sortOrder': 101,
+      'createdAt': now,
+    });
+    batch.insert('categories', {
+      'id': debtRepaymentsCategoryId,
+      'name': 'Debt Repayments',
+      'type': 'income',
+      'icon': 'redeem',
+      'color': '#5B8C5A',
+      'isDefault': 1,
+      'sortOrder': 100,
+      'createdAt': now,
+    });
+    await batch.commit(noResult: true);
   }
 
   /// Seeds the default "My Wallet" cash account every pre-accounts

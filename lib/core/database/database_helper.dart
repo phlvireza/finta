@@ -13,7 +13,7 @@ class DatabaseHelper {
   /// branch in [_onUpgrade] backed by a method on [Migrations]. `_onCreate`
   /// must always produce a schema identical to a v1 install that has
   /// replayed every migration — see test/migration_test.dart.
-  static const int dbVersion = 4;
+  static const int dbVersion = 5;
 
   static Database? _database;
 
@@ -50,6 +50,7 @@ class DatabaseHelper {
     if (oldVersion < 2) await Migrations.v2(db);
     if (oldVersion < 3) await Migrations.v3(db);
     if (oldVersion < 4) await Migrations.v4(db);
+    if (oldVersion < 5) await Migrations.v5(db);
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -87,6 +88,8 @@ class DatabaseHelper {
         date TEXT NOT NULL,
         note TEXT,
         recurringId TEXT,
+        goalId TEXT,
+        debtId TEXT,
         createdAt TEXT NOT NULL,
         updatedAt TEXT NOT NULL,
         FOREIGN KEY (categoryId) REFERENCES categories(id)
@@ -116,6 +119,10 @@ class DatabaseHelper {
     await db.execute(Migrations.createBudgetsTable);
     await db.execute(Migrations.createBudgetCategoriesTable);
 
+    // Goals & debts tables
+    await db.execute(Migrations.createGoalsTable);
+    await db.execute(Migrations.createDebtsTable);
+
     // Indexes for common queries
     await db.execute(
       'CREATE INDEX idx_transactions_date ON transactions(date)',
@@ -129,13 +136,20 @@ class DatabaseHelper {
     await db.execute(
       'CREATE INDEX idx_transactions_accountId ON transactions(accountId)',
     );
+    await db.execute(
+      'CREATE INDEX idx_transactions_goalId ON transactions(goalId)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_transactions_debtId ON transactions(debtId)',
+    );
     await Migrations.createRecurringOccurrenceIndex(db);
 
-    // Seed default categories, the system Transfer category, and the
-    // default account every new install starts with.
+    // Seed default categories, the system Transfer category, the default
+    // account, and the goal/debt categories every new install starts with.
     await SeedData.seedCategories(db);
     await SeedData.seedSystemCategory(db);
     await SeedData.seedDefaultAccount(db);
+    await SeedData.seedGoalDebtCategories(db);
   }
 
   /// Close the database (for testing / cleanup).

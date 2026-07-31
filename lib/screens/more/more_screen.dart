@@ -4,6 +4,8 @@ import '../accounts/manage_accounts_screen.dart';
 import '../budgets/manage_budgets_screen.dart';
 import '../categories/manage_categories_screen.dart';
 import '../recurring/recurring_list_screen.dart';
+import '../goals/goals_list_screen.dart';
+import '../debts/debts_list_screen.dart';
 import '../settings/settings_screen.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -56,6 +58,22 @@ class MoreScreen extends StatelessWidget {
                 label: loc.recurring,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const RecurringListScreen()),
+                ),
+              ),
+              const Divider(),
+              _MoreTile(
+                icon: Icons.savings_outlined,
+                label: loc.goals,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const GoalsListScreen()),
+                ),
+              ),
+              const Divider(),
+              _MoreTile(
+                icon: Icons.handshake_outlined,
+                label: loc.debts,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const DebtsListScreen()),
                 ),
               ),
             ],

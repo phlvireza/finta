@@ -1669,6 +1669,288 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Imported'**
   String get importedCategoryName;
+
+  /// No description provided for @goals.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals'**
+  String get goals;
+
+  /// No description provided for @addGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Add goal'**
+  String get addGoal;
+
+  /// No description provided for @editGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit goal'**
+  String get editGoal;
+
+  /// No description provided for @deleteGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete goal'**
+  String get deleteGoal;
+
+  /// No description provided for @goalName.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal name'**
+  String get goalName;
+
+  /// No description provided for @targetAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Target amount'**
+  String get targetAmount;
+
+  /// No description provided for @targetDateOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Target date (optional)'**
+  String get targetDateOptional;
+
+  /// No description provided for @noDateSet.
+  ///
+  /// In en, this message translates to:
+  /// **'No date set'**
+  String get noDateSet;
+
+  /// No description provided for @noGoalsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No goals yet'**
+  String get noGoalsYet;
+
+  /// No description provided for @noGoalsYetMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a savings target and track your progress toward it'**
+  String get noGoalsYetMessage;
+
+  /// No description provided for @contribute.
+  ///
+  /// In en, this message translates to:
+  /// **'Contribute'**
+  String get contribute;
+
+  /// No description provided for @contributeToGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Contribute to {name}'**
+  String contributeToGoal(String name);
+
+  /// No description provided for @goalProgressAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} of {target}'**
+  String goalProgressAmount(String current, String target);
+
+  /// No description provided for @goalComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal reached!'**
+  String get goalComplete;
+
+  /// No description provided for @goalTargetDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Target: {date}'**
+  String goalTargetDate(String date);
+
+  /// No description provided for @goalProjectedDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Projected: {date}'**
+  String goalProjectedDate(String date);
+
+  /// No description provided for @confirmDeleteGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"? This can\'t be undone.'**
+  String confirmDeleteGoal(String name);
+
+  /// No description provided for @confirmArchiveGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{name}\" has {count} contributions. It will be archived instead of deleted so your history stays intact.'**
+  String confirmArchiveGoal(String name, int count);
+
+  /// No description provided for @debts.
+  ///
+  /// In en, this message translates to:
+  /// **'Debts'**
+  String get debts;
+
+  /// No description provided for @addDebt.
+  ///
+  /// In en, this message translates to:
+  /// **'Add debt'**
+  String get addDebt;
+
+  /// No description provided for @editDebt.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit debt'**
+  String get editDebt;
+
+  /// No description provided for @deleteDebt.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete debt'**
+  String get deleteDebt;
+
+  /// No description provided for @debtTypeBorrowed.
+  ///
+  /// In en, this message translates to:
+  /// **'I borrowed'**
+  String get debtTypeBorrowed;
+
+  /// No description provided for @debtTypeLent.
+  ///
+  /// In en, this message translates to:
+  /// **'I lent'**
+  String get debtTypeLent;
+
+  /// No description provided for @borrowedFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowed from'**
+  String get borrowedFrom;
+
+  /// No description provided for @lentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Lent to'**
+  String get lentTo;
+
+  /// No description provided for @principalAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Principal amount'**
+  String get principalAmount;
+
+  /// No description provided for @interestRateOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest rate (optional)'**
+  String get interestRateOptional;
+
+  /// No description provided for @dueDateOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Due date (optional)'**
+  String get dueDateOptional;
+
+  /// No description provided for @noDebtsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No debts yet'**
+  String get noDebtsYet;
+
+  /// No description provided for @noDebtsYetMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Track money you\'ve lent or borrowed and log repayments over time'**
+  String get noDebtsYetMessage;
+
+  /// No description provided for @owedToYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Owed to you'**
+  String get owedToYou;
+
+  /// No description provided for @youOwe.
+  ///
+  /// In en, this message translates to:
+  /// **'You owe'**
+  String get youOwe;
+
+  /// No description provided for @debtSettled.
+  ///
+  /// In en, this message translates to:
+  /// **'Settled'**
+  String get debtSettled;
+
+  /// No description provided for @debtOutstandingOfPrincipal.
+  ///
+  /// In en, this message translates to:
+  /// **'{outstanding} of {principal} outstanding'**
+  String debtOutstandingOfPrincipal(String outstanding, String principal);
+
+  /// No description provided for @debtDueDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String debtDueDate(String date);
+
+  /// No description provided for @logRepaymentAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Log repayment'**
+  String get logRepaymentAction;
+
+  /// No description provided for @logRepayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Log repayment for {name}'**
+  String logRepayment(String name);
+
+  /// No description provided for @confirmDeleteDebt.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"? This can\'t be undone.'**
+  String confirmDeleteDebt(String name);
+
+  /// No description provided for @confirmArchiveDebt.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{name}\" has {count} repayments. It will be archived instead of deleted so your history stays intact.'**
+  String confirmArchiveDebt(String name, int count);
+
+  /// No description provided for @payoffCalculator.
+  ///
+  /// In en, this message translates to:
+  /// **'Payoff calculator'**
+  String get payoffCalculator;
+
+  /// No description provided for @payoffOutstandingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Outstanding: {amount}'**
+  String payoffOutstandingLabel(String amount);
+
+  /// No description provided for @monthlyPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly payment'**
+  String get monthlyPayment;
+
+  /// No description provided for @payoffNeverAtThisRate.
+  ///
+  /// In en, this message translates to:
+  /// **'This payment won\'t cover the interest — the balance will never clear'**
+  String get payoffNeverAtThisRate;
+
+  /// No description provided for @payoffMonthsEstimate.
+  ///
+  /// In en, this message translates to:
+  /// **'{months, plural, =1{Paid off in 1 month} other{Paid off in {months} months}}'**
+  String payoffMonthsEstimate(int months);
+
+  /// No description provided for @goalsAndDebts.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals & Debts'**
+  String get goalsAndDebts;
+
+  /// No description provided for @netDebtSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{owed} owed to you · {owe} you owe'**
+  String netDebtSummary(String owed, String owe);
 }
 
 class _AppLocalizationsDelegate

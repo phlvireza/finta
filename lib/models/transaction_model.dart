@@ -11,6 +11,8 @@ class TransactionModel {
   final DateTime date;
   final String? note;
   final String? recurringId;
+  final String? goalId;
+  final String? debtId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -26,6 +28,8 @@ class TransactionModel {
     required this.date,
     this.note,
     this.recurringId,
+    this.goalId,
+    this.debtId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -47,6 +51,8 @@ class TransactionModel {
       'date': date.toIso8601String().substring(0, 10),
       'note': note,
       'recurringId': recurringId,
+      'goalId': goalId,
+      'debtId': debtId,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -68,6 +74,8 @@ class TransactionModel {
       date: DateTime.parse(map['date'] as String),
       note: map['note'] as String?,
       recurringId: map['recurringId'] as String?,
+      goalId: map['goalId'] as String?,
+      debtId: map['debtId'] as String?,
       createdAt: DateTime.parse(map['createdAt'] as String),
       updatedAt: DateTime.parse(map['updatedAt'] as String),
     );
@@ -85,6 +93,8 @@ class TransactionModel {
     DateTime? date,
     String? note,
     String? recurringId,
+    String? goalId,
+    String? debtId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -100,6 +110,8 @@ class TransactionModel {
       date: date ?? this.date,
       note: note ?? this.note,
       recurringId: recurringId ?? this.recurringId,
+      goalId: goalId ?? this.goalId,
+      debtId: debtId ?? this.debtId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

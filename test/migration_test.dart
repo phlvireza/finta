@@ -290,4 +290,68 @@ void main() {
       await db.close();
     },
   );
+
+  test(
+    'migrating a populated v4 database to v5 adds goals/debts tables, '
+    'goalId/debtId columns, and seeds the goal/debt default categories',
+    () async {
+      final db = await databaseFactoryFfi.openDatabase(
+        ':memory:',
+        options: OpenDatabaseOptions(version: 1, onCreate: _createV1Schema),
+      );
+      await db.insert('categories', {
+        'id': 'cat1',
+        'name': 'Food',
+        'type': 'expense',
+        'icon': 'restaurant',
+        'color': '#C87941',
+        'isDefault': 0,
+        'sortOrder': 0,
+        'createdAt': '2026-01-01T00:00:00.000',
+      });
+      await db.insert('transactions', {
+        'id': 'tx1',
+        'type': 'expense',
+        'amount': 45000,
+        'categoryId': 'cat1',
+        'date': '2026-07-01',
+        'note': null,
+        'recurringId': null,
+        'createdAt': '2026-07-01T00:00:00.000',
+        'updatedAt': '2026-07-01T00:00:00.000',
+      });
+
+      // Replay the real upgrade path: v2 -> v3 -> v4 -> v5, in order.
+      await Migrations.v2(db);
+      await Migrations.v3(db);
+      await Migrations.v4(db);
+      await Migrations.v5(db);
+
+      // The pre-existing transaction survives with the new columns present
+      // (and null, since it predates goals/debts entirely).
+      final transactions = await db.query('transactions', where: "id = 'tx1'");
+      expect(transactions, hasLength(1));
+      expect(transactions.first['goalId'], isNull);
+      expect(transactions.first['debtId'], isNull);
+
+      // goals/debts tables exist and are empty on a fresh upgrade.
+      expect(await db.query('goals'), isEmpty);
+      expect(await db.query('debts'), isEmpty);
+
+      // The three seeded default categories are present with the right type.
+      final savings = await db.query('categories', where: "id = 'default_savings_goals'");
+      expect(savings, hasLength(1));
+      expect(savings.first['type'], 'expense');
+
+      final debtPayments = await db.query('categories', where: "id = 'default_debt_payments'");
+      expect(debtPayments, hasLength(1));
+      expect(debtPayments.first['type'], 'expense');
+
+      final debtRepayments = await db.query('categories', where: "id = 'default_debt_repayments'");
+      expect(debtRepayments, hasLength(1));
+      expect(debtRepayments.first['type'], 'income');
+
+      await db.close();
+    },
+  );
 }

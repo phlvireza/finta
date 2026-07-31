@@ -407,5 +407,130 @@
     }
   },
   "importFailed": "Impor gagal",
-  "importedCategoryName": "Impor"
+  "importedCategoryName": "Impor",
+
+  "goals": "Target",
+  "addGoal": "Tambah target",
+  "editGoal": "Edit target",
+  "deleteGoal": "Hapus target",
+  "goalName": "Nama target",
+  "targetAmount": "Jumlah target",
+  "targetDateOptional": "Tanggal target (opsional)",
+  "noDateSet": "Belum ada tanggal",
+  "noGoalsYet": "Belum ada target",
+  "noGoalsYetMessage": "Tetapkan target tabungan dan pantau kemajuan Anda",
+  "contribute": "Setor",
+  "contributeToGoal": "Setor ke {name}",
+  "@contributeToGoal": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "goalProgressAmount": "{current} dari {target}",
+  "@goalProgressAmount": {
+    "placeholders": {
+      "current": { "type": "String" },
+      "target": { "type": "String" }
+    }
+  },
+  "goalComplete": "Target tercapai!",
+  "goalTargetDate": "Target: {date}",
+  "@goalTargetDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "goalProjectedDate": "Perkiraan: {date}",
+  "@goalProjectedDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "confirmDeleteGoal": "Hapus \"{name}\"? Tindakan ini tidak dapat dibatalkan.",
+  "@confirmDeleteGoal": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "confirmArchiveGoal": "\"{name}\" memiliki {count} setoran. Target ini akan diarsipkan, bukan dihapus, agar riwayatnya tetap utuh.",
+  "@confirmArchiveGoal": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+
+  "debts": "Utang Piutang",
+  "addDebt": "Tambah catatan",
+  "editDebt": "Edit catatan",
+  "deleteDebt": "Hapus catatan",
+  "debtTypeBorrowed": "Saya meminjam",
+  "debtTypeLent": "Saya meminjamkan",
+  "borrowedFrom": "Dipinjam dari",
+  "lentTo": "Dipinjamkan ke",
+  "principalAmount": "Jumlah pokok",
+  "interestRateOptional": "Suku bunga (opsional)",
+  "dueDateOptional": "Tanggal jatuh tempo (opsional)",
+  "noDebtsYet": "Belum ada catatan utang piutang",
+  "noDebtsYetMessage": "Catat uang yang Anda pinjamkan atau pinjam dan catat pembayarannya dari waktu ke waktu",
+  "owedToYou": "Piutang Anda",
+  "youOwe": "Utang Anda",
+  "debtSettled": "Lunas",
+  "debtOutstandingOfPrincipal": "{outstanding} dari {principal} tersisa",
+  "@debtOutstandingOfPrincipal": {
+    "placeholders": {
+      "outstanding": { "type": "String" },
+      "principal": { "type": "String" }
+    }
+  },
+  "debtDueDate": "Jatuh tempo {date}",
+  "@debtDueDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "logRepaymentAction": "Catat pembayaran",
+  "logRepayment": "Catat pembayaran untuk {name}",
+  "@logRepayment": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "confirmDeleteDebt": "Hapus \"{name}\"? Tindakan ini tidak dapat dibatalkan.",
+  "@confirmDeleteDebt": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "confirmArchiveDebt": "\"{name}\" memiliki {count} pembayaran. Catatan ini akan diarsipkan, bukan dihapus, agar riwayatnya tetap utuh.",
+  "@confirmArchiveDebt": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "payoffCalculator": "Kalkulator pelunasan",
+  "payoffOutstandingLabel": "Sisa: {amount}",
+  "@payoffOutstandingLabel": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "monthlyPayment": "Pembayaran bulanan",
+  "payoffNeverAtThisRate": "Pembayaran ini tidak menutupi bunga — saldo tidak akan pernah lunas",
+  "payoffMonthsEstimate": "{months, plural, =1{Lunas dalam 1 bulan} other{Lunas dalam {months} bulan}}",
+  "@payoffMonthsEstimate": {
+    "placeholders": {
+      "months": { "type": "int" }
+    }
+  },
+
+  "goalsAndDebts": "Target & Utang Piutang",
+  "netDebtSummary": "{owed} piutang Anda · {owe} utang Anda",
+  "@netDebtSummary": {
+    "placeholders": {
+      "owed": { "type": "String" },
+      "owe": { "type": "String" }
+    }
+  }
 }

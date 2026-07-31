@@ -96,6 +96,54 @@ class Migrations {
     });
   }
 
+  /// v4 → v5: goals and debts. Both are tracked as their own small tables
+  /// (principal/target live there) while actual money movement — a
+  /// contribution or a repayment — is just an ordinary transaction tagged
+  /// with `goalId`/`debtId`. That keeps goal/debt progress fully derived
+  /// (SUM over tagged transactions, same "compute on the fly" choice as
+  /// budget rollover) instead of a second number that can drift out of
+  /// sync with the transaction history, and it means every existing
+  /// transaction feature (edit, delete, search, CSV export) works on
+  /// contributions/repayments for free.
+  static Future<void> v5(Database db) async {
+    await db.transaction((txn) async {
+      await txn.execute(createGoalsTable);
+      await txn.execute(createDebtsTable);
+      await txn.execute('ALTER TABLE transactions ADD COLUMN goalId TEXT');
+      await txn.execute('ALTER TABLE transactions ADD COLUMN debtId TEXT');
+      await txn.execute('CREATE INDEX idx_transactions_goalId ON transactions(goalId)');
+      await txn.execute('CREATE INDEX idx_transactions_debtId ON transactions(debtId)');
+      await SeedData.seedGoalDebtCategories(txn);
+    });
+  }
+
+  static const String createGoalsTable = '''
+    CREATE TABLE goals (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      targetAmount REAL NOT NULL,
+      targetDate TEXT,
+      icon TEXT NOT NULL DEFAULT 'savings',
+      color TEXT NOT NULL,
+      isArchived INTEGER NOT NULL DEFAULT 0,
+      createdAt TEXT NOT NULL
+    )
+  ''';
+
+  static const String createDebtsTable = '''
+    CREATE TABLE debts (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL,
+      principal REAL NOT NULL,
+      dueDate TEXT,
+      interestRate REAL,
+      note TEXT,
+      isArchived INTEGER NOT NULL DEFAULT 0,
+      createdAt TEXT NOT NULL
+    )
+  ''';
+
   /// Used by [v4]: the new budgets table is built under a temporary name
   /// during the rebuild (the live `budgets` table can't be replaced until
   /// its data is copied out), then renamed. [createBudgetsTable] below is

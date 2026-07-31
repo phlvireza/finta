@@ -11,6 +11,7 @@ import 'widgets/summary_row.dart';
 import 'widgets/burn_rate_indicator.dart';
 import 'widgets/budget_overview.dart';
 import 'widgets/upcoming_bills.dart';
+import 'widgets/goals_debts_teaser.dart';
 import 'widgets/recent_transactions.dart';
 import 'widgets/period_selector.dart';
 import '../../widgets/error_state.dart';
@@ -84,6 +85,8 @@ class DashboardScreen extends StatelessWidget {
                   const BudgetOverview(),
                   const SizedBox(height: AppConstants.spacingXxxl),
                   const UpcomingBills(),
+                  const SizedBox(height: AppConstants.spacingXxxl),
+                  const GoalsDebtsTeaser(),
                 ],
                 const SizedBox(height: AppConstants.spacingXxxl),
                 const RecentTransactions(),

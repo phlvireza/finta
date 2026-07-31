@@ -414,5 +414,130 @@
     }
   },
   "importFailed": "Import failed",
-  "importedCategoryName": "Imported"
+  "importedCategoryName": "Imported",
+
+  "goals": "Goals",
+  "addGoal": "Add goal",
+  "editGoal": "Edit goal",
+  "deleteGoal": "Delete goal",
+  "goalName": "Goal name",
+  "targetAmount": "Target amount",
+  "targetDateOptional": "Target date (optional)",
+  "noDateSet": "No date set",
+  "noGoalsYet": "No goals yet",
+  "noGoalsYetMessage": "Set a savings target and track your progress toward it",
+  "contribute": "Contribute",
+  "contributeToGoal": "Contribute to {name}",
+  "@contributeToGoal": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "goalProgressAmount": "{current} of {target}",
+  "@goalProgressAmount": {
+    "placeholders": {
+      "current": { "type": "String" },
+      "target": { "type": "String" }
+    }
+  },
+  "goalComplete": "Goal reached!",
+  "goalTargetDate": "Target: {date}",
+  "@goalTargetDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "goalProjectedDate": "Projected: {date}",
+  "@goalProjectedDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "confirmDeleteGoal": "Delete \"{name}\"? This can't be undone.",
+  "@confirmDeleteGoal": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "confirmArchiveGoal": "\"{name}\" has {count} contributions. It will be archived instead of deleted so your history stays intact.",
+  "@confirmArchiveGoal": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+
+  "debts": "Debts",
+  "addDebt": "Add debt",
+  "editDebt": "Edit debt",
+  "deleteDebt": "Delete debt",
+  "debtTypeBorrowed": "I borrowed",
+  "debtTypeLent": "I lent",
+  "borrowedFrom": "Borrowed from",
+  "lentTo": "Lent to",
+  "principalAmount": "Principal amount",
+  "interestRateOptional": "Interest rate (optional)",
+  "dueDateOptional": "Due date (optional)",
+  "noDebtsYet": "No debts yet",
+  "noDebtsYetMessage": "Track money you've lent or borrowed and log repayments over time",
+  "owedToYou": "Owed to you",
+  "youOwe": "You owe",
+  "debtSettled": "Settled",
+  "debtOutstandingOfPrincipal": "{outstanding} of {principal} outstanding",
+  "@debtOutstandingOfPrincipal": {
+    "placeholders": {
+      "outstanding": { "type": "String" },
+      "principal": { "type": "String" }
+    }
+  },
+  "debtDueDate": "Due {date}",
+  "@debtDueDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "logRepaymentAction": "Log repayment",
+  "logRepayment": "Log repayment for {name}",
+  "@logRepayment": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "confirmDeleteDebt": "Delete \"{name}\"? This can't be undone.",
+  "@confirmDeleteDebt": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "confirmArchiveDebt": "\"{name}\" has {count} repayments. It will be archived instead of deleted so your history stays intact.",
+  "@confirmArchiveDebt": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "payoffCalculator": "Payoff calculator",
+  "payoffOutstandingLabel": "Outstanding: {amount}",
+  "@payoffOutstandingLabel": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "monthlyPayment": "Monthly payment",
+  "payoffNeverAtThisRate": "This payment won't cover the interest — the balance will never clear",
+  "payoffMonthsEstimate": "{months, plural, =1{Paid off in 1 month} other{Paid off in {months} months}}",
+  "@payoffMonthsEstimate": {
+    "placeholders": {
+      "months": { "type": "int" }
+    }
+  },
+
+  "goalsAndDebts": "Goals & Debts",
+  "netDebtSummary": "{owed} owed to you · {owe} you owe",
+  "@netDebtSummary": {
+    "placeholders": {
+      "owed": { "type": "String" },
+      "owe": { "type": "String" }
+    }
+  }
 }

@@ -854,4 +854,182 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importedCategoryName => 'Imported';
+
+  @override
+  String get goals => 'Goals';
+
+  @override
+  String get addGoal => 'Add goal';
+
+  @override
+  String get editGoal => 'Edit goal';
+
+  @override
+  String get deleteGoal => 'Delete goal';
+
+  @override
+  String get goalName => 'Goal name';
+
+  @override
+  String get targetAmount => 'Target amount';
+
+  @override
+  String get targetDateOptional => 'Target date (optional)';
+
+  @override
+  String get noDateSet => 'No date set';
+
+  @override
+  String get noGoalsYet => 'No goals yet';
+
+  @override
+  String get noGoalsYetMessage =>
+      'Set a savings target and track your progress toward it';
+
+  @override
+  String get contribute => 'Contribute';
+
+  @override
+  String contributeToGoal(String name) {
+    return 'Contribute to $name';
+  }
+
+  @override
+  String goalProgressAmount(String current, String target) {
+    return '$current of $target';
+  }
+
+  @override
+  String get goalComplete => 'Goal reached!';
+
+  @override
+  String goalTargetDate(String date) {
+    return 'Target: $date';
+  }
+
+  @override
+  String goalProjectedDate(String date) {
+    return 'Projected: $date';
+  }
+
+  @override
+  String confirmDeleteGoal(String name) {
+    return 'Delete \"$name\"? This can\'t be undone.';
+  }
+
+  @override
+  String confirmArchiveGoal(String name, int count) {
+    return '\"$name\" has $count contributions. It will be archived instead of deleted so your history stays intact.';
+  }
+
+  @override
+  String get debts => 'Debts';
+
+  @override
+  String get addDebt => 'Add debt';
+
+  @override
+  String get editDebt => 'Edit debt';
+
+  @override
+  String get deleteDebt => 'Delete debt';
+
+  @override
+  String get debtTypeBorrowed => 'I borrowed';
+
+  @override
+  String get debtTypeLent => 'I lent';
+
+  @override
+  String get borrowedFrom => 'Borrowed from';
+
+  @override
+  String get lentTo => 'Lent to';
+
+  @override
+  String get principalAmount => 'Principal amount';
+
+  @override
+  String get interestRateOptional => 'Interest rate (optional)';
+
+  @override
+  String get dueDateOptional => 'Due date (optional)';
+
+  @override
+  String get noDebtsYet => 'No debts yet';
+
+  @override
+  String get noDebtsYetMessage =>
+      'Track money you\'ve lent or borrowed and log repayments over time';
+
+  @override
+  String get owedToYou => 'Owed to you';
+
+  @override
+  String get youOwe => 'You owe';
+
+  @override
+  String get debtSettled => 'Settled';
+
+  @override
+  String debtOutstandingOfPrincipal(String outstanding, String principal) {
+    return '$outstanding of $principal outstanding';
+  }
+
+  @override
+  String debtDueDate(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String get logRepaymentAction => 'Log repayment';
+
+  @override
+  String logRepayment(String name) {
+    return 'Log repayment for $name';
+  }
+
+  @override
+  String confirmDeleteDebt(String name) {
+    return 'Delete \"$name\"? This can\'t be undone.';
+  }
+
+  @override
+  String confirmArchiveDebt(String name, int count) {
+    return '\"$name\" has $count repayments. It will be archived instead of deleted so your history stays intact.';
+  }
+
+  @override
+  String get payoffCalculator => 'Payoff calculator';
+
+  @override
+  String payoffOutstandingLabel(String amount) {
+    return 'Outstanding: $amount';
+  }
+
+  @override
+  String get monthlyPayment => 'Monthly payment';
+
+  @override
+  String get payoffNeverAtThisRate =>
+      'This payment won\'t cover the interest — the balance will never clear';
+
+  @override
+  String payoffMonthsEstimate(int months) {
+    String _temp0 = intl.Intl.pluralLogic(
+      months,
+      locale: localeName,
+      other: 'Paid off in $months months',
+      one: 'Paid off in 1 month',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get goalsAndDebts => 'Goals & Debts';
+
+  @override
+  String netDebtSummary(String owed, String owe) {
+    return '$owed owed to you · $owe you owe';
+  }
 }
