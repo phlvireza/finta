@@ -10,6 +10,8 @@ import 'widgets/breakdown_chart.dart';
 import 'widgets/category_rank_list.dart';
 import 'widgets/yearly_report.dart';
 import 'widgets/trends_report.dart';
+import '../insights/insights_hub_screen.dart';
+import '../insights/monthly_recap_screen.dart';
 import '../budgets/widgets/budget_progress_bar.dart';
 import '../transactions/add_transaction_screen.dart';
 import '../transactions/widgets/type_toggle.dart';
@@ -158,6 +160,24 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                       trailing: const Icon(Icons.chevron_right),
                                       onTap: () => Navigator.of(context).push(
                                         MaterialPageRoute(builder: (_) => const TrendsReportScreen()),
+                                      ),
+                                    ),
+                                    const Divider(height: 1),
+                                    ListTile(
+                                      leading: const Icon(Icons.auto_awesome_outlined),
+                                      title: Text(loc.smartInsights),
+                                      trailing: const Icon(Icons.chevron_right),
+                                      onTap: () => Navigator.of(context).push(
+                                        MaterialPageRoute(builder: (_) => const InsightsHubScreen()),
+                                      ),
+                                    ),
+                                    const Divider(height: 1),
+                                    ListTile(
+                                      leading: const Icon(Icons.card_giftcard_outlined),
+                                      title: Text(loc.monthlyRecap),
+                                      trailing: const Icon(Icons.chevron_right),
+                                      onTap: () => Navigator.of(context).push(
+                                        MaterialPageRoute(builder: (_) => const MonthlyRecapScreen()),
                                       ),
                                     ),
                                   ],

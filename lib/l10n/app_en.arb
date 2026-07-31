@@ -638,5 +638,70 @@
   },
   "cannotDuplicateTransfers": "Transfers can't be duplicated — select a regular transaction instead",
   "cannotRecategorizeTransfers": "Transfers can't be recategorized — select a regular transaction instead",
-  "selectSameTypeToRecategorize": "Select only income or only expense transactions to recategorize together"
+  "selectSameTypeToRecategorize": "Select only income or only expense transactions to recategorize together",
+
+  "unusualAmountTitle": "Unusually large amount",
+  "unusualAmountMessage": "{amount} is unusually large for {category} — typical is around {typical}. Continue?",
+  "@unusualAmountMessage": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "category": { "type": "String" },
+      "typical": { "type": "String" }
+    }
+  },
+  "continueAnyway": "Continue anyway",
+
+  "smartInsights": "Smart Insights",
+  "financialHealthScore": "Financial health score",
+  "healthScoreOutOf100": "Out of 100, based on your savings rate, budget adherence, and income stability",
+  "healthScoreSavings": "Savings",
+  "healthScoreBudget": "Budget",
+  "healthScoreStability": "Stability",
+  "projectedSpendLabel": "Projected {month} spend",
+  "@projectedSpendLabel": {
+    "placeholders": {
+      "month": { "type": "String" }
+    }
+  },
+  "spendingInsightsTitle": "Insights",
+  "noInsightsYet": "No notable changes from last period yet",
+  "unusualActivity": "Unusual activity",
+  "noUnusualActivity": "Nothing unusual in the last 30 days",
+  "insightFastestGrowing": "{category} is your fastest-growing category, up {percent}%",
+  "@insightFastestGrowing": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "percent": { "type": "String" }
+    }
+  },
+  "insightSpendingIncreased": "You spent {percent}% more on {category} than last period",
+  "@insightSpendingIncreased": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "percent": { "type": "String" }
+    }
+  },
+  "insightSpendingDecreased": "You spent {percent}% less on {category} than last period",
+  "@insightSpendingDecreased": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "percent": { "type": "String" }
+    }
+  },
+
+  "monthlyRecap": "Monthly Recap",
+  "yourMonthRecapTitle": "Your {month}",
+  "@yourMonthRecapTitle": {
+    "placeholders": {
+      "month": { "type": "String" }
+    }
+  },
+  "topCategoryLabel": "Top category: {category} ({amount})",
+  "@topCategoryLabel": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "savingsRateLabel": "Savings rate: {percent}"
 }

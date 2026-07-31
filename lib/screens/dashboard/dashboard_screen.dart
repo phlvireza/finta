@@ -9,6 +9,7 @@ import 'widgets/balance_card.dart';
 import 'widgets/net_worth_card.dart';
 import 'widgets/summary_row.dart';
 import 'widgets/burn_rate_indicator.dart';
+import 'widgets/forecast_card.dart';
 import 'widgets/budget_overview.dart';
 import 'widgets/upcoming_bills.dart';
 import 'widgets/goals_debts_teaser.dart';
@@ -81,6 +82,8 @@ class DashboardScreen extends StatelessWidget {
                 if (showCurrentPeriodSections) ...[
                   const SizedBox(height: AppConstants.spacingLg),
                   const BurnRateIndicator(),
+                  const SizedBox(height: AppConstants.spacingXxxl),
+                  const ForecastCard(),
                   const SizedBox(height: AppConstants.spacingXxxl),
                   const BudgetOverview(),
                   const SizedBox(height: AppConstants.spacingXxxl),

@@ -9,9 +9,11 @@ import '../../providers/settings_provider.dart';
 import '../../providers/account_provider.dart';
 import '../../providers/template_provider.dart';
 import '../../providers/category_provider.dart';
+import '../../providers/insights_provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/formatters/currency_formatter.dart';
+import '../../core/utils/number_utils.dart';
 import 'widgets/amount_input_field.dart';
 import 'widgets/category_picker.dart';
 import 'widgets/account_picker.dart';
@@ -19,6 +21,7 @@ import 'widgets/merchant_field.dart';
 import 'widgets/date_picker_field.dart';
 import 'widgets/recurring_toggle.dart';
 import 'widgets/type_toggle.dart';
+import 'widgets/anomaly_confirm.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Full-screen form for adding or editing a transaction.
@@ -99,6 +102,28 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       return;
     }
 
+    final loc = AppLocalizations.of(context)!;
+    final amount = parseFormattedAmount(_amountController.text);
+
+    // A statistical-outlier nudge, not a hard block — only for a brand-new
+    // expense, where there's a category chosen to check history against.
+    if (widget.editTransaction == null && !_isIncome && _categoryId != null) {
+      final check = await context.read<InsightsProvider>().checkAnomaly(_categoryId!, amount);
+      if (check != null && check.isAnomaly) {
+        if (!mounted) return;
+        final categoryName = context.read<CategoryProvider>().getCategoryById(_categoryId!)?.name ?? loc.unknown;
+        final settings = context.read<SettingsProvider>();
+        final proceed = await confirmUnusualAmount(
+          context,
+          loc: loc,
+          categoryName: categoryName,
+          formattedAmount: NumberUtils.formatCurrency(amount, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals),
+          formattedTypical: NumberUtils.formatCurrency(check.mean, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals),
+        );
+        if (!proceed || !mounted) return;
+      }
+    }
+
     setState(() => _isSaving = true);
 
     try {
@@ -109,7 +134,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
       String type = _isIncome ? 'income' : 'expense';
       String? recurringId = widget.editTransaction?.recurringId;
-      final amount = parseFormattedAmount(_amountController.text);
 
       final trimmedMerchant = _merchant?.trim();
       final merchant = (trimmedMerchant == null || trimmedMerchant.isEmpty) ? null : trimmedMerchant;

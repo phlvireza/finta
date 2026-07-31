@@ -7,6 +7,7 @@ import '../../../providers/settings_provider.dart';
 import '../../../providers/account_provider.dart';
 import '../../../providers/template_provider.dart';
 import '../../../providers/category_provider.dart';
+import '../../../providers/insights_provider.dart';
 import '../../../models/template_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_colors.dart';
@@ -20,6 +21,7 @@ import 'category_picker.dart';
 import 'account_picker.dart';
 import 'merchant_field.dart';
 import 'date_picker_field.dart';
+import 'anomaly_confirm.dart';
 
 enum _EntryType { expense, income, transfer }
 
@@ -133,6 +135,25 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
     } else if (_categoryId == null) {
       setState(() => _error = loc.pleaseSelectCategory);
       return;
+    }
+
+    // A statistical-outlier nudge, not a hard block — only for expenses,
+    // which is the only case with a category to check history against.
+    if (!_isTransfer && !_isIncome) {
+      final check = await context.read<InsightsProvider>().checkAnomaly(_categoryId!, amount);
+      if (check != null && check.isAnomaly) {
+        if (!mounted) return;
+        final categoryName = context.read<CategoryProvider>().getCategoryById(_categoryId!)?.name ?? loc.unknown;
+        final settings = context.read<SettingsProvider>();
+        final proceed = await confirmUnusualAmount(
+          context,
+          loc: loc,
+          categoryName: categoryName,
+          formattedAmount: NumberUtils.formatCurrency(amount, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals),
+          formattedTypical: NumberUtils.formatCurrency(check.mean, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals),
+        );
+        if (!proceed || !mounted) return;
+      }
     }
 
     setState(() {

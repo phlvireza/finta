@@ -1196,4 +1196,85 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get selectSameTypeToRecategorize =>
       'Pilih hanya transaksi pemasukan atau hanya pengeluaran untuk diubah kategorinya bersamaan';
+
+  @override
+  String get unusualAmountTitle => 'Jumlah tidak biasa';
+
+  @override
+  String unusualAmountMessage(String amount, String category, String typical) {
+    return '$amount tidak biasa untuk $category — biasanya sekitar $typical. Lanjutkan?';
+  }
+
+  @override
+  String get continueAnyway => 'Tetap lanjutkan';
+
+  @override
+  String get smartInsights => 'Wawasan Cerdas';
+
+  @override
+  String get financialHealthScore => 'Skor kesehatan finansial';
+
+  @override
+  String get healthScoreOutOf100 =>
+      'Dari 100, berdasarkan tingkat tabungan, kepatuhan anggaran, dan stabilitas pendapatan Anda';
+
+  @override
+  String get healthScoreSavings => 'Tabungan';
+
+  @override
+  String get healthScoreBudget => 'Anggaran';
+
+  @override
+  String get healthScoreStability => 'Stabilitas';
+
+  @override
+  String projectedSpendLabel(String month) {
+    return 'Proyeksi pengeluaran $month';
+  }
+
+  @override
+  String get spendingInsightsTitle => 'Wawasan';
+
+  @override
+  String get noInsightsYet => 'Belum ada perubahan berarti dari periode lalu';
+
+  @override
+  String get unusualActivity => 'Aktivitas tidak biasa';
+
+  @override
+  String get noUnusualActivity =>
+      'Tidak ada yang tidak biasa dalam 30 hari terakhir';
+
+  @override
+  String insightFastestGrowing(String category, String percent) {
+    return '$category adalah kategori yang tumbuh paling cepat, naik $percent%';
+  }
+
+  @override
+  String insightSpendingIncreased(String category, String percent) {
+    return 'Pengeluaran Anda untuk $category naik $percent% dari periode lalu';
+  }
+
+  @override
+  String insightSpendingDecreased(String category, String percent) {
+    return 'Pengeluaran Anda untuk $category turun $percent% dari periode lalu';
+  }
+
+  @override
+  String get monthlyRecap => 'Rekap Bulanan';
+
+  @override
+  String yourMonthRecapTitle(String month) {
+    return '$month Anda';
+  }
+
+  @override
+  String topCategoryLabel(String category, String amount) {
+    return 'Kategori teratas: $category ($amount)';
+  }
+
+  @override
+  String savingsRateLabel(Object percent) {
+    return 'Tingkat tabungan: $percent';
+  }
 }

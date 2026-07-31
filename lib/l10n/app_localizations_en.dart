@@ -1194,4 +1194,84 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get selectSameTypeToRecategorize =>
       'Select only income or only expense transactions to recategorize together';
+
+  @override
+  String get unusualAmountTitle => 'Unusually large amount';
+
+  @override
+  String unusualAmountMessage(String amount, String category, String typical) {
+    return '$amount is unusually large for $category — typical is around $typical. Continue?';
+  }
+
+  @override
+  String get continueAnyway => 'Continue anyway';
+
+  @override
+  String get smartInsights => 'Smart Insights';
+
+  @override
+  String get financialHealthScore => 'Financial health score';
+
+  @override
+  String get healthScoreOutOf100 =>
+      'Out of 100, based on your savings rate, budget adherence, and income stability';
+
+  @override
+  String get healthScoreSavings => 'Savings';
+
+  @override
+  String get healthScoreBudget => 'Budget';
+
+  @override
+  String get healthScoreStability => 'Stability';
+
+  @override
+  String projectedSpendLabel(String month) {
+    return 'Projected $month spend';
+  }
+
+  @override
+  String get spendingInsightsTitle => 'Insights';
+
+  @override
+  String get noInsightsYet => 'No notable changes from last period yet';
+
+  @override
+  String get unusualActivity => 'Unusual activity';
+
+  @override
+  String get noUnusualActivity => 'Nothing unusual in the last 30 days';
+
+  @override
+  String insightFastestGrowing(String category, String percent) {
+    return '$category is your fastest-growing category, up $percent%';
+  }
+
+  @override
+  String insightSpendingIncreased(String category, String percent) {
+    return 'You spent $percent% more on $category than last period';
+  }
+
+  @override
+  String insightSpendingDecreased(String category, String percent) {
+    return 'You spent $percent% less on $category than last period';
+  }
+
+  @override
+  String get monthlyRecap => 'Monthly Recap';
+
+  @override
+  String yourMonthRecapTitle(String month) {
+    return 'Your $month';
+  }
+
+  @override
+  String topCategoryLabel(String category, String amount) {
+    return 'Top category: $category ($amount)';
+  }
+
+  @override
+  String savingsRateLabel(Object percent) {
+    return 'Savings rate: $percent';
+  }
 }

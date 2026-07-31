@@ -631,5 +631,70 @@
   },
   "cannotDuplicateTransfers": "Transfer tidak dapat diduplikasi — pilih transaksi biasa sebagai gantinya",
   "cannotRecategorizeTransfers": "Transfer tidak dapat diubah kategorinya — pilih transaksi biasa sebagai gantinya",
-  "selectSameTypeToRecategorize": "Pilih hanya transaksi pemasukan atau hanya pengeluaran untuk diubah kategorinya bersamaan"
+  "selectSameTypeToRecategorize": "Pilih hanya transaksi pemasukan atau hanya pengeluaran untuk diubah kategorinya bersamaan",
+
+  "unusualAmountTitle": "Jumlah tidak biasa",
+  "unusualAmountMessage": "{amount} tidak biasa untuk {category} — biasanya sekitar {typical}. Lanjutkan?",
+  "@unusualAmountMessage": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "category": { "type": "String" },
+      "typical": { "type": "String" }
+    }
+  },
+  "continueAnyway": "Tetap lanjutkan",
+
+  "smartInsights": "Wawasan Cerdas",
+  "financialHealthScore": "Skor kesehatan finansial",
+  "healthScoreOutOf100": "Dari 100, berdasarkan tingkat tabungan, kepatuhan anggaran, dan stabilitas pendapatan Anda",
+  "healthScoreSavings": "Tabungan",
+  "healthScoreBudget": "Anggaran",
+  "healthScoreStability": "Stabilitas",
+  "projectedSpendLabel": "Proyeksi pengeluaran {month}",
+  "@projectedSpendLabel": {
+    "placeholders": {
+      "month": { "type": "String" }
+    }
+  },
+  "spendingInsightsTitle": "Wawasan",
+  "noInsightsYet": "Belum ada perubahan berarti dari periode lalu",
+  "unusualActivity": "Aktivitas tidak biasa",
+  "noUnusualActivity": "Tidak ada yang tidak biasa dalam 30 hari terakhir",
+  "insightFastestGrowing": "{category} adalah kategori yang tumbuh paling cepat, naik {percent}%",
+  "@insightFastestGrowing": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "percent": { "type": "String" }
+    }
+  },
+  "insightSpendingIncreased": "Pengeluaran Anda untuk {category} naik {percent}% dari periode lalu",
+  "@insightSpendingIncreased": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "percent": { "type": "String" }
+    }
+  },
+  "insightSpendingDecreased": "Pengeluaran Anda untuk {category} turun {percent}% dari periode lalu",
+  "@insightSpendingDecreased": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "percent": { "type": "String" }
+    }
+  },
+
+  "monthlyRecap": "Rekap Bulanan",
+  "yourMonthRecapTitle": "{month} Anda",
+  "@yourMonthRecapTitle": {
+    "placeholders": {
+      "month": { "type": "String" }
+    }
+  },
+  "topCategoryLabel": "Kategori teratas: {category} ({amount})",
+  "@topCategoryLabel": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "savingsRateLabel": "Tingkat tabungan: {percent}"
 }

@@ -11,6 +11,7 @@ import 'providers/account_provider.dart';
 import 'providers/goal_provider.dart';
 import 'providers/debt_provider.dart';
 import 'providers/template_provider.dart';
+import 'providers/insights_provider.dart';
 import 'repositories/transaction_repository.dart';
 import 'repositories/category_repository.dart';
 import 'repositories/recurring_repository.dart';
@@ -59,6 +60,7 @@ class FintaRoot extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => GoalProvider(repository: goalRepo)),
         ChangeNotifierProvider(create: (_) => DebtProvider(repository: debtRepo)),
         ChangeNotifierProvider(create: (_) => TemplateProvider(repository: templateRepo)),
+        ChangeNotifierProvider(create: (_) => InsightsProvider(repository: transactionRepo)),
         Provider<RecurringService>(
           create: (_) => RecurringService(recurringRepo: recurringRepo),
         ),

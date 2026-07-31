@@ -2191,6 +2191,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select only income or only expense transactions to recategorize together'**
   String get selectSameTypeToRecategorize;
+
+  /// No description provided for @unusualAmountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unusually large amount'**
+  String get unusualAmountTitle;
+
+  /// No description provided for @unusualAmountMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} is unusually large for {category} — typical is around {typical}. Continue?'**
+  String unusualAmountMessage(String amount, String category, String typical);
+
+  /// No description provided for @continueAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue anyway'**
+  String get continueAnyway;
+
+  /// No description provided for @smartInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Insights'**
+  String get smartInsights;
+
+  /// No description provided for @financialHealthScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Financial health score'**
+  String get financialHealthScore;
+
+  /// No description provided for @healthScoreOutOf100.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of 100, based on your savings rate, budget adherence, and income stability'**
+  String get healthScoreOutOf100;
+
+  /// No description provided for @healthScoreSavings.
+  ///
+  /// In en, this message translates to:
+  /// **'Savings'**
+  String get healthScoreSavings;
+
+  /// No description provided for @healthScoreBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget'**
+  String get healthScoreBudget;
+
+  /// No description provided for @healthScoreStability.
+  ///
+  /// In en, this message translates to:
+  /// **'Stability'**
+  String get healthScoreStability;
+
+  /// No description provided for @projectedSpendLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Projected {month} spend'**
+  String projectedSpendLabel(String month);
+
+  /// No description provided for @spendingInsightsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Insights'**
+  String get spendingInsightsTitle;
+
+  /// No description provided for @noInsightsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No notable changes from last period yet'**
+  String get noInsightsYet;
+
+  /// No description provided for @unusualActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Unusual activity'**
+  String get unusualActivity;
+
+  /// No description provided for @noUnusualActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing unusual in the last 30 days'**
+  String get noUnusualActivity;
+
+  /// No description provided for @insightFastestGrowing.
+  ///
+  /// In en, this message translates to:
+  /// **'{category} is your fastest-growing category, up {percent}%'**
+  String insightFastestGrowing(String category, String percent);
+
+  /// No description provided for @insightSpendingIncreased.
+  ///
+  /// In en, this message translates to:
+  /// **'You spent {percent}% more on {category} than last period'**
+  String insightSpendingIncreased(String category, String percent);
+
+  /// No description provided for @insightSpendingDecreased.
+  ///
+  /// In en, this message translates to:
+  /// **'You spent {percent}% less on {category} than last period'**
+  String insightSpendingDecreased(String category, String percent);
+
+  /// No description provided for @monthlyRecap.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Recap'**
+  String get monthlyRecap;
+
+  /// No description provided for @yourMonthRecapTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {month}'**
+  String yourMonthRecapTitle(String month);
+
+  /// No description provided for @topCategoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Top category: {category} ({amount})'**
+  String topCategoryLabel(String category, String amount);
+
+  /// No description provided for @savingsRateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Savings rate: {percent}'**
+  String savingsRateLabel(Object percent);
 }
 
 class _AppLocalizationsDelegate

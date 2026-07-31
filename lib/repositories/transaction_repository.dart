@@ -378,6 +378,33 @@ class TransactionRepository {
     }
   }
 
+  /// A category's last [limit] individual (non-transfer) transaction
+  /// amounts, most recent first — the history an anomaly check compares a
+  /// new entry against. Excludes [excludeId] so re-checking an existing
+  /// transaction being edited doesn't compare it against itself.
+  Future<List<double>> getRecentAmountsForCategory(
+    String categoryId, {
+    int limit = 20,
+    String? excludeId,
+  }) async {
+    try {
+      final db = await _dbHelper.database;
+      final maps = await db.query(
+        'transactions',
+        columns: ['amount'],
+        where: excludeId != null
+            ? 'categoryId = ? AND isTransfer = 0 AND id != ?'
+            : 'categoryId = ? AND isTransfer = 0',
+        whereArgs: excludeId != null ? [categoryId, excludeId] : [categoryId],
+        orderBy: 'date DESC, createdAt DESC',
+        limit: limit,
+      );
+      return maps.map((m) => (m['amount'] as num).toDouble()).toList();
+    } catch (e) {
+      throw DatabaseException('Failed to get recent amounts for category', cause: e);
+    }
+  }
+
   /// The category and account this merchant is most often paired with —
   /// used to pre-fill the rest of the form the moment a known merchant is
   /// picked, the "20 lines of SQL that feel like magic" trick.
