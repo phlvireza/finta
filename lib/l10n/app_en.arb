@@ -1,0 +1,251 @@
+{
+  "@@locale": "en",
+  "home": "Home",
+  "analytics": "Analytics",
+  "transactions": "Transactions",
+  "settings": "Settings",
+  "more": "More",
+  
+  "preferences": "Preferences",
+  "currency": "Currency",
+  "theme": "Theme",
+  "language": "Language",
+  "payday": "Payday (Cycle Reset)",
+  
+  "manage": "Manage",
+  "categories": "Categories",
+  "budgets": "Budgets",
+  "recurring": "Recurring",
+  
+  "data": "Data",
+  "exportCsv": "Export as CSV",
+
+  "save": "Save",
+  "cancel": "Cancel",
+  "add": "Add",
+  "delete": "Delete",
+  "edit": "Edit",
+  
+  "system": "System",
+  "light": "Light",
+  "dark": "Dark",
+
+  "totalBalance": "Total Balance",
+  "netThisPeriod": "Net This Period",
+  "income": "Income",
+  "expense": "Expense",
+  "recentTransactions": "Recent Transactions",
+  "seeAll": "See All",
+  "noRecentTransactions": "No recent transactions",
+
+  "expenseBreakdown": "Expense Breakdown",
+  "noDataForThisPeriod": "No data for this period",
+  "totalSpent": "Total Spent",
+  "totalIncome": "Total Income",
+  "totalExpense": "Total Expense",
+
+  "addTransaction": "Add Transaction",
+  "editTransaction": "Edit Transaction",
+  "noteOptional": "Note (optional)",
+  "amount": "Amount",
+  "date": "Date",
+  "saveTransaction": "Save Transaction",
+  "saveChanges": "Save Changes",
+  "pleaseEnterValidAmount": "Please enter a valid amount",
+  "pleaseSelectCategory": "Please select a category",
+  "moreOptions": "More options",
+
+  "manageCategories": "Manage Categories",
+  "addCategory": "Add Category",
+  "editCategory": "Edit Category",
+  "categoryName": "Category Name",
+  "icon": "Icon",
+  "color": "Color",
+
+  "manageBudgets": "Manage Budgets",
+  "addBudget": "Add Budget",
+  "editBudget": "Edit Budget",
+  "budgetAmount": "Budget Amount",
+  "spent": "Spent",
+  "remaining": "Remaining",
+
+  "recurringTransactions": "Recurring Transactions",
+  "addRecurring": "Add Recurring",
+  "frequency": "Frequency",
+  "daily": "Daily",
+  "weekly": "Weekly",
+  "monthly": "Monthly",
+  "yearly": "Yearly",
+  "nextDate": "Next Date",
+  "active": "Active",
+  "paused": "Paused",
+
+  "welcomeToFinta": "Welcome to Finta",
+  "trackYourExpensesEasily": "Track your expenses easily.",
+  "getStarted": "Get Started",
+  "confirmDelete": "Are you sure you want to delete this?",
+  "archive": "Archive",
+  "archiveCategory": "Archive Category",
+  "confirmDeleteCategory": "Delete \"{name}\"? This category has no transactions, so it can be safely removed.",
+  "@confirmDeleteCategory": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmArchiveCategory": "\"{name}\" is used by {count} transaction(s). It will be hidden from new entries but those transactions will keep their category label — nothing is deleted.",
+  "@confirmArchiveCategory": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "yes": "Yes",
+  "no": "No",
+  "history": "History",
+  "yearlyReport": "Yearly Report",
+  "summary": "Summary",
+  "netSavings": "Net Savings",
+  "searchNotes": "Search notes...",
+  "all": "All",
+  "noTransactionsFound": "No transactions found",
+  "tryAdjustingSearch": "Try adjusting your search",
+  "noTransactionsYet": "You haven't added any transactions yet",
+  "incomeAmount": "Income Amount",
+  "expenseAmount": "Expense Amount",
+  "category": "Category",
+  "selectACategory": "Select a category...",
+  "searchCategories": "Search categories...",
+  "createNewCategory": "Create New Category",
+  "noCategoriesFound": "No categories found",
+  "makeThisRecurring": "Make this recurring?",
+  "biweekly": "Every 2 weeks",
+  "pleaseEnterName": "Please enter a name",
+  "noBudgetsYet": "No budgets yet",
+  "setMonthlyLimits": "Set monthly limits to track your spending",
+  "ofString": "of",
+  "deleteBudget": "Delete Budget",
+  "removeBudgetFor": "Remove the budget for {category}?",
+  "@removeBudgetFor": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "editBudget": "Edit Budget",
+  "newBudget": "New Budget",
+  "saveBudget": "Save Budget",
+  "budgetAlreadyExistsForCategory": "A budget already exists for this category",
+  "used": "used",
+  "spentString": "spent",
+  "left": "left",
+  "recurringTransactions": "Recurring Transactions",
+  "noRecurringTransactions": "No recurring transactions",
+  "enableRecurringWhenAdding": "Enable \"recurring\" when adding a transaction",
+  "unknown": "Unknown",
+  "next": "Next",
+  "stopRecurring": "Stop Recurring",
+  "stopRecurringMessage": "This will stop future transactions from being generated automatically. Existing transactions will remain.",
+  "stop": "Stop",
+  "skip": "Skip",
+  "trackYourMoney": "Track your money,\nnot your stress",
+  "getStarted": "Get Started",
+  "chooseYourCurrency": "Choose your currency",
+  "currencyDisplayOnly": "This is just for display — no conversion",
+  "whenDoYouGetPaid": "When do you get paid?",
+  "paydayDescription": "Your tracking period resets on this day each month",
+  "startTracking": "Start Tracking",
+  "budgetExceededAlert": "You've exceeded your budget for this category",
+  "budgetWarningAlert": "Heads up — you've used {pct}% of your budget",
+  "errorFailedToSave": "Failed to save. Please try again.",
+  "errorFailedToDelete": "Failed to delete. Please try again.",
+  "categoryAlreadyExists": "A category with this name already exists",
+  "retry": "Retry",
+  "overBudget": "Over Budget!",
+  "backupYourData": "Backup your data",
+  "upcoming": "Upcoming",
+  "dueToday": "Today",
+  "dueTomorrow": "Tomorrow",
+  "dueInDays": "in {days} days",
+  "@dueInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "showAllCount": "Show all ({count})",
+  "@showAllCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "createFirstBudget": "Create your first budget",
+  "addTransactionCta": "Add a transaction",
+  "createCategory": "Create a category",
+  "createFirstRecurring": "Set up recurring transactions",
+  "quarter": "Quarter",
+  "year": "Year",
+  "noTransactionsOnThisDay": "No transactions on this day",
+  "period": "Period",
+  "paceAhead": "Ahead of pace",
+  "paceOnTrack": "On track",
+  "paceUnder": "Under pace",
+  "safeToSpendPerDay": "Safe to spend: {amount}/day for {days} more days",
+  "@safeToSpendPerDay": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "percentOfIncomeSpent": "{percent} of income spent",
+  "@percentOfIncomeSpent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "filters": "Filters",
+  "clearFilters": "Clear all",
+  "dateRange": "Date range",
+  "anyTime": "Any time",
+  "thisPeriod": "This period",
+  "lastPeriod": "Last period",
+  "last3Months": "Last 3 months",
+  "customRange": "Custom",
+  "type": "Type",
+  "amountRange": "Amount range",
+  "minAmount": "Min",
+  "maxAmount": "Max",
+  "applyFilters": "Apply filters",
+  "transactionsSummary": "{count} transactions · {total}",
+  "@transactionsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "whereItWent": "Where it went",
+  "budgetPerformance": "Budget performance",
+  "reports": "Reports",
+  "paceInfoTitle": "Spending pace",
+  "paceExplanation": "Compares how much of the budget you've spent to how far through the period you are. The tick on the bar marks today — if the colored fill has passed it, you're spending faster than the days are passing (ahead of pace); if it hasn't reached the tick yet, you're spending slower (under pace).",
+  "gotIt": "Got it"
+}

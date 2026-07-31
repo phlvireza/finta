@@ -1,0 +1,244 @@
+{
+  "@@locale": "id",
+  "home": "Beranda",
+  "analytics": "Analisis",
+  "transactions": "Transaksi",
+  "settings": "Pengaturan",
+  "more": "Lainnya",
+  
+  "preferences": "Preferensi",
+  "currency": "Mata Uang",
+  "theme": "Tema",
+  "language": "Bahasa",
+  "payday": "Hari Gajian",
+  
+  "manage": "Kelola",
+  "categories": "Kategori",
+  "budgets": "Anggaran",
+  "recurring": "Rutin",
+  
+  "data": "Data",
+  "exportCsv": "Ekspor ke CSV",
+
+  "save": "Simpan",
+  "cancel": "Batal",
+  "add": "Tambah",
+  "delete": "Hapus",
+  "edit": "Ubah",
+
+  "system": "Sistem",
+  "light": "Terang",
+  "dark": "Gelap",
+
+  "totalBalance": "Total Saldo",
+  "netThisPeriod": "Bersih Periode Ini",
+  "income": "Pemasukan",
+  "expense": "Pengeluaran",
+  "recentTransactions": "Transaksi Terakhir",
+  "seeAll": "Lihat Semua",
+  "noRecentTransactions": "Tidak ada transaksi",
+
+  "expenseBreakdown": "Rincian Pengeluaran",
+  "noDataForThisPeriod": "Tidak ada data untuk periode ini",
+  "totalSpent": "Total Pengeluaran",
+  "totalIncome": "Total Pemasukan",
+  "totalExpense": "Total Pengeluaran",
+
+  "addTransaction": "Tambah Transaksi",
+  "editTransaction": "Ubah Transaksi",
+  "noteOptional": "Catatan (opsional)",
+  "amount": "Jumlah",
+  "date": "Tanggal",
+  "saveTransaction": "Simpan Transaksi",
+  "saveChanges": "Simpan Perubahan",
+  "pleaseEnterValidAmount": "Masukkan jumlah yang valid",
+  "pleaseSelectCategory": "Pilih kategori",
+  "moreOptions": "Opsi lainnya",
+
+  "manageCategories": "Kelola Kategori",
+  "addCategory": "Tambah Kategori",
+  "editCategory": "Ubah Kategori",
+  "categoryName": "Nama Kategori",
+  "icon": "Ikon",
+  "color": "Warna",
+
+  "manageBudgets": "Kelola Anggaran",
+  "addBudget": "Tambah Anggaran",
+  "editBudget": "Ubah Anggaran",
+  "budgetAmount": "Jumlah Anggaran",
+  "spent": "Terpakai",
+  "remaining": "Tersisa",
+
+  "recurringTransactions": "Transaksi Rutin",
+  "addRecurring": "Tambah Rutin",
+  "frequency": "Frekuensi",
+  "daily": "Harian",
+  "weekly": "Mingguan",
+  "monthly": "Bulanan",
+  "yearly": "Tahunan",
+  "nextDate": "Tanggal Berikutnya",
+  "active": "Aktif",
+  "paused": "Jeda",
+
+  "welcomeToFinta": "Selamat Datang di Finta",
+  "trackYourExpensesEasily": "Lacak pengeluaran Anda dengan mudah.",
+  "getStarted": "Mulai",
+  "confirmDelete": "Apakah Anda yakin ingin menghapus ini?",
+  "archive": "Arsipkan",
+  "archiveCategory": "Arsipkan Kategori",
+  "confirmDeleteCategory": "Hapus \"{name}\"? Kategori ini belum memiliki transaksi, jadi aman untuk dihapus.",
+  "@confirmDeleteCategory": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmArchiveCategory": "\"{name}\" digunakan oleh {count} transaksi. Kategori ini akan disembunyikan dari entri baru, tetapi transaksi tersebut akan tetap menyimpan label kategorinya — tidak ada yang dihapus.",
+  "@confirmArchiveCategory": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "yes": "Ya",
+  "no": "Tidak",
+  "history": "Riwayat",
+  "yearlyReport": "Laporan Tahunan",
+  "summary": "Ringkasan",
+  "netSavings": "Tabungan Bersih",
+  "searchNotes": "Cari catatan...",
+  "all": "Semua",
+  "noTransactionsFound": "Tidak ada transaksi ditemukan",
+  "tryAdjustingSearch": "Coba sesuaikan pencarian Anda",
+  "noTransactionsYet": "Anda belum menambahkan transaksi apa pun",
+  "incomeAmount": "Jumlah Pemasukan",
+  "expenseAmount": "Jumlah Pengeluaran",
+  "category": "Kategori",
+  "selectACategory": "Pilih kategori...",
+  "searchCategories": "Cari kategori...",
+  "createNewCategory": "Buat Kategori Baru",
+  "noCategoriesFound": "Kategori tidak ditemukan",
+  "makeThisRecurring": "Jadikan ini rutin?",
+  "biweekly": "Setiap 2 minggu",
+  "pleaseEnterName": "Harap masukkan nama",
+  "noBudgetsYet": "Belum ada anggaran",
+  "setMonthlyLimits": "Tetapkan batas bulanan untuk melacak pengeluaran Anda",
+  "ofString": "dari",
+  "deleteBudget": "Hapus Anggaran",
+  "removeBudgetFor": "Hapus anggaran untuk {category}?",
+  "editBudget": "Edit Anggaran",
+  "newBudget": "Anggaran Baru",
+  "saveBudget": "Simpan Anggaran",
+  "budgetAlreadyExistsForCategory": "Anggaran untuk kategori ini sudah ada",
+  "used": "terpakai",
+  "spentString": "terpakai",
+  "left": "tersisa",
+  "recurringTransactions": "Transaksi Rutin",
+  "noRecurringTransactions": "Belum ada transaksi rutin",
+  "enableRecurringWhenAdding": "Aktifkan \"rutin\" saat menambah transaksi",
+  "unknown": "Tidak diketahui",
+  "next": "Berikutnya",
+  "stopRecurring": "Hentikan Rutin",
+  "stopRecurringMessage": "Ini akan menghentikan pembuatan transaksi otomatis di masa depan. Transaksi yang ada akan tetap dipertahankan.",
+  "stop": "Hentikan",
+  "skip": "Lewati",
+  "trackYourMoney": "Lacak uang Anda,\nbukan stres Anda",
+  "getStarted": "Mulai",
+  "chooseYourCurrency": "Pilih mata uang Anda",
+  "currencyDisplayOnly": "Ini hanya untuk tampilan — tidak ada konversi",
+  "whenDoYouGetPaid": "Kapan Anda gajian?",
+  "paydayDescription": "Periode pelacakan Anda diatur ulang pada hari ini setiap bulan",
+  "startTracking": "Mulai Melacak",
+  "budgetExceededAlert": "Anda telah melebihi anggaran untuk kategori ini",
+  "budgetWarningAlert": "Perhatian — Anda telah menggunakan {pct}% dari anggaran Anda",
+  "errorFailedToSave": "Gagal menyimpan. Silakan coba lagi.",
+  "errorFailedToDelete": "Gagal menghapus. Silakan coba lagi.",
+  "categoryAlreadyExists": "Kategori dengan nama ini sudah ada",
+  "retry": "Coba Lagi",
+  "overBudget": "Melebihi Anggaran!",
+  "backupYourData": "Cadangkan data Anda",
+  "upcoming": "Akan Datang",
+  "dueToday": "Hari ini",
+  "dueTomorrow": "Besok",
+  "dueInDays": "dalam {days} hari",
+  "@dueInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "showAllCount": "Lihat semua ({count})",
+  "@showAllCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "createFirstBudget": "Buat anggaran pertama Anda",
+  "addTransactionCta": "Tambah transaksi",
+  "createCategory": "Buat kategori",
+  "createFirstRecurring": "Atur transaksi rutin",
+  "quarter": "Kuartal",
+  "year": "Tahun",
+  "noTransactionsOnThisDay": "Tidak ada transaksi pada hari ini",
+  "period": "Periode",
+  "paceAhead": "Lebih cepat dari perkiraan",
+  "paceOnTrack": "Sesuai jalur",
+  "paceUnder": "Lebih lambat dari perkiraan",
+  "safeToSpendPerDay": "Aman dibelanjakan: {amount}/hari selama {days} hari lagi",
+  "@safeToSpendPerDay": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "percentOfIncomeSpent": "{percent} dari pemasukan terpakai",
+  "@percentOfIncomeSpent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "filters": "Filter",
+  "clearFilters": "Hapus semua",
+  "dateRange": "Rentang tanggal",
+  "anyTime": "Kapan saja",
+  "thisPeriod": "Periode ini",
+  "lastPeriod": "Periode lalu",
+  "last3Months": "3 bulan terakhir",
+  "customRange": "Kustom",
+  "type": "Jenis",
+  "amountRange": "Rentang jumlah",
+  "minAmount": "Min",
+  "maxAmount": "Maks",
+  "applyFilters": "Terapkan filter",
+  "transactionsSummary": "{count} transaksi · {total}",
+  "@transactionsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "whereItWent": "Ke mana perginya",
+  "budgetPerformance": "Kinerja anggaran",
+  "reports": "Laporan",
+  "paceInfoTitle": "Kecepatan belanja",
+  "paceExplanation": "Membandingkan seberapa banyak anggaran yang sudah kamu pakai dengan seberapa jauh periode ini sudah berjalan. Garis tegak di batang menandai hari ini — jika warna terisi sudah melewati garis itu, kamu membelanjakan lebih cepat dari waktu yang berjalan (lebih cepat dari perkiraan); jika belum mencapai garis, kamu membelanjakan lebih lambat (lebih lambat dari perkiraan).",
+  "gotIt": "Mengerti"
+}

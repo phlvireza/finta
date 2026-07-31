@@ -1,0 +1,113 @@
+import 'package:flutter/foundation.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:uuid/uuid.dart';
+import '../../models/recurring_transaction_model.dart';
+import '../../models/transaction_model.dart';
+import '../../repositories/recurring_repository.dart';
+import '../database/database_helper.dart';
+
+/// Service that checks for due recurring transactions on app launch
+/// and generates the missing transaction entries.
+class RecurringService {
+  final RecurringRepository _recurringRepo;
+  static const _uuid = Uuid();
+
+  RecurringService({RecurringRepository? recurringRepo})
+      : _recurringRepo = recurringRepo ?? RecurringRepository();
+
+  /// Safety cap on occurrences caught up per template in one run — guards
+  /// against a runaway loop for a daily template left active for years
+  /// without the app being opened.
+  static const _maxCatchUpPerTemplate = 500;
+
+  /// Process all active recurring transactions and generate any entries
+  /// due since the last run. Each template's catch-up runs inside one
+  /// database transaction: either every due occurrence for that template
+  /// lands, or none of them do. Re-running this after a crash (or twice in
+  /// a row) is a no-op, backed by the unique index on
+  /// transactions(recurringId, date).
+  Future<int> processRecurringTransactions() async {
+    List<RecurringTransactionModel> activeRecurring;
+    try {
+      activeRecurring = await _recurringRepo.getActive();
+    } catch (e) {
+      debugPrint('Failed to load active recurring transactions: $e');
+      return 0;
+    }
+
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+    var generatedCount = 0;
+
+    for (final recurring in activeRecurring) {
+      try {
+        generatedCount += await _processOne(recurring, todayDate);
+      } catch (e) {
+        debugPrint('Failed to process recurring transaction ${recurring.id}: $e');
+      }
+    }
+
+    return generatedCount;
+  }
+
+  Future<int> _processOne(
+    RecurringTransactionModel recurring,
+    DateTime todayDate,
+  ) async {
+    if (recurring.endDate != null && todayDate.isAfter(recurring.endDate!)) {
+      return 0;
+    }
+
+    final due = <TransactionModel>[];
+    var next = recurring.nextOccurrence;
+    while (!next.isAfter(todayDate)) {
+      if (recurring.endDate != null && next.isAfter(recurring.endDate!)) break;
+      due.add(_materialize(recurring, next));
+      next = recurring.advanceFrom(next);
+      if (due.length >= _maxCatchUpPerTemplate) break;
+    }
+    if (due.isEmpty) return 0;
+
+    final db = await DatabaseHelper.instance.database;
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+      for (final t in due) {
+        // ConflictAlgorithm.ignore + the partial unique index on
+        // (recurringId, date) makes a repeated run a no-op instead of
+        // posting duplicate transactions.
+        batch.insert(
+          'transactions',
+          t.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+      await batch.commit(noResult: true);
+      await txn.update(
+        'recurring_transactions',
+        {'lastRunDate': due.last.date.toIso8601String().substring(0, 10)},
+        where: 'id = ?',
+        whereArgs: [recurring.id],
+      );
+    });
+
+    return due.length;
+  }
+
+  TransactionModel _materialize(
+    RecurringTransactionModel recurring,
+    DateTime date,
+  ) {
+    final now = DateTime.now();
+    return TransactionModel(
+      id: _uuid.v4(),
+      type: recurring.type,
+      amount: recurring.amount,
+      categoryId: recurring.categoryId,
+      date: date,
+      note: recurring.note,
+      recurringId: recurring.id,
+      createdAt: now,
+      updatedAt: now,
+    );
+  }
+}
