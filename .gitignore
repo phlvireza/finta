@@ -1,5 +1,10 @@
 # Claude Code local tooling (not project source)
 .agents/
+.claude/scheduled_tasks.lock
+.claude/settings.local.json
+
+# Project guidance for Claude Code — local-only, not part of the shipped repo
+CLAUDE.md
 
 # Miscellaneous
 *.class
@@ -48,5 +53,8 @@ app.*.map.json
 /android/app/release
 /android/build/
 
-# Local-only docs (not pushed to remote)
+# Local-only docs (not pushed to remote) — README and the shared Claude rules
+# are the deliberate exceptions.
 *.md
+!/README.md
+!.claude/rules/*.md
