@@ -208,6 +208,9 @@ class TransactionTile extends StatelessWidget {
                     );
                     if (confirmed && sheetContext.mounted) {
                       await sheetContext.read<TransactionProvider>().deleteTransaction(transaction.id);
+                      if (sheetContext.mounted) {
+                        await sheetContext.read<AccountProvider>().loadAccounts();
+                      }
                       if (sheetContext.mounted) Navigator.of(sheetContext).pop();
                     }
                   },

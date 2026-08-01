@@ -239,7 +239,15 @@ void main() {
     () async {
       final db = await databaseFactoryFfi.openDatabase(
         ':memory:',
-        options: OpenDatabaseOptions(version: 1, onCreate: _createV1Schema),
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: _createV1Schema,
+          // The real app runs with foreign_keys ON (see DatabaseHelper),
+          // which makes `DROP TABLE budgets` inside v4 implicitly cascade
+          // into budget_categories rows that reference it. Without this,
+          // the test passes even if v4 silently wipes every category link.
+          onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
+        ),
       );
       await db.insert('categories', {
         'id': 'cat1',

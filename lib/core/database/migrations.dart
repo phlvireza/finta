@@ -69,11 +69,10 @@ class Migrations {
       final existing = await txn.query('budgets');
 
       await txn.execute(createBudgetsTableTemp);
-      await txn.execute(createBudgetCategoriesTable);
 
-      final batch = txn.batch();
+      final budgetsBatch = txn.batch();
       for (final row in existing) {
-        batch.insert('budgets_new', {
+        budgetsBatch.insert('budgets_new', {
           'id': row['id'],
           'name': null,
           'amount': row['amount'],
@@ -84,15 +83,27 @@ class Migrations {
           'createdAt': row['createdAt'],
           'updatedAt': row['updatedAt'],
         });
-        batch.insert('budget_categories', {
+      }
+      await budgetsBatch.commit(noResult: true);
+
+      await txn.execute('DROP TABLE budgets');
+      await txn.execute('ALTER TABLE budgets_new RENAME TO budgets');
+
+      // budget_categories (FK budgetId -> budgets(id) ON DELETE CASCADE) is
+      // created only now, after the rename. Creating it earlier and
+      // inserting into it before `DROP TABLE budgets` above would make
+      // SQLite's implicit FK cleanup on that drop cascade into it and
+      // silently wipe every link we'd just inserted.
+      await txn.execute(createBudgetCategoriesTable);
+
+      final linksBatch = txn.batch();
+      for (final row in existing) {
+        linksBatch.insert('budget_categories', {
           'budgetId': row['id'],
           'categoryId': row['categoryId'],
         });
       }
-      await batch.commit(noResult: true);
-
-      await txn.execute('DROP TABLE budgets');
-      await txn.execute('ALTER TABLE budgets_new RENAME TO budgets');
+      await linksBatch.commit(noResult: true);
     });
   }
 

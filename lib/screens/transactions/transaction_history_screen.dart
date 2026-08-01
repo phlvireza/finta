@@ -158,6 +158,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         await context.read<BudgetProvider>().loadBudgets(payday: settings.payday);
         if (!mounted) return;
         await context.read<AnalyticsProvider>().loadForCurrentPeriod(settings.payday);
+        if (!mounted) return;
+        await context.read<AccountProvider>().loadAccounts();
       }
     }
   }
@@ -174,6 +176,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
   /// Reloads every provider whose numbers a bulk action could have moved —
   /// same set [_deleteTransaction] refreshes after a single delete.
+  /// Kept manually in sync since bulk and single-delete are separate call sites.
   Future<void> _reloadAfterBulkChange() async {
     if (!mounted) return;
     final settings = context.read<SettingsProvider>();
