@@ -61,6 +61,7 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
             note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
             goalId: widget.goal.id,
           );
+      if (!mounted) return;
       await context.read<GoalProvider>().loadGoals();
       if (mounted) Navigator.of(context).pop();
     } catch (e) {

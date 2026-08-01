@@ -26,6 +26,7 @@ class _YearlyReportScreenState extends State<YearlyReportScreen> {
     super.initState();
     // Load available years, then load data for the first available year (usually current)
     context.read<AnalyticsProvider>().loadAvailableYears().then((_) {
+      if (!mounted) return;
       final years = context.read<AnalyticsProvider>().availableYears;
       if (years.isNotEmpty) {
         setState(() => _selectedYear = years.first);

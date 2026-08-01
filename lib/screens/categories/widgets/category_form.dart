@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../../providers/category_provider.dart';
 import '../../../models/category_model.dart';
 import '../../../core/constants/app_constants.dart';
-import '../../../core/constants/app_colors.dart';
 import 'icon_picker.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -120,7 +119,8 @@ class _CategoryFormState extends State<CategoryForm> {
       child: Form(
         key: _formKey,
         autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
-        child: Column(
+        child: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -198,7 +198,7 @@ class _CategoryFormState extends State<CategoryForm> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: _colorOptions.length,
-                separatorBuilder: (_, __) => const SizedBox(width: AppConstants.spacingMd),
+                separatorBuilder: (_, _) => const SizedBox(width: AppConstants.spacingMd),
                 itemBuilder: (context, index) {
                   final hex = _colorOptions[index];
                   final c = Color(int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
@@ -280,6 +280,7 @@ class _CategoryFormState extends State<CategoryForm> {
               ),
             ),
           ],
+          ),
         ),
       ),
     );

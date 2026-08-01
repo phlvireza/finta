@@ -64,6 +64,7 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
             note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
             debtId: widget.debt.id,
           );
+      if (!mounted) return;
       await context.read<DebtProvider>().loadDebts();
       if (mounted) Navigator.of(context).pop();
     } catch (e) {

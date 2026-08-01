@@ -37,7 +37,7 @@ dependencies:
 
   # Backup, restore & import
   share_plus: ^10.1.4
-  file_picker: ^8.1.7
+  file_picker: ^10.3.10
   archive: ^3.6.1
   csv: ^6.0.0
 

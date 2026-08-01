@@ -109,8 +109,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     // expense, where there's a category chosen to check history against.
     if (widget.editTransaction == null && !_isIncome && _categoryId != null) {
       final check = await context.read<InsightsProvider>().checkAnomaly(_categoryId!, amount);
+      if (!mounted) return;
       if (check != null && check.isAnomaly) {
-        if (!mounted) return;
         final categoryName = context.read<CategoryProvider>().getCategoryById(_categoryId!)?.name ?? loc.unknown;
         final settings = context.read<SettingsProvider>();
         final proceed = await confirmUnusualAmount(

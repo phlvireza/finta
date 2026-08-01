@@ -136,7 +136,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   Future<void> _deleteTransaction(TransactionModel tx) async {
     final loc = AppLocalizations.of(context)!;
     final settings = context.read<SettingsProvider>();
-    final formattedAmount = '${settings.currencySymbol}${tx.amount.toStringAsFixed(settings.currencyUseDecimals ? 2 : 0)}';
+    final formattedAmount = NumberUtils.formatCurrency(
+      tx.amount,
+      symbol: settings.currencySymbol,
+      useDecimals: settings.currencyUseDecimals,
+    );
     final typeName = tx.isIncome ? loc.income : loc.expense;
 
     final confirmed = await ConfirmDialog.show(
@@ -152,6 +156,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       if (mounted) {
         final settings = context.read<SettingsProvider>();
         await context.read<BudgetProvider>().loadBudgets(payday: settings.payday);
+        if (!mounted) return;
         await context.read<AnalyticsProvider>().loadForCurrentPeriod(settings.payday);
       }
     }

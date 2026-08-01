@@ -59,14 +59,9 @@ class ManageCategoriesScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (_) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: CategoryForm(
-          isIncome: isIncome,
-          categoryToEdit: category,
-        ),
+      builder: (_) => CategoryForm(
+        isIncome: isIncome,
+        categoryToEdit: category,
       ),
     );
   }

@@ -38,9 +38,11 @@ class DashboardScreen extends StatelessWidget {
           await context
               .read<TransactionProvider>()
               .loadTransactions(payday: settings.payday);
+          if (!context.mounted) return;
           await context
               .read<BudgetProvider>()
               .loadBudgets(payday: settings.payday);
+          if (!context.mounted) return;
           await context.read<AccountProvider>().loadAccounts();
         },
         child: Consumer2<TransactionProvider, BudgetProvider>(

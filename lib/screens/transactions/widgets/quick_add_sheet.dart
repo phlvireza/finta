@@ -141,8 +141,8 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
     // which is the only case with a category to check history against.
     if (!_isTransfer && !_isIncome) {
       final check = await context.read<InsightsProvider>().checkAnomaly(_categoryId!, amount);
+      if (!mounted) return;
       if (check != null && check.isAnomaly) {
-        if (!mounted) return;
         final categoryName = context.read<CategoryProvider>().getCategoryById(_categoryId!)?.name ?? loc.unknown;
         final settings = context.read<SettingsProvider>();
         final proceed = await confirmUnusualAmount(
@@ -430,7 +430,7 @@ class _TemplateChipsRow extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
         itemCount: templates.length,
-        separatorBuilder: (_, __) => const SizedBox(width: AppConstants.spacingSm),
+        separatorBuilder: (_, _) => const SizedBox(width: AppConstants.spacingSm),
         itemBuilder: (context, index) {
           final template = templates[index];
           final category = categories.getCategoryById(template.categoryId);
