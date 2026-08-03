@@ -14,6 +14,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/formatters/currency_formatter.dart';
 import '../../core/utils/number_utils.dart';
+import '../../core/utils/template_validation.dart';
 import 'widgets/amount_input_field.dart';
 import 'widgets/category_picker.dart';
 import 'widgets/account_picker.dart';
@@ -231,13 +232,29 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   /// Only offered for a brand-new entry — templating an edit-in-progress
   /// would be an odd, easy-to-mispress action next to Save.
   Future<void> _saveAsTemplate() async {
+    // Dismiss the keyboard first — otherwise the feedback snackbar below
+    // can render behind it and go unnoticed.
+    FocusScope.of(context).unfocus();
+
     final loc = AppLocalizations.of(context)!;
     final amount = parseFormattedAmount(_amountController.text);
 
-    if (_categoryId == null || _accountId == null || amount <= 0) {
+    final missing = missingTemplateFields(
+      amount: amount,
+      categoryId: _categoryId,
+      accountId: _accountId,
+    );
+    if (missing.isNotEmpty) {
+      final message = missing.length > 1
+          ? loc.fillOutFormFirst
+          : switch (missing.first) {
+              MissingTemplateField.amount => loc.pleaseEnterValidAmount,
+              MissingTemplateField.category => loc.pleaseSelectCategory,
+              MissingTemplateField.account => loc.selectAnAccount,
+            };
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.fillOutFormFirst)),
+        SnackBar(content: Text(message)),
       );
       return;
     }
@@ -251,10 +268,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(loc.saveAsTemplate),
-        content: TextField(
-          controller: nameController,
-          autofocus: true,
-          decoration: InputDecoration(labelText: loc.templateName),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              loc.templateExplainer,
+              style: Theme.of(dialogContext).textTheme.bodySmall,
+            ),
+            const SizedBox(height: AppConstants.spacingMd),
+            TextField(
+              controller: nameController,
+              autofocus: true,
+              decoration: InputDecoration(labelText: loc.templateName),
+            ),
+          ],
         ),
         actions: [
           TextButton(

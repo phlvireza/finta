@@ -1134,6 +1134,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saveAsTemplate => 'Save as template';
 
   @override
+  String get templateExplainer => 'A reusable shortcut you can tap to add this again anytime — not a one-off copy like duplicating a past transaction.';
+
+  @override
   String get templateName => 'Template name';
 
   @override

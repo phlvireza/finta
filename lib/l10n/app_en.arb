@@ -604,6 +604,7 @@
 
   "fillOutFormFirst": "Fill out amount, category, and account first",
   "saveAsTemplate": "Save as template",
+  "templateExplainer": "A reusable shortcut you can tap to add this again anytime — not a one-off copy like duplicating a past transaction.",
   "templateName": "Template name",
   "templateSaved": "Saved \"{name}\" as a template",
   "@templateSaved": {

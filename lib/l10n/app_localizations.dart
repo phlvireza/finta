@@ -2114,6 +2114,12 @@ abstract class AppLocalizations {
   /// **'Save as template'**
   String get saveAsTemplate;
 
+  /// No description provided for @templateExplainer.
+  ///
+  /// In en, this message translates to:
+  /// **'A reusable shortcut you can tap to add this again anytime — not a one-off copy like duplicating a past transaction.'**
+  String get templateExplainer;
+
   /// No description provided for @templateName.
   ///
   /// In en, this message translates to:
