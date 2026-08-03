@@ -8,6 +8,7 @@ import '../../models/category_model.dart';
 import '../../core/constants/app_constants.dart';
 import 'widgets/category_form.dart';
 import '../../widgets/confirm_dialog.dart';
+import '../../widgets/form_sheet.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Screen to list, create, edit, and delete custom categories.
@@ -56,9 +57,8 @@ class ManageCategoriesScreen extends StatelessWidget {
     required bool isIncome,
     CategoryModel? category,
   }) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
+    FormSheet.show<String>(
+      context,
       builder: (_) => CategoryForm(
         isIncome: isIncome,
         categoryToEdit: category,

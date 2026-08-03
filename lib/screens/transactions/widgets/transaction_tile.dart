@@ -9,6 +9,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/utils/number_utils.dart';
+import '../../../core/utils/transaction_display.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/confirm_dialog.dart';
 import '../add_transaction_screen.dart';
@@ -50,19 +51,22 @@ class TransactionTile extends StatelessWidget {
     final amountFontSize = dense ? 14.0 : 15.0;
     final recurringIconSize = dense ? 12.0 : 14.0;
 
-    final hasMerchant = !transaction.isTransfer &&
-        transaction.merchant != null &&
-        transaction.merchant!.isNotEmpty;
-    final title = transaction.isTransfer
-        ? loc.transfer
-        : (hasMerchant ? transaction.merchant! : (category?.name ?? loc.unknown));
-    final subtitleParts = <String>[
-      // Merchant takes the title slot, so the category becomes part of the
-      // subtitle instead of being redundant with it.
-      if (hasMerchant) (category?.name ?? loc.unknown),
-      if (account != null) account.name,
-      if (transaction.note != null && transaction.note!.isNotEmpty) transaction.note!,
-    ];
+    // The note leads the title: it is the line that says what was actually
+    // bought, and as the last part of the old subtitle it was the first
+    // thing the single-line ellipsis cut off.
+    final categoryName = category?.name ?? loc.unknown;
+    final title = transactionTitle(
+      note: transaction.note,
+      merchant: transaction.merchant,
+      categoryName: categoryName,
+      isTransfer: transaction.isTransfer,
+      transferLabel: loc.transfer,
+    );
+    final subtitle = transactionSubtitle(
+      categoryName: categoryName,
+      accountName: account?.name,
+      isTransfer: transaction.isTransfer,
+    );
 
     return Material(
       color: Colors.transparent,
@@ -115,10 +119,12 @@ class TransactionTile extends StatelessWidget {
                     Text(
                       title,
                       style: titleStyle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    if (subtitleParts.isNotEmpty)
+                    if (subtitle.isNotEmpty)
                       Text(
-                        subtitleParts.join(' · '),
+                        subtitle,
                         style: theme.textTheme.bodySmall,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

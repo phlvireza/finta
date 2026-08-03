@@ -11,6 +11,7 @@ import '../../core/utils/number_utils.dart';
 import '../../core/utils/budget_display.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/confirm_dialog.dart';
+import '../../widgets/form_sheet.dart';
 import 'widgets/budget_form.dart';
 import 'widgets/budget_progress_bar.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -112,15 +113,13 @@ class ManageBudgetsScreen extends StatelessWidget {
   }
 
   void _showBudgetForm(BuildContext context, {String? budgetId}) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: BudgetForm(budgetIdToEdit: budgetId),
-      ),
+    // No keyboard padding here — [FormSheet] inside [BudgetForm] owns it.
+    // This used to add its own on top, which both doubled the inset and
+    // froze it at whatever it was when the sheet opened, since this
+    // context never rebuilds as the keyboard animates in.
+    FormSheet.show(
+      context,
+      builder: (_) => BudgetForm(budgetIdToEdit: budgetId),
     );
   }
 

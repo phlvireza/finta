@@ -8,6 +8,7 @@ import '../../../core/formatters/currency_formatter.dart';
 import '../../../models/budget_model.dart';
 import '../../transactions/widgets/amount_input_field.dart';
 import '../../transactions/widgets/category_picker.dart';
+import '../../../widgets/form_sheet.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Form for creating or editing a budget — a single category, a named
@@ -131,177 +132,183 @@ class _BudgetFormState extends State<BudgetForm> {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: AppConstants.spacingLg,
-        right: AppConstants.spacingLg,
-        top: AppConstants.spacingLg,
-        bottom: MediaQuery.of(context).viewInsets.bottom + AppConstants.spacingLg,
-      ),
-      child: Form(
-        key: _formKey,
-        autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _editingBudget != null ? loc.editBudget : loc.newBudget,
-                style: theme.textTheme.titleLarge,
-              ),
-              const SizedBox(height: AppConstants.spacingXxl),
-
-              Text(loc.budgetScope, style: theme.textTheme.labelMedium),
-              const SizedBox(height: AppConstants.spacingSm),
-              Wrap(
-                spacing: AppConstants.spacingSm,
+    return Form(
+      key: _formKey,
+      autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+      child: FormSheet(
+        title: _editingBudget != null ? loc.editBudget : loc.newBudget,
+        action: ElevatedButton(
+          onPressed: _save,
+          child: Text(loc.saveBudget),
+        ),
+        // No horizontal padding on the body itself: AmountInputField and
+        // the category pickers already pad themselves, and stacking a
+        // second spacingLg on the amount field is what squeezed long
+        // amounts until they scrolled out of view.
+        body: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _section(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ChoiceChip(
-                    label: Text(loc.budgetScopeCategory),
-                    selected: _scope == 'category',
-                    onSelected: (_) => setState(() => _scope = 'category'),
-                  ),
-                  ChoiceChip(
-                    label: Text(loc.budgetScopeGroup),
-                    selected: _scope == 'group',
-                    onSelected: (_) => setState(() => _scope = 'group'),
-                  ),
-                  ChoiceChip(
-                    label: Text(loc.budgetScopeOverall),
-                    selected: _scope == 'overall',
-                    onSelected: (_) => setState(() => _scope = 'overall'),
+                  Text(loc.budgetScope, style: theme.textTheme.labelMedium),
+                  const SizedBox(height: AppConstants.spacingSm),
+                  Wrap(
+                    spacing: AppConstants.spacingSm,
+                    children: [
+                      ChoiceChip(
+                        label: Text(loc.budgetScopeCategory),
+                        selected: _scope == 'category',
+                        onSelected: (_) => setState(() => _scope = 'category'),
+                      ),
+                      ChoiceChip(
+                        label: Text(loc.budgetScopeGroup),
+                        selected: _scope == 'group',
+                        onSelected: (_) => setState(() => _scope = 'group'),
+                      ),
+                      ChoiceChip(
+                        label: Text(loc.budgetScopeOverall),
+                        selected: _scope == 'overall',
+                        onSelected: (_) => setState(() => _scope = 'overall'),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: AppConstants.spacingXxl),
+            ),
 
-              AmountInputField(
-                controller: _amountController,
-                isIncome: false, // Budgets use expense colors
-                labelOverride: loc.budgetAmount,
-                validator: (val) {
-                  final amount = parseFormattedAmount(val ?? '');
-                  if (amount <= 0 || amount > 999999999999) return loc.pleaseEnterValidAmount;
-                  return null;
-                },
-              ),
+            AmountInputField(
+              controller: _amountController,
+              isIncome: false, // Budgets use expense colors
+              labelOverride: loc.budgetAmount,
+              validator: (val) {
+                final amount = parseFormattedAmount(val ?? '');
+                if (amount <= 0 || amount > 999999999999) return loc.pleaseEnterValidAmount;
+                return null;
+              },
+            ),
 
-              if (_scope != 'category') ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
-                  child: TextFormField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: _scope == 'overall' ? loc.budgetNameOptional : loc.budgetName,
-                      filled: true,
-                      fillColor: theme.colorScheme.surfaceContainerHighest,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-                        borderSide: BorderSide.none,
-                      ),
+            if (_scope != 'category') ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+                child: TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: _scope == 'overall' ? loc.budgetNameOptional : loc.budgetName,
+                    filled: true,
+                    fillColor: theme.colorScheme.surfaceContainerHighest,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+                      borderSide: BorderSide.none,
                     ),
-                    validator: (val) {
-                      if (_scope == 'group' && (val == null || val.trim().isEmpty)) {
-                        return loc.pleaseEnterName;
-                      }
-                      return null;
-                    },
                   ),
-                ),
-                const SizedBox(height: AppConstants.spacingXxl),
-              ],
-
-              if (_scope == 'category')
-                CategoryPicker(
-                  isIncome: false,
-                  selectedCategoryId: _selectedCategoryId,
-                  onCategorySelected: (id) => setState(() => _selectedCategoryId = id),
                   validator: (val) {
-                    if (val == null) return loc.pleaseSelectCategory;
-                    if (_categoryAlreadyBudgeted(val)) return loc.budgetAlreadyExistsForCategory;
+                    if (_scope == 'group' && (val == null || val.trim().isEmpty)) {
+                      return loc.pleaseEnterName;
+                    }
                     return null;
                   },
-                )
-              else if (_scope == 'group')
-                _GroupCategoryPicker(
-                  selected: _selectedCategoryIds,
-                  onChanged: (ids) => setState(() => _selectedCategoryIds = ids),
-                  isAlreadyBudgeted: _categoryAlreadyBudgeted,
-                ),
-              const SizedBox(height: AppConstants.spacingXxl),
-
-              Text(loc.budgetPeriod, style: theme.textTheme.labelMedium),
-              const SizedBox(height: AppConstants.spacingSm),
-              Wrap(
-                spacing: AppConstants.spacingSm,
-                children: [
-                  ChoiceChip(
-                    label: Text(loc.weekly),
-                    selected: _period == 'weekly',
-                    onSelected: (_) => setState(() => _period = 'weekly'),
-                  ),
-                  ChoiceChip(
-                    label: Text(loc.monthly),
-                    selected: _period == 'monthly',
-                    onSelected: (_) => setState(() => _period = 'monthly'),
-                  ),
-                  ChoiceChip(
-                    label: Text(loc.quarter),
-                    selected: _period == 'quarterly',
-                    onSelected: (_) => setState(() => _period = 'quarterly'),
-                  ),
-                  ChoiceChip(
-                    label: Text(loc.year),
-                    selected: _period == 'yearly',
-                    onSelected: (_) => setState(() => _period = 'yearly'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppConstants.spacingXxl),
-
-              Text(loc.budgetRollover, style: theme.textTheme.labelMedium),
-              const SizedBox(height: AppConstants.spacingXs),
-              Text(
-                loc.budgetRolloverExplanation,
-                style: theme.textTheme.bodySmall,
-              ),
-              const SizedBox(height: AppConstants.spacingSm),
-              Wrap(
-                spacing: AppConstants.spacingSm,
-                children: [
-                  ChoiceChip(
-                    label: Text(loc.rolloverNone),
-                    selected: _rolloverMode == 'none',
-                    onSelected: (_) => setState(() => _rolloverMode = 'none'),
-                  ),
-                  ChoiceChip(
-                    label: Text(loc.rolloverPositiveOnly),
-                    selected: _rolloverMode == 'positive',
-                    onSelected: (_) => setState(() => _rolloverMode = 'positive'),
-                  ),
-                  ChoiceChip(
-                    label: Text(loc.rolloverFull),
-                    selected: _rolloverMode == 'full',
-                    onSelected: (_) => setState(() => _rolloverMode = 'full'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppConstants.spacingXxxl),
-
-              // Save Button
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _save,
-                  child: Text(loc.saveBudget),
                 ),
               ),
+              const SizedBox(height: AppConstants.spacingXxl),
             ],
-          ),
+
+            if (_scope == 'category')
+              CategoryPicker(
+                isIncome: false,
+                selectedCategoryId: _selectedCategoryId,
+                onCategorySelected: (id) => setState(() => _selectedCategoryId = id),
+                validator: (val) {
+                  if (val == null) return loc.pleaseSelectCategory;
+                  if (_categoryAlreadyBudgeted(val)) return loc.budgetAlreadyExistsForCategory;
+                  return null;
+                },
+              )
+            else if (_scope == 'group')
+              _GroupCategoryPicker(
+                selected: _selectedCategoryIds,
+                onChanged: (ids) => setState(() => _selectedCategoryIds = ids),
+                isAlreadyBudgeted: _categoryAlreadyBudgeted,
+              ),
+            const SizedBox(height: AppConstants.spacingXxl),
+
+            _section(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(loc.budgetPeriod, style: theme.textTheme.labelMedium),
+                  const SizedBox(height: AppConstants.spacingSm),
+                  Wrap(
+                    spacing: AppConstants.spacingSm,
+                    children: [
+                      ChoiceChip(
+                        label: Text(loc.weekly),
+                        selected: _period == 'weekly',
+                        onSelected: (_) => setState(() => _period = 'weekly'),
+                      ),
+                      ChoiceChip(
+                        label: Text(loc.monthly),
+                        selected: _period == 'monthly',
+                        onSelected: (_) => setState(() => _period = 'monthly'),
+                      ),
+                      ChoiceChip(
+                        label: Text(loc.quarter),
+                        selected: _period == 'quarterly',
+                        onSelected: (_) => setState(() => _period = 'quarterly'),
+                      ),
+                      ChoiceChip(
+                        label: Text(loc.year),
+                        selected: _period == 'yearly',
+                        onSelected: (_) => setState(() => _period = 'yearly'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppConstants.spacingXxl),
+
+                  Text(loc.budgetRollover, style: theme.textTheme.labelMedium),
+                  const SizedBox(height: AppConstants.spacingXs),
+                  Text(
+                    loc.budgetRolloverExplanation,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: AppConstants.spacingSm),
+                  Wrap(
+                    spacing: AppConstants.spacingSm,
+                    children: [
+                      ChoiceChip(
+                        label: Text(loc.rolloverNone),
+                        selected: _rolloverMode == 'none',
+                        onSelected: (_) => setState(() => _rolloverMode = 'none'),
+                      ),
+                      ChoiceChip(
+                        label: Text(loc.rolloverPositiveOnly),
+                        selected: _rolloverMode == 'positive',
+                        onSelected: (_) => setState(() => _rolloverMode = 'positive'),
+                      ),
+                      ChoiceChip(
+                        label: Text(loc.rolloverFull),
+                        selected: _rolloverMode == 'full',
+                        onSelected: (_) => setState(() => _rolloverMode = 'full'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  /// Horizontal gutter for the parts of the form that don't pad
+  /// themselves — the chip groups and their labels.
+  Widget _section({required Widget child}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+      child: child,
     );
   }
 }

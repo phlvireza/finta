@@ -3,18 +3,27 @@ import 'package:provider/provider.dart';
 import '../../../providers/category_provider.dart';
 import '../../../models/category_model.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../widgets/form_sheet.dart';
 import 'icon_picker.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Form for creating or editing a category.
+///
+/// Pops with the id of the saved category (null if dismissed), so a caller
+/// that opened it from a picker can select the result immediately.
 class CategoryForm extends StatefulWidget {
   final bool isIncome;
   final CategoryModel? categoryToEdit;
+
+  /// Pre-selects the parent for a brand-new category, so "add a
+  /// sub-category under this one" arrives at the form already set up.
+  final String? initialParentId;
 
   const CategoryForm({
     super.key,
     required this.isIncome,
     this.categoryToEdit,
+    this.initialParentId,
   });
 
   @override
@@ -42,6 +51,8 @@ class _CategoryFormState extends State<CategoryForm> {
       _selectedIcon = widget.categoryToEdit!.icon;
       _selectedColor = widget.categoryToEdit!.color;
       _parentId = widget.categoryToEdit!.parentId;
+    } else {
+      _parentId = widget.initialParentId;
     }
   }
 
@@ -58,8 +69,9 @@ class _CategoryFormState extends State<CategoryForm> {
     final name = _nameController.text.trim();
     final provider = context.read<CategoryProvider>();
     final loc = AppLocalizations.of(context)!;
-    
+
     try {
+      final String savedId;
       if (widget.categoryToEdit != null) {
         final updated = widget.categoryToEdit!.copyWith(
           name: name,
@@ -69,18 +81,20 @@ class _CategoryFormState extends State<CategoryForm> {
           clearParentId: _parentId == null,
         );
         await provider.updateCategory(updated);
+        savedId = updated.id;
       } else {
-        await provider.addCategory(
+        final created = await provider.addCategory(
           name: name,
           type: widget.isIncome ? 'income' : 'expense',
           icon: _selectedIcon,
           color: _selectedColor,
           parentId: _parentId,
         );
+        savedId = created.id;
       }
 
       if (mounted) {
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(savedId);
       }
     } catch (e) {
       if (mounted) {
@@ -109,27 +123,21 @@ class _CategoryFormState extends State<CategoryForm> {
     final colorValue = Color(int.parse('FF$hexColor', radix: 16));
     final loc = AppLocalizations.of(context)!;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: AppConstants.spacingLg,
-        right: AppConstants.spacingLg,
-        top: AppConstants.spacingLg,
-        bottom: MediaQuery.of(context).viewInsets.bottom + AppConstants.spacingLg,
-      ),
-      child: Form(
-        key: _formKey,
-        autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
-        child: SingleChildScrollView(
+    return Form(
+      key: _formKey,
+      autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+      child: FormSheet(
+        title: widget.categoryToEdit != null ? loc.editCategory : loc.addCategory,
+        action: ElevatedButton(
+          onPressed: _save,
+          child: Text(loc.save),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
           child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.categoryToEdit != null ? loc.editCategory : loc.addCategory,
-              style: theme.textTheme.titleLarge,
-            ),
-            const SizedBox(height: AppConstants.spacingXxl),
-
             // Icon and Name Row
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,11 +180,11 @@ class _CategoryFormState extends State<CategoryForm> {
                     maxLength: 30, // Input validation: Name length
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) return loc.pleaseEnterName;
-                      
+
                       // Input validation: Duplicate check
                       final provider = context.read<CategoryProvider>();
-                      final isDuplicate = provider.categories.any((c) => 
-                        c.name.toLowerCase() == val.trim().toLowerCase() && 
+                      final isDuplicate = provider.categories.any((c) =>
+                        c.name.toLowerCase() == val.trim().toLowerCase() &&
                         c.id != widget.categoryToEdit?.id &&
                         c.type == (widget.isIncome ? 'income' : 'expense')
                       );
@@ -189,6 +197,62 @@ class _CategoryFormState extends State<CategoryForm> {
               ],
             ),
             const SizedBox(height: AppConstants.spacingXxl),
+
+            // Parent category — sits directly under the name because it is
+            // a structural choice (it decides where the category lands in
+            // every picker), not decoration like the colour below. It used
+            // to be the last field before the button, which on a phone with
+            // the keyboard up put it below the fold entirely.
+            //
+            // Only 2 levels are allowed, so a category that already has
+            // children of its own can't also become one (that would make
+            // its children grandchildren of its new parent), and only
+            // top-level categories are valid choices.
+            Builder(builder: (context) {
+              final provider = context.watch<CategoryProvider>();
+              final selfId = widget.categoryToEdit?.id;
+              final hasChildren =
+                  selfId != null && provider.categories.any((c) => c.parentId == selfId);
+              if (hasChildren) return const SizedBox.shrink();
+
+              final parentOptions = provider.categories.where((c) =>
+                  c.type == (widget.isIncome ? 'income' : 'expense') &&
+                  c.parentId == null &&
+                  !c.isSystem &&
+                  !c.isArchived &&
+                  c.id != selfId);
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(loc.parentCategoryOptional, style: theme.textTheme.labelMedium),
+                  const SizedBox(height: AppConstants.spacingSm),
+                  DropdownButtonFormField<String?>(
+                    initialValue: _parentId,
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: theme.colorScheme.surfaceContainerHighest,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    items: [
+                      DropdownMenuItem<String?>(value: null, child: Text(loc.noneTopLevel)),
+                      ...parentOptions.map(
+                        (c) => DropdownMenuItem<String?>(
+                          value: c.id,
+                          child: Text(c.name, overflow: TextOverflow.ellipsis),
+                        ),
+                      ),
+                    ],
+                    onChanged: (val) => setState(() => _parentId = val),
+                  ),
+                  const SizedBox(height: AppConstants.spacingXxl),
+                ],
+              );
+            }),
 
             // Color Picker
             Text(loc.color, style: theme.textTheme.labelMedium),
@@ -221,62 +285,6 @@ class _CategoryFormState extends State<CategoryForm> {
                     ),
                   );
                 },
-              ),
-            ),
-            const SizedBox(height: AppConstants.spacingXxl),
-
-            // Parent category — only 2 levels are allowed, so a category
-            // that already has children of its own can't also become one
-            // (that would make its children grandchildren of its new
-            // parent), and only top-level categories are valid choices.
-            Builder(builder: (context) {
-              final provider = context.watch<CategoryProvider>();
-              final selfId = widget.categoryToEdit?.id;
-              final hasChildren =
-                  selfId != null && provider.categories.any((c) => c.parentId == selfId);
-              if (hasChildren) return const SizedBox.shrink();
-
-              final parentOptions = provider.categories.where((c) =>
-                  c.type == (widget.isIncome ? 'income' : 'expense') &&
-                  c.parentId == null &&
-                  !c.isSystem &&
-                  c.id != selfId);
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(loc.parentCategoryOptional, style: theme.textTheme.labelMedium),
-                  const SizedBox(height: AppConstants.spacingSm),
-                  DropdownButtonFormField<String?>(
-                    initialValue: _parentId,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: theme.colorScheme.surfaceContainerHighest,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    items: [
-                      DropdownMenuItem<String?>(value: null, child: Text(loc.noneTopLevel)),
-                      ...parentOptions.map(
-                        (c) => DropdownMenuItem<String?>(value: c.id, child: Text(c.name)),
-                      ),
-                    ],
-                    onChanged: (val) => setState(() => _parentId = val),
-                  ),
-                ],
-              );
-            }),
-            const SizedBox(height: AppConstants.spacingXxxl),
-
-            // Save Button
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: _save,
-                child: Text(loc.save),
               ),
             ),
           ],

@@ -94,8 +94,12 @@ class _CalculatorSheetState extends State<CalculatorSheet> {
                   color: theme.colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(AppConstants.radiusMd),
                 ),
+                // Grouped for reading only — `_expression` itself stays raw
+                // so [evaluateExpression] never sees a comma.
                 child: Text(
-                  _expression.isEmpty ? '0' : _expression,
+                  _expression.isEmpty
+                      ? '0'
+                      : formatExpressionWithSeparators(_expression),
                   style: theme.textTheme.headlineSmall,
                   textAlign: TextAlign.right,
                   maxLines: 2,

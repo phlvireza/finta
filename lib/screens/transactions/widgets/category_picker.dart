@@ -4,6 +4,7 @@ import '../../../providers/category_provider.dart';
 import '../../../models/category_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../categories/widgets/category_form.dart';
+import '../../../widgets/form_sheet.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Form field that opens a searchable bottom sheet for category selection.
@@ -168,12 +169,20 @@ class _CategorySearchSheetState extends State<_CategorySearchSheet> {
     super.dispose();
   }
 
-  void _createNewCategory() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => CategoryForm(isIncome: widget.isIncome),
+  /// Opens the category form and, if it saved, selects the result straight
+  /// away — creating a category from inside a picker is always a means to
+  /// picking it, and leaving the user back on an unchanged-looking list
+  /// made the creation read as if it had failed.
+  Future<void> _createNewCategory({String? parentId}) async {
+    final createdId = await FormSheet.show<String>(
+      context,
+      builder: (_) => CategoryForm(
+        isIncome: widget.isIncome,
+        initialParentId: parentId,
+      ),
     );
+    if (createdId == null || !mounted) return;
+    widget.onSelected(createdId);
   }
 
   @override
@@ -237,7 +246,7 @@ class _CategorySearchSheetState extends State<_CategorySearchSheet> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              onTap: _createNewCategory,
+              onTap: () => _createNewCategory(),
             ),
             const Divider(),
             
@@ -298,20 +307,28 @@ class _CategorySearchSheetState extends State<_CategorySearchSheet> {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Keyed off parentId rather than [indented]: a sub-category
+            // whose parent fell outside the search results still renders
+            // flush left, and the hierarchy is only 2 levels deep — it
+            // can't take children of its own.
+            if (cat.parentId == null)
+              IconButton(
+                icon: const Icon(Icons.playlist_add, size: 20),
+                color: theme.colorScheme.onSurfaceVariant,
+                tooltip: loc.createNewCategory,
+                onPressed: () => _createNewCategory(parentId: cat.id),
+              ),
             if (!cat.isDefault)
               IconButton(
                 icon: const Icon(Icons.edit, size: 20),
                 color: theme.colorScheme.onSurfaceVariant,
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    builder: (_) => CategoryForm(
-                      isIncome: widget.isIncome,
-                      categoryToEdit: cat,
-                    ),
-                  );
-                },
+                onPressed: () => FormSheet.show<String>(
+                  context,
+                  builder: (_) => CategoryForm(
+                    isIncome: widget.isIncome,
+                    categoryToEdit: cat,
+                  ),
+                ),
               ),
             if (isSelected) Icon(Icons.check, color: theme.colorScheme.primary),
           ],

@@ -60,8 +60,11 @@ class CategoryProvider extends ChangeNotifier {
     }
   }
 
-  /// Create a new custom category.
-  Future<void> addCategory({
+  /// Create a new custom category. Returns the created model so a caller
+  /// that opened the form mid-flow (e.g. the transaction category picker)
+  /// can select it straight away instead of making the user hunt for it in
+  /// the list afterwards.
+  Future<CategoryModel> addCategory({
     required String name,
     required String type,
     required String icon,
@@ -85,6 +88,7 @@ class CategoryProvider extends ChangeNotifier {
       await _repository.insert(category);
       _categories.add(category);
       notifyListeners();
+      return category;
     } catch (e) {
       rethrow;
     }
