@@ -37,7 +37,7 @@ dependencies:
 
   # Backup, restore & import
   share_plus: ^10.1.4
-  file_picker: ^10.3.10
+  file_picker: ^11.0.3
   archive: ^3.6.1
   csv: ^6.0.0
 
@@ -50,6 +50,19 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
+
+# file_picker 11.0.3's Android build skips applying the legacy
+# kotlin-android plugin under AGP 9, trusting AGP's built-in Kotlin
+# compiler instead — but android.builtInKotlin=true isn't safe on this
+# project's Flutter SDK (<3.47; see android/gradle.properties). Points at
+# a local copy with that AGP9 skip removed, so it applies kotlin-android
+# unconditionally like every other plugin here. Only
+# vendor/file_picker_agp9/android/build.gradle differs from the published
+# 11.0.3 package. Drop this override once the Flutter SDK is upgraded to
+# >=3.47 and android.builtInKotlin=true is turned back on project-wide.
+dependency_overrides:
+  file_picker:
+    path: vendor/file_picker_agp9
 
 flutter:
   uses-material-design: true
