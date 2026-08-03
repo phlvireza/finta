@@ -27,6 +27,12 @@ class SeedData {
   static const String debtPaymentsCategoryId = 'default_debt_payments';
   static const String debtRepaymentsCategoryId = 'default_debt_repayments';
 
+  /// Well-known id for the "Donation" category added in v8. Fixed (rather
+  /// than a fresh uuid like the original seed list) so a fresh install and
+  /// an upgraded one end up with the same row, and so replaying the
+  /// migration can't create a second copy.
+  static const String donationCategoryId = 'default_donation';
+
   static Future<void> seedCategories(Database db) async {
     final now = DateTime.now().toIso8601String();
     final batch = db.batch();
@@ -140,6 +146,34 @@ class SeedData {
       'createdAt': now,
     });
     await batch.commit(noResult: true);
+  }
+
+  /// Seeds the "Donation" expense category. Shipped after the original
+  /// default set, so it is seeded separately (by [Migrations.v8] for
+  /// existing installs and alongside the other seeds for new ones) rather
+  /// than being appended to [seedCategories] — which only ever runs on a
+  /// fresh database.
+  ///
+  /// `sortOrder` 9 puts it directly after "Other" (8) and ahead of the
+  /// goal/debt categories at 100+. Inserted with `ignore` so replaying the
+  /// migration is a no-op instead of a primary-key failure.
+  static Future<void> seedDonationCategory(DatabaseExecutor db) async {
+    await db.insert(
+      'categories',
+      {
+        'id': donationCategoryId,
+        'name': 'Donation',
+        'type': 'expense',
+        'icon': 'volunteer_activism',
+        'color': '#7A8B6F',
+        'isDefault': 1,
+        'isArchived': 0,
+        'isSystem': 0,
+        'sortOrder': 9,
+        'createdAt': DateTime.now().toIso8601String(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
   }
 
   /// Seeds the default "My Wallet" cash account every pre-accounts

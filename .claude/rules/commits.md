@@ -21,8 +21,7 @@ This project's history uses two shapes — match whichever fits:
 - **Plain imperative** for fixes, chores, and follow-ups:
   `Ignore markdown docs so they stay local-only`
 
-No Conventional Commits prefixes (`feat:`, `fix:`, `chore:`) — the history does not
-use them, so don't start.
+Use Conventional Commits prefixes (`feat:`, `fix:`, `chore:`)
 
 ## Body
 

@@ -159,6 +159,17 @@ class Migrations {
     await db.execute(createTemplatesTable);
   }
 
+  /// v7 → v8: adds the "Donation" default expense category. Data-only —
+  /// no schema change — so a fresh install (which seeds the same row from
+  /// `_onCreate`) and an upgraded one still converge exactly.
+  ///
+  /// Safe to replay: the row carries a fixed id and is inserted with
+  /// `ConflictAlgorithm.ignore`, and a user who has since archived or
+  /// renamed it keeps their version rather than having it reset.
+  static Future<void> v8(Database db) async {
+    await SeedData.seedDonationCategory(db);
+  }
+
   static const String createTemplatesTable = '''
     CREATE TABLE templates (
       id TEXT PRIMARY KEY,

@@ -418,4 +418,97 @@ void main() {
       await db.close();
     },
   );
+
+  group('v8 — the Donation category', () {
+    Future<Database> upgradedToV7() async {
+      final db = await databaseFactoryFfi.openDatabase(
+        ':memory:',
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: _createV1Schema,
+          onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
+        ),
+      );
+      await db.insert('categories', {
+        'id': 'cat1',
+        'name': 'Coffee',
+        'type': 'expense',
+        'icon': 'local_cafe',
+        'color': '#C87941',
+        'isDefault': 0,
+        'sortOrder': 0,
+        'createdAt': '2026-01-01T00:00:00.000',
+      });
+      await Migrations.v2(db);
+      await Migrations.v3(db);
+      await Migrations.v4(db);
+      await Migrations.v5(db);
+      await Migrations.v6(db);
+      await Migrations.v7(db);
+      return db;
+    }
+
+    test('adds Donation to an existing install without touching user rows',
+        () async {
+      final db = await upgradedToV7();
+
+      expect(
+        await db.query('categories', where: "name = 'Donation'"),
+        isEmpty,
+        reason: 'nothing should have seeded it before v8 runs',
+      );
+
+      await Migrations.v8(db);
+
+      final donation = await db.query('categories', where: "id = 'default_donation'");
+      expect(donation, hasLength(1));
+      expect(donation.first['name'], 'Donation');
+      expect(donation.first['type'], 'expense');
+      expect(donation.first['icon'], 'volunteer_activism');
+      expect(donation.first['isDefault'], 1);
+      expect(donation.first['isSystem'], 0, reason: 'it is a normal, pickable category');
+      expect(donation.first['isArchived'], 0);
+      // Right after "Other" (8) and ahead of the goal/debt categories.
+      expect(donation.first['sortOrder'], 9);
+
+      final coffee = await db.query('categories', where: "id = 'cat1'");
+      expect(coffee, hasLength(1), reason: 'the user category must survive');
+      expect(coffee.first['name'], 'Coffee');
+
+      await db.close();
+    });
+
+    test('replaying the migration does not duplicate the row', () async {
+      // A user who upgrades, then reinstalls over the same database, must
+      // not end up with two Donation categories.
+      final db = await upgradedToV7();
+      await Migrations.v8(db);
+      await Migrations.v8(db);
+
+      expect(
+        await db.query('categories', where: "id = 'default_donation'"),
+        hasLength(1),
+      );
+
+      await db.close();
+    });
+
+    test('a user edit to the category survives a replay', () async {
+      final db = await upgradedToV7();
+      await Migrations.v8(db);
+      await db.update(
+        'categories',
+        {'name': 'Charity', 'isArchived': 1},
+        where: "id = 'default_donation'",
+      );
+
+      await Migrations.v8(db);
+
+      final row = await db.query('categories', where: "id = 'default_donation'");
+      expect(row.first['name'], 'Charity');
+      expect(row.first['isArchived'], 1);
+
+      await db.close();
+    });
+  });
 }

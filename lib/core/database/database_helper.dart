@@ -13,7 +13,7 @@ class DatabaseHelper {
   /// branch in [_onUpgrade] backed by a method on [Migrations]. `_onCreate`
   /// must always produce a schema identical to a v1 install that has
   /// replayed every migration — see test/migration_test.dart.
-  static const int dbVersion = 7;
+  static const int dbVersion = 8;
 
   static Database? _database;
 
@@ -53,6 +53,7 @@ class DatabaseHelper {
     if (oldVersion < 5) await Migrations.v5(db);
     if (oldVersion < 6) await Migrations.v6(db);
     if (oldVersion < 7) await Migrations.v7(db);
+    if (oldVersion < 8) await Migrations.v8(db);
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -159,6 +160,7 @@ class DatabaseHelper {
     await SeedData.seedSystemCategory(db);
     await SeedData.seedDefaultAccount(db);
     await SeedData.seedGoalDebtCategories(db);
+    await SeedData.seedDonationCategory(db);
   }
 
   /// Close the database (for testing / cleanup).
