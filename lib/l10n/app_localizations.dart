@@ -2114,6 +2114,12 @@ abstract class AppLocalizations {
   /// **'Save as template'**
   String get saveAsTemplate;
 
+  /// No description provided for @saveAsTemplateHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this transaction as a reusable one-tap template'**
+  String get saveAsTemplateHelp;
+
   /// No description provided for @templateName.
   ///
   /// In en, this message translates to:

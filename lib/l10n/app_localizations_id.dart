@@ -1136,6 +1136,10 @@ class AppLocalizationsId extends AppLocalizations {
   String get saveAsTemplate => 'Simpan sebagai templat';
 
   @override
+  String get saveAsTemplateHelp =>
+      'Simpan transaksi ini sebagai templat sekali klik yang dapat digunakan kembali';
+
+  @override
   String get templateName => 'Nama templat';
 
   @override

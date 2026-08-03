@@ -1134,6 +1134,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saveAsTemplate => 'Save as template';
 
   @override
+  String get saveAsTemplateHelp =>
+      'Save this transaction as a reusable one-tap template';
+
+  @override
   String get templateName => 'Template name';
 
   @override

@@ -8,6 +8,7 @@ import '../../../providers/account_provider.dart';
 import '../../../providers/template_provider.dart';
 import '../../../providers/category_provider.dart';
 import '../../../providers/insights_provider.dart';
+import '../../../providers/recurring_provider.dart';
 import '../../../models/template_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_colors.dart';
@@ -15,27 +16,34 @@ import '../../../core/formatters/currency_formatter.dart';
 import '../../../core/utils/number_utils.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/confirm_dialog.dart';
-import '../add_transaction_screen.dart';
+import '../../../widgets/form_sheet.dart';
 import 'amount_input_field.dart';
 import 'category_picker.dart';
 import 'account_picker.dart';
 import 'merchant_field.dart';
 import 'date_picker_field.dart';
+import 'recurring_toggle.dart';
 import 'anomaly_confirm.dart';
+import 'save_template_dialog.dart';
 
 enum _EntryType { expense, income, transfer }
 
-/// Three-tap entry sheet opened from the FAB — amount, category, date,
-/// save. Covers the common case fast; anything less common (recurring,
-/// notes, editing) stays on the full [AddTransactionScreen]. Also handles
-/// transfers, which never need a category — just two accounts.
+/// Entry sheet opened from the FAB — amount, merchant, category, date,
+/// note, optional recurrence, save. Also handles transfers, which never
+/// need a category (or a note/recurrence — the model has no room for
+/// either on a transfer) — just two accounts.
+///
+/// It used to stop at the amount/category/date trio and hand anything else
+/// off to the full add screen behind a "More options" button, which
+/// threw away everything already typed on the way there. The remaining
+/// fields are cheap to show inline under a pinned Save, so that detour is
+/// gone; the full screen is now only for editing an existing transaction.
 class QuickAddSheet extends StatefulWidget {
   const QuickAddSheet({super.key});
 
   static Future<void> show(BuildContext context) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
+    return FormSheet.show(
+      context,
       builder: (_) => const QuickAddSheet(),
     );
   }
@@ -46,14 +54,18 @@ class QuickAddSheet extends StatefulWidget {
 
 class _QuickAddSheetState extends State<QuickAddSheet> {
   final _amountController = TextEditingController();
+  final _noteController = TextEditingController();
   _EntryType _entryType = _EntryType.expense;
   DateTime _date = DateTime.now();
   String? _categoryId;
   String? _accountId;
   String? _toAccountId;
   String? _merchant;
+  bool _isRecurring = false;
+  String _recurringFrequency = 'monthly';
   bool _isSaving = false;
   String? _error;
+  String? _templateFeedback;
 
   bool get _isIncome => _entryType == _EntryType.income;
   bool get _isTransfer => _entryType == _EntryType.transfer;
@@ -88,6 +100,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
   @override
   void dispose() {
     _amountController.dispose();
+    _noteController.dispose();
     super.dispose();
   }
 
@@ -96,22 +109,42 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
     setState(() {
       _entryType = type;
       _error = null;
+      _templateFeedback = null;
       if (type != _EntryType.transfer) {
         _categoryId = null;
         _prefillMostRecentCategory();
       } else {
+        // A transfer carries neither a note nor a recurrence, so anything
+        // typed into those before switching would silently be dropped on
+        // save — clear it instead of pretending it still applies.
         _toAccountId = null;
+        _noteController.clear();
+        _isRecurring = false;
       }
     });
   }
 
-  Future<void> _openFullForm() {
-    Navigator.of(context).pop();
-    return Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const AddTransactionScreen(),
-        fullscreenDialog: true,
-      ),
+  /// Saves the current form as a one-tap template. Uses onFeedback callback
+  /// to render messages inside the sheet rather than via SnackBar — the modal
+  /// bottom sheet would otherwise hide any SnackBar behind itself.
+  Future<void> _saveAsTemplate() {
+    return saveAsTemplate(
+      context,
+      isIncome: _isIncome,
+      amount: parseFormattedAmount(_amountController.text),
+      categoryId: _categoryId,
+      accountId: _accountId,
+      merchant: _merchant,
+      note: _noteController.text,
+      onFeedback: (message, {required isError}) => setState(() {
+        if (isError) {
+          _error = message;
+          _templateFeedback = null;
+        } else {
+          _templateFeedback = message;
+          _error = null;
+        }
+      }),
     );
   }
 
@@ -166,6 +199,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
       final budgetProvider = context.read<BudgetProvider>();
       final settings = context.read<SettingsProvider>();
       final accountProvider = context.read<AccountProvider>();
+      final recurringProvider = context.read<RecurringProvider>();
 
       if (_isTransfer) {
         await txProvider.addTransfer(
@@ -176,13 +210,39 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
         );
       } else {
         final trimmedMerchant = _merchant?.trim();
+        final merchant =
+            (trimmedMerchant == null || trimmedMerchant.isEmpty) ? null : trimmedMerchant;
+        final note = _noteController.text.trim();
+        final type = _isIncome ? 'income' : 'expense';
+
+        // Same order as AddTransactionScreen: create the template first,
+        // then post this occurrence carrying its recurringId, so the
+        // partial unique index on (recurringId, date) already covers today
+        // and the catch-up pass can't post it a second time.
+        String? recurringId;
+        if (_isRecurring) {
+          final template = await recurringProvider.addRecurring(
+            type: type,
+            amount: amount,
+            categoryId: _categoryId!,
+            accountId: _accountId,
+            merchant: merchant,
+            note: note.isEmpty ? null : note,
+            frequency: _recurringFrequency,
+            startDate: _date,
+          );
+          recurringId = template.id;
+        }
+
         await txProvider.addTransaction(
-          type: _isIncome ? 'income' : 'expense',
+          type: type,
           amount: amount,
           categoryId: _categoryId!,
           accountId: _accountId!,
-          merchant: (trimmedMerchant == null || trimmedMerchant.isEmpty) ? null : trimmedMerchant,
+          merchant: merchant,
           date: _date,
+          note: note.isEmpty ? null : note,
+          recurringId: recurringId,
         );
       }
 
@@ -271,135 +331,170 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
             ? (theme.brightness == Brightness.dark ? AppColors.darkIncome : AppColors.lightIncome)
             : (theme.brightness == Brightness.dark ? AppColors.darkExpense : AppColors.lightExpense));
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: AppConstants.spacingSm),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.outline,
-                  borderRadius: BorderRadius.circular(AppConstants.radiusFull),
+    return FormSheet(
+      title: _isTransfer ? loc.transfer : loc.addTransaction,
+      // The only remaining way to create a template now that the sheet no
+      // longer hands off to the full form.
+      headerAction: _isTransfer
+          ? null
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.bookmark_add_outlined),
+                  tooltip: loc.saveAsTemplate,
+                  onPressed: _isSaving ? null : _saveAsTemplate,
                 ),
-              ),
-              const SizedBox(height: AppConstants.spacingLg),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
-                child: _EntryTypeSegments(
-                  entryType: _entryType,
-                  onChanged: _setEntryType,
-                  expenseLabel: loc.expense,
-                  incomeLabel: loc.income,
-                  transferLabel: loc.transfer,
-                ),
-              ),
-              if (!_isTransfer) ...[
-                const SizedBox(height: AppConstants.spacingMd),
-                _TemplateChipsRow(onSelected: _useTemplate, onDelete: _deleteTemplate),
-              ],
-              AmountInputField(
-                controller: _amountController,
-                isIncome: _isIncome || _isTransfer,
-                labelOverride: _isTransfer ? loc.transferAmount : null,
-                autofocus: true,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
-                child: DatePickerField(
-                  selectedDate: _date,
-                  onDateSelected: (date) => setState(() => _date = date),
-                ),
-              ),
-              const SizedBox(height: AppConstants.spacingLg),
-              AccountPicker(
-                label: _isTransfer ? loc.fromAccount : loc.account,
-                selectedAccountId: _accountId,
-                excludeIds: _isTransfer && _toAccountId != null ? [_toAccountId!] : const [],
-                onAccountSelected: (id) => setState(() {
-                  _accountId = id;
-                  _error = null;
-                }),
-              ),
-              if (_isTransfer) ...[
-                const SizedBox(height: AppConstants.spacingLg),
-                AccountPicker(
-                  label: loc.toAccount,
-                  selectedAccountId: _toAccountId,
-                  excludeIds: _accountId != null ? [_accountId!] : const [],
-                  onAccountSelected: (id) => setState(() {
-                    _toAccountId = id;
-                    _error = null;
-                  }),
-                ),
-              ] else ...[
-                const SizedBox(height: AppConstants.spacingLg),
-                MerchantField(
-                  initialValue: _merchant,
-                  onChanged: (val) => _merchant = val,
-                  onMerchantDefaults: (categoryId, accountId) => setState(() {
-                    _categoryId = categoryId;
-                    _accountId = accountId;
-                  }),
-                ),
-                const SizedBox(height: AppConstants.spacingLg),
-                CategoryPicker(
-                  isIncome: _isIncome,
-                  selectedCategoryId: _categoryId,
-                  onCategorySelected: (id) => setState(() {
-                    _categoryId = id;
-                    _error = null;
-                  }),
-                ),
-              ],
-              if (_error != null) ...[
-                const SizedBox(height: AppConstants.spacingSm),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
-                  child: Text(
-                    _error!,
-                    style: TextStyle(color: theme.colorScheme.error, fontSize: 12),
+                Tooltip(
+                  message: loc.saveAsTemplateHelp,
+                  child: Icon(
+                    Icons.info_outline,
+                    size: 20,
+                    color: theme.colorScheme.primary.withAlpha(180),
                   ),
                 ),
               ],
-              const SizedBox(height: AppConstants.spacingLg),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
-                child: Row(
-                  children: [
-                    if (!_isTransfer)
-                      Expanded(
-                        child: TextButton(
-                          onPressed: _isSaving ? null : _openFullForm,
-                          child: Text(loc.moreOptions),
-                        ),
-                      ),
-                    if (!_isTransfer) const SizedBox(width: AppConstants.spacingMd),
-                    Expanded(
-                      flex: 2,
-                      child: SizedBox(
-                        height: 48,
-                        child: _isSaving
-                            ? const Center(child: CircularProgressIndicator())
-                            : ElevatedButton(
-                                onPressed: _save,
-                                style: ElevatedButton.styleFrom(backgroundColor: accentColor),
-                                child: Text(loc.saveTransaction),
-                              ),
+            ),
+      action: _isSaving
+          ? const Center(child: CircularProgressIndicator())
+          : ElevatedButton(
+              onPressed: _save,
+              style: ElevatedButton.styleFrom(backgroundColor: accentColor),
+              child: Text(loc.saveTransaction),
+            ),
+      body: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+            child: _EntryTypeSegments(
+              entryType: _entryType,
+              onChanged: _setEntryType,
+              expenseLabel: loc.expense,
+              incomeLabel: loc.income,
+              transferLabel: loc.transfer,
+            ),
+          ),
+          if (!_isTransfer) ...[
+            const SizedBox(height: AppConstants.spacingMd),
+            _TemplateChipsRow(onSelected: _useTemplate, onDelete: _deleteTemplate),
+          ],
+          AmountInputField(
+            controller: _amountController,
+            isIncome: _isIncome || _isTransfer,
+            labelOverride: _isTransfer ? loc.transferAmount : null,
+            autofocus: true,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+            child: DatePickerField(
+              selectedDate: _date,
+              onDateSelected: (date) => setState(() => _date = date),
+            ),
+          ),
+          const SizedBox(height: AppConstants.spacingLg),
+          AccountPicker(
+            label: _isTransfer ? loc.fromAccount : loc.account,
+            selectedAccountId: _accountId,
+            excludeIds: _isTransfer && _toAccountId != null ? [_toAccountId!] : const [],
+            onAccountSelected: (id) => setState(() {
+              _accountId = id;
+              _error = null;
+              _templateFeedback = null;
+            }),
+          ),
+          if (_isTransfer) ...[
+            const SizedBox(height: AppConstants.spacingLg),
+            AccountPicker(
+              label: loc.toAccount,
+              selectedAccountId: _toAccountId,
+              excludeIds: _accountId != null ? [_accountId!] : const [],
+              onAccountSelected: (id) => setState(() {
+                _toAccountId = id;
+                _error = null;
+                _templateFeedback = null;
+              }),
+            ),
+          ] else ...[
+            const SizedBox(height: AppConstants.spacingLg),
+            MerchantField(
+              initialValue: _merchant,
+              onChanged: (val) => _merchant = val,
+              onMerchantDefaults: (categoryId, accountId) => setState(() {
+                _categoryId = categoryId;
+                _accountId = accountId;
+              }),
+            ),
+            const SizedBox(height: AppConstants.spacingLg),
+            CategoryPicker(
+              isIncome: _isIncome,
+              selectedCategoryId: _categoryId,
+              onCategorySelected: (id) => setState(() {
+                _categoryId = id;
+                _error = null;
+                _templateFeedback = null;
+              }),
+            ),
+            const SizedBox(height: AppConstants.spacingLg),
+
+            // Note and recurrence — both used to live behind "More
+            // options" on the full screen. Neither applies to a
+            // transfer, which is why they sit in this branch.
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(loc.noteOptional, style: theme.textTheme.labelMedium),
+                  const SizedBox(height: AppConstants.spacingSm),
+                  TextField(
+                    controller: _noteController,
+                    maxLength: AppConstants.maxNoteLength,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: InputDecoration(
+                      hintText: '',
+                      filled: true,
+                      fillColor: theme.colorScheme.surfaceContainerHighest,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+                        borderSide: BorderSide.none,
                       ),
                     ),
-                  ],
+                  ),
+                  const SizedBox(height: AppConstants.spacingSm),
+                  RecurringToggle(
+                    isRecurring: _isRecurring,
+                    onToggle: (val) => setState(() => _isRecurring = val),
+                    frequency: _recurringFrequency,
+                    onFrequencyChanged: (val) => setState(() => _recurringFrequency = val),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (_error != null) ...[
+            const SizedBox(height: AppConstants.spacingSm),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+              child: Text(
+                _error!,
+                style: TextStyle(color: theme.colorScheme.error, fontSize: 12),
+              ),
+            ),
+          ] else if (_templateFeedback != null) ...[
+            const SizedBox(height: AppConstants.spacingSm),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+              child: Text(
+                _templateFeedback!,
+                style: TextStyle(
+                  color: theme.brightness == Brightness.dark ? AppColors.darkIncome : AppColors.lightIncome,
+                  fontSize: 12,
                 ),
               ),
-              const SizedBox(height: AppConstants.spacingLg),
-            ],
-          ),
-        ),
+            ),
+          ],
+        ],
       ),
     );
   }

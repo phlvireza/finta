@@ -7,7 +7,6 @@ import '../../providers/recurring_provider.dart';
 import '../../providers/budget_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/account_provider.dart';
-import '../../providers/template_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/insights_provider.dart';
 import '../../core/constants/app_constants.dart';
@@ -22,6 +21,7 @@ import 'widgets/date_picker_field.dart';
 import 'widgets/recurring_toggle.dart';
 import 'widgets/type_toggle.dart';
 import 'widgets/anomaly_confirm.dart';
+import 'widgets/save_template_dialog.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Full-screen form for adding or editing a transaction.
@@ -230,64 +230,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   /// Saves the form's current values as a one-tap quick-add template.
   /// Only offered for a brand-new entry — templating an edit-in-progress
   /// would be an odd, easy-to-mispress action next to Save.
-  Future<void> _saveAsTemplate() async {
-    final loc = AppLocalizations.of(context)!;
-    final amount = parseFormattedAmount(_amountController.text);
-
-    if (_categoryId == null || _accountId == null || amount <= 0) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.fillOutFormFirst)),
-      );
-      return;
-    }
-
-    final category = context.read<CategoryProvider>().getCategoryById(_categoryId!);
-    final nameController = TextEditingController(
-      text: (_merchant?.trim().isNotEmpty ?? false) ? _merchant!.trim() : (category?.name ?? ''),
+  Future<void> _saveAsTemplate() {
+    return saveAsTemplate(
+      context,
+      isIncome: _isIncome,
+      amount: parseFormattedAmount(_amountController.text),
+      categoryId: _categoryId,
+      accountId: _accountId,
+      merchant: _merchant,
+      note: _noteController.text,
     );
-
-    final name = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(loc.saveAsTemplate),
-        content: TextField(
-          controller: nameController,
-          autofocus: true,
-          decoration: InputDecoration(labelText: loc.templateName),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(loc.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(nameController.text.trim()),
-            child: Text(loc.save),
-          ),
-        ],
-      ),
-    );
-    nameController.dispose();
-    if (name == null || name.isEmpty || !mounted) return;
-
-    final trimmedMerchant = _merchant?.trim();
-    await context.read<TemplateProvider>().addTemplate(
-          name: name,
-          type: _isIncome ? 'income' : 'expense',
-          amount: amount,
-          categoryId: _categoryId!,
-          accountId: _accountId!,
-          merchant: (trimmedMerchant == null || trimmedMerchant.isEmpty) ? null : trimmedMerchant,
-          note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
-        );
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.templateSaved(name))),
-      );
-    }
   }
 
   @override
@@ -305,10 +257,23 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         ),
         actions: [
           if (!isEditing)
-            IconButton(
-              icon: const Icon(Icons.bookmark_add_outlined),
-              tooltip: loc.saveAsTemplate,
-              onPressed: _saveAsTemplate,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.bookmark_add_outlined),
+                  tooltip: loc.saveAsTemplate,
+                  onPressed: _saveAsTemplate,
+                ),
+                Tooltip(
+                  message: loc.saveAsTemplateHelp,
+                  child: Icon(
+                    Icons.info_outline,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary.withAlpha(180),
+                  ),
+                ),
+              ],
             ),
         ],
       ),

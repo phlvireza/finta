@@ -597,6 +597,7 @@
 
   "fillOutFormFirst": "Isi jumlah, kategori, dan akun terlebih dahulu",
   "saveAsTemplate": "Simpan sebagai templat",
+  "saveAsTemplateHelp": "Simpan transaksi ini sebagai templat sekali klik yang dapat digunakan kembali",
   "templateName": "Nama templat",
   "templateSaved": "Menyimpan \"{name}\" sebagai templat",
   "@templateSaved": {
