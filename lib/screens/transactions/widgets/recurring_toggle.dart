@@ -8,6 +8,8 @@ class RecurringToggle extends StatelessWidget {
   final ValueChanged<bool> onToggle;
   final String frequency;
   final ValueChanged<String> onFrequencyChanged;
+  final bool isSubscription;
+  final ValueChanged<bool> onSubscriptionToggle;
 
   const RecurringToggle({
     super.key,
@@ -15,6 +17,8 @@ class RecurringToggle extends StatelessWidget {
     required this.onToggle,
     required this.frequency,
     required this.onFrequencyChanged,
+    required this.isSubscription,
+    required this.onSubscriptionToggle,
   });
 
   @override
@@ -72,6 +76,30 @@ class RecurringToggle extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: AppConstants.spacingMd),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Text(loc.markAsSubscription, style: theme.textTheme.titleMedium),
+                  const SizedBox(width: AppConstants.spacingSm),
+                  Tooltip(
+                    message: loc.markAsSubscriptionHelp,
+                    child: Icon(
+                      Icons.info_outline,
+                      size: 20,
+                      color: theme.colorScheme.primary.withAlpha(180),
+                    ),
+                  ),
+                ],
+              ),
+              Switch(
+                value: isSubscription,
+                onChanged: onSubscriptionToggle,
+              ),
+            ],
           ),
         ],
       ],

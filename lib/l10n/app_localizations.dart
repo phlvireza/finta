@@ -1952,6 +1952,18 @@ abstract class AppLocalizations {
   /// **'{owed} owed to you · {owe} you owe'**
   String netDebtSummary(String owed, String owe);
 
+  /// No description provided for @markAsSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Track as a subscription?'**
+  String get markAsSubscription;
+
+  /// No description provided for @markAsSubscriptionHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscriptions show up on the Subscriptions screen with their total cost, and can remind you before they renew.'**
+  String get markAsSubscriptionHelp;
+
   /// No description provided for @subscriptions.
   ///
   /// In en, this message translates to:

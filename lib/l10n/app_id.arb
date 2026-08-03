@@ -533,6 +533,8 @@
     }
   },
 
+  "markAsSubscription": "Lacak sebagai langganan?",
+  "markAsSubscriptionHelp": "Langganan muncul di layar Langganan beserta total biayanya, dan bisa mengingatkan Anda sebelum diperpanjang.",
   "subscriptions": "Langganan",
   "noSubscriptionsTitle": "Belum ada langganan yang dilacak",
   "noSubscriptionsSubtitle": "Tandai transaksi berulang sebagai langganan untuk melacak biayanya dan mendapat pengingat perpanjangan",

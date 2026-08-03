@@ -1035,6 +1035,13 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
+  String get markAsSubscription => 'Lacak sebagai langganan?';
+
+  @override
+  String get markAsSubscriptionHelp =>
+      'Langganan muncul di layar Langganan beserta total biayanya, dan bisa mengingatkan Anda sebelum diperpanjang.';
+
+  @override
   String get subscriptions => 'Langganan';
 
   @override

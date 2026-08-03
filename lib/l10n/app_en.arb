@@ -540,6 +540,8 @@
     }
   },
 
+  "markAsSubscription": "Track as a subscription?",
+  "markAsSubscriptionHelp": "Subscriptions show up on the Subscriptions screen with their total cost, and can remind you before they renew.",
   "subscriptions": "Subscriptions",
   "noSubscriptionsTitle": "No subscriptions tracked",
   "noSubscriptionsSubtitle": "Mark a recurring transaction as a subscription to track its cost and get renewal reminders",

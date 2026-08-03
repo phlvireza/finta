@@ -1034,6 +1034,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get markAsSubscription => 'Track as a subscription?';
+
+  @override
+  String get markAsSubscriptionHelp =>
+      'Subscriptions show up on the Subscriptions screen with their total cost, and can remind you before they renew.';
+
+  @override
   String get subscriptions => 'Subscriptions';
 
   @override

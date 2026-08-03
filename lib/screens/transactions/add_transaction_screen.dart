@@ -46,6 +46,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   bool _isRecurring = false;
   String _recurringFrequency = 'monthly';
+  bool _isSubscription = false;
 
   bool _isSaving = false;
   bool _autoValidate = false;
@@ -149,6 +150,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           note: _noteController.text.trim(),
           frequency: _recurringFrequency,
           startDate: _date,
+          isSubscription: _isSubscription,
         );
         recurringId = recTx.id;
       }
@@ -396,9 +398,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     if (!isEditing) ...[
                       RecurringToggle(
                         isRecurring: _isRecurring,
-                        onToggle: (val) => setState(() => _isRecurring = val),
+                        onToggle: (val) => setState(() {
+                          _isRecurring = val;
+                          if (!val) _isSubscription = false;
+                        }),
                         frequency: _recurringFrequency,
                         onFrequencyChanged: (val) => setState(() => _recurringFrequency = val),
+                        isSubscription: _isSubscription,
+                        onSubscriptionToggle: (val) => setState(() => _isSubscription = val),
                       ),
                       const SizedBox(height: AppConstants.spacingXxxl),
                     ],

@@ -63,6 +63,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
   String? _merchant;
   bool _isRecurring = false;
   String _recurringFrequency = 'monthly';
+  bool _isSubscription = false;
   bool _isSaving = false;
   String? _error;
   String? _templateFeedback;
@@ -120,6 +121,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
         _toAccountId = null;
         _noteController.clear();
         _isRecurring = false;
+        _isSubscription = false;
       }
     });
   }
@@ -230,6 +232,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
             note: note.isEmpty ? null : note,
             frequency: _recurringFrequency,
             startDate: _date,
+            isSubscription: _isSubscription,
           );
           recurringId = template.id;
         }
@@ -464,9 +467,14 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                   const SizedBox(height: AppConstants.spacingSm),
                   RecurringToggle(
                     isRecurring: _isRecurring,
-                    onToggle: (val) => setState(() => _isRecurring = val),
+                    onToggle: (val) => setState(() {
+                      _isRecurring = val;
+                      if (!val) _isSubscription = false;
+                    }),
                     frequency: _recurringFrequency,
                     onFrequencyChanged: (val) => setState(() => _recurringFrequency = val),
+                    isSubscription: _isSubscription,
+                    onSubscriptionToggle: (val) => setState(() => _isSubscription = val),
                   ),
                 ],
               ),
