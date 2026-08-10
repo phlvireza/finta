@@ -1284,11 +1284,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get healthScoreStability => 'Stability';
 
   @override
-  String projectedSpendLabel(String month) {
-    return 'Projected $month spend';
-  }
-
-  @override
   String get spendingInsightsTitle => 'Insights';
 
   @override

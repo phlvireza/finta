@@ -686,12 +686,6 @@
   "healthScoreSavings": "Tabungan",
   "healthScoreBudget": "Anggaran",
   "healthScoreStability": "Stabilitas",
-  "projectedSpendLabel": "Proyeksi pengeluaran {month}",
-  "@projectedSpendLabel": {
-    "placeholders": {
-      "month": { "type": "String" }
-    }
-  },
   "spendingInsightsTitle": "Wawasan",
   "noInsightsYet": "Belum ada perubahan berarti dari periode lalu",
   "unusualActivity": "Aktivitas tidak biasa",

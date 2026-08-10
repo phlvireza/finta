@@ -2342,12 +2342,6 @@ abstract class AppLocalizations {
   /// **'Stability'**
   String get healthScoreStability;
 
-  /// No description provided for @projectedSpendLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Projected {month} spend'**
-  String projectedSpendLabel(String month);
-
   /// No description provided for @spendingInsightsTitle.
   ///
   /// In en, this message translates to:

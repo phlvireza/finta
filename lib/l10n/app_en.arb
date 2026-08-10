@@ -693,12 +693,6 @@
   "healthScoreSavings": "Savings",
   "healthScoreBudget": "Budget",
   "healthScoreStability": "Stability",
-  "projectedSpendLabel": "Projected {month} spend",
-  "@projectedSpendLabel": {
-    "placeholders": {
-      "month": { "type": "String" }
-    }
-  },
   "spendingInsightsTitle": "Insights",
   "noInsightsYet": "No notable changes from last period yet",
   "unusualActivity": "Unusual activity",

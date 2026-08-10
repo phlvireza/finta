@@ -1286,11 +1286,6 @@ class AppLocalizationsId extends AppLocalizations {
   String get healthScoreStability => 'Stabilitas';
 
   @override
-  String projectedSpendLabel(String month) {
-    return 'Proyeksi pengeluaran $month';
-  }
-
-  @override
   String get spendingInsightsTitle => 'Wawasan';
 
   @override

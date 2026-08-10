@@ -11,12 +11,11 @@ import '../../core/utils/date_utils.dart';
 import '../../core/utils/health_score.dart';
 import '../../core/utils/insight_rules.dart';
 import '../../widgets/empty_state.dart';
-import '../dashboard/widgets/forecast_card.dart';
 import '../transactions/widgets/transaction_tile.dart';
 import '../../l10n/app_localizations.dart';
 
-/// The intelligence layer's home: financial health score, projected spend,
-/// rule-based spending insights, and unusual-activity flags — everything
+/// The intelligence layer's home: financial health score, rule-based
+/// spending insights, and unusual-activity flags — everything
 /// [InsightsProvider] computes from on-device statistics, no cloud calls.
 class InsightsHubScreen extends StatefulWidget {
   const InsightsHubScreen({super.key});
@@ -78,8 +77,6 @@ class _InsightsHubScreenState extends State<InsightsHubScreen> {
                     _HealthScoreCard(breakdown: insights.healthScore!),
                     const SizedBox(height: AppConstants.spacingXxxl),
                   ],
-                  const ForecastCard(),
-                  const SizedBox(height: AppConstants.spacingXxxl),
                   Text(loc.spendingInsightsTitle, style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: AppConstants.spacingMd),
                   if (insights.spendingInsights.isEmpty)
