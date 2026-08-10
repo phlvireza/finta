@@ -90,8 +90,8 @@ class AppDateUtils {
     return (start: periodStart, end: periodEnd);
   }
 
-  static ({DateTime start, DateTime end}) getWeeklyPeriod() {
-    final now = DateTime.now();
+  static ({DateTime start, DateTime end}) getWeeklyPeriod({DateTime? referenceDate}) {
+    final now = referenceDate ?? DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     // Assuming week starts on Monday
     final start = today.subtract(Duration(days: today.weekday - 1));
@@ -99,8 +99,8 @@ class AppDateUtils {
     return (start: start, end: end);
   }
 
-  static ({DateTime start, DateTime end}) getBiweeklyPeriod() {
-    final now = DateTime.now();
+  static ({DateTime start, DateTime end}) getBiweeklyPeriod({DateTime? referenceDate}) {
+    final now = referenceDate ?? DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     if (today.day <= 15) {
       return (
@@ -115,41 +115,50 @@ class AppDateUtils {
     }
   }
 
-  static ({DateTime start, DateTime end}) getQuarterlyPeriod({DateTime? referenceDate}) {
-    final now = referenceDate ?? DateTime.now();
-    final quarterStartMonth = ((now.month - 1) ~/ 3) * 3 + 1;
-    final start = DateTime(now.year, quarterStartMonth, 1);
-    final end = DateTime(now.year, quarterStartMonth + 3, 0);
-    return (start: start, end: end);
-  }
-
-  static ({DateTime start, DateTime end}) getYearlyPeriod({DateTime? referenceDate}) {
-    final now = referenceDate ?? DateTime.now();
-    return (start: DateTime(now.year, 1, 1), end: DateTime(now.year, 12, 31));
-  }
-
   /// Dispatches to the right "current period" function for a budget's
-  /// [periodType] ('weekly'|'monthly'|'quarterly'|'yearly'). Monthly is
-  /// the only one anchored to [payday] — the others use calendar
-  /// boundaries, since payday-anchoring is specifically a paycheck-cycle
-  /// concept.
-  static ({DateTime start, DateTime end}) getCurrentPeriodFor(String periodType, int payday) {
+  /// [periodType]. Monthly is the only one anchored to [payday]; weekly
+  /// uses calendar Mon–Sun, since payday-anchoring is specifically a
+  /// paycheck-cycle concept.
+  ///
+  /// [referenceDate] defaults to now. Pass it to get the period that
+  /// *contains* some other date — a one-off budget resolves its range
+  /// from its own `createdAt` rather than from today.
+  ///
+  /// **Budgets deliberately offer only 'weekly' and 'monthly'.**
+  /// [getBiweeklyPeriod] exists for the analytics period filter and the
+  /// recurring-transaction frequencies, not for budgets. Two things to
+  /// know before adding a `'biweekly'` case here:
+  ///
+  ///  - It must be paired with a matching case in [getPreviousPeriodFor].
+  ///    Without one, the walk-back falls through to [getPreviousPeriod]'s
+  ///    day-count heuristic, which recognises only monthly (28–31 days)
+  ///    and otherwise shifts by `end - start`. For Aug 1–15 that yields
+  ///    Jul 17–31 instead of Jul 16–31 — a day short, compounding at
+  ///    every step of `BudgetRolloverService`'s carry walk.
+  ///  - [getBiweeklyPeriod] is semi-monthly (1st–15th / 16th–EOM, so 15
+  ///    and 13–16 days), not a true 14-day cycle, despite its
+  ///    "Every 2 weeks" label.
+  static ({DateTime start, DateTime end}) getCurrentPeriodFor(
+    String periodType,
+    int payday, {
+    DateTime? referenceDate,
+  }) {
     switch (periodType) {
       case 'weekly':
-        return getWeeklyPeriod();
-      case 'quarterly':
-        return getQuarterlyPeriod();
-      case 'yearly':
-        return getYearlyPeriod();
+        return getWeeklyPeriod(referenceDate: referenceDate);
       case 'monthly':
       default:
-        return getCurrentPeriod(payday);
+        return getCurrentPeriod(payday, referenceDate: referenceDate);
     }
   }
 
   /// Steps [current] back one period for the given [periodType] — the
   /// budget-period counterpart to [getPreviousPeriod], which only knows
   /// about the fixed payday-anchored monthly period.
+  ///
+  /// Must stay in step with [getCurrentPeriodFor]: any period type added
+  /// there needs a case here too, or the rollover walk-back silently
+  /// drifts. See that method's note about biweekly.
   static ({DateTime start, DateTime end}) getPreviousPeriodFor(
     String periodType,
     ({DateTime start, DateTime end}) current,
@@ -160,15 +169,6 @@ class AppDateUtils {
         return (
           start: current.start.subtract(const Duration(days: 7)),
           end: current.end.subtract(const Duration(days: 7)),
-        );
-      case 'quarterly':
-        final start = DateTime(current.start.year, current.start.month - 3, 1);
-        final end = DateTime(start.year, start.month + 3, 0);
-        return (start: start, end: end);
-      case 'yearly':
-        return (
-          start: DateTime(current.start.year - 1, 1, 1),
-          end: DateTime(current.start.year - 1, 12, 31),
         );
       case 'monthly':
       default:

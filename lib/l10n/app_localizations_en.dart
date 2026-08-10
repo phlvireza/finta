@@ -456,9 +456,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createFirstRecurring => 'Set up recurring transactions';
 
   @override
-  String get quarter => 'Quarter';
-
-  @override
   String get year => 'Year';
 
   @override

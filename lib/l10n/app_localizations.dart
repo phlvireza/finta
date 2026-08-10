@@ -956,12 +956,6 @@ abstract class AppLocalizations {
   /// **'Set up recurring transactions'**
   String get createFirstRecurring;
 
-  /// No description provided for @quarter.
-  ///
-  /// In en, this message translates to:
-  /// **'Quarter'**
-  String get quarter;
-
   /// No description provided for @year.
   ///
   /// In en, this message translates to:

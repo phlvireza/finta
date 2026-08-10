@@ -6,6 +6,8 @@ import '../../../models/category_model.dart';
 import '../../../providers/analytics_provider.dart';
 import '../../../providers/category_provider.dart';
 import '../../../providers/settings_provider.dart';
+import '../../../providers/transaction_provider.dart';
+import '../../transactions/widgets/transaction_tile.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
@@ -65,6 +67,19 @@ class _TrendsReportScreenState extends State<TrendsReportScreen> {
         );
   }
 
+  /// Opens the transactions behind a heatmap cell. The heatmap only ever
+  /// showed intensity, so a dark day raised the obvious question — what was
+  /// it? — with no way to answer it without leaving for the history screen
+  /// and filtering by hand.
+  void _showDayTransactions(DateTime day) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => _DayTransactionsSheet(day: day),
+    );
+  }
+
   Future<void> _onTrendCategoryChanged(String? categoryId) async {
     if (categoryId == null) return;
     setState(() => _trendCategoryId = categoryId);
@@ -110,7 +125,9 @@ class _TrendsReportScreenState extends State<TrendsReportScreen> {
             dailyExpenses: analytics.dailyExpenses,
             focusedMonth: _heatmapMonth,
             onPageChanged: _onHeatmapPageChanged,
+            onDaySelected: _showDayTransactions,
             symbol: settings.currencySymbol,
+            useDecimals: settings.currencyUseDecimals,
           ),
           const SizedBox(height: AppConstants.spacingXxxl),
 
@@ -346,18 +363,23 @@ class _SpendingHeatmap extends StatelessWidget {
   final Map<String, double> dailyExpenses;
   final DateTime focusedMonth;
   final ValueChanged<DateTime> onPageChanged;
+  final ValueChanged<DateTime> onDaySelected;
   final String symbol;
+  final bool useDecimals;
 
   const _SpendingHeatmap({
     required this.dailyExpenses,
     required this.focusedMonth,
     required this.onPageChanged,
+    required this.onDaySelected,
     required this.symbol,
+    required this.useDecimals,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final isDark = theme.brightness == Brightness.dark;
     final expenseColor = isDark ? AppColors.darkExpense : AppColors.lightExpense;
 
@@ -365,52 +387,180 @@ class _SpendingHeatmap extends StatelessWidget {
         ? 0.0
         : dailyExpenses.values.reduce((a, b) => a > b ? a : b);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppConstants.radiusLg),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-      ),
-      padding: const EdgeInsets.all(AppConstants.spacingSm),
-      child: TableCalendar(
-        firstDay: DateTime.utc(2020, 1, 1),
-        lastDay: DateTime.utc(2030, 12, 31),
-        focusedDay: focusedMonth,
-        calendarFormat: CalendarFormat.month,
-        headerStyle: const HeaderStyle(formatButtonVisible: false),
-        availableGestures: AvailableGestures.horizontalSwipe,
-        onPageChanged: onPageChanged,
-        daysOfWeekVisible: true,
-        calendarBuilders: CalendarBuilders(
-          defaultBuilder: (context, day, focusedDay) => _dayCell(context, day, maxDay, expenseColor),
-          todayBuilder: (context, day, focusedDay) => _dayCell(context, day, maxDay, expenseColor, isToday: true),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+            border: Border.all(color: theme.colorScheme.outlineVariant),
+          ),
+          padding: const EdgeInsets.all(AppConstants.spacingSm),
+          child: TableCalendar(
+            firstDay: DateTime.utc(2020, 1, 1),
+            lastDay: DateTime.utc(2030, 12, 31),
+            focusedDay: focusedMonth,
+            calendarFormat: CalendarFormat.month,
+            headerStyle: const HeaderStyle(formatButtonVisible: false),
+            availableGestures: AvailableGestures.horizontalSwipe,
+            onPageChanged: onPageChanged,
+            onDaySelected: (selected, _) => onDaySelected(selected),
+            daysOfWeekVisible: true,
+            calendarBuilders: CalendarBuilders(
+              defaultBuilder: (context, day, focusedDay) => _dayCell(context, day, maxDay, expenseColor),
+              todayBuilder: (context, day, focusedDay) => _dayCell(context, day, maxDay, expenseColor, isToday: true),
+              outsideBuilder: (context, day, focusedDay) => _dayCell(context, day, maxDay, expenseColor, isOutside: true),
+            ),
+          ),
         ),
-      ),
+        const SizedBox(height: AppConstants.spacingSm),
+        Text(loc.heatmapTapHint, style: theme.textTheme.labelSmall),
+      ],
     );
   }
 
-  Widget _dayCell(BuildContext context, DateTime day, double maxDay, Color expenseColor, {bool isToday = false}) {
+  Widget _dayCell(
+    BuildContext context,
+    DateTime day,
+    double maxDay,
+    Color expenseColor, {
+    bool isToday = false,
+    bool isOutside = false,
+  }) {
     final theme = Theme.of(context);
     final key = AppDateUtils.formatIso(day);
     final amount = dailyExpenses[key] ?? 0;
     final intensity = maxDay > 0 ? (amount / maxDay).clamp(0.0, 1.0) : 0.0;
 
-    return Container(
-      margin: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        color: intensity > 0 ? expenseColor.withValues(alpha: 0.15 + intensity * 0.55) : null,
-        borderRadius: BorderRadius.circular(6),
-        border: isToday ? Border.all(color: theme.colorScheme.primary, width: 1.5) : null,
-      ),
-      child: Center(
-        child: Text(
-          '${day.day}',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: intensity > 0.4 ? Colors.white : theme.textTheme.bodyMedium?.color,
-            fontWeight: intensity > 0 ? FontWeight.bold : FontWeight.normal,
+    // Tooltip rather than an always-on label: the cell is barely wide
+    // enough for the date, and the tap sheet is the real answer.
+    return Tooltip(
+      message: amount > 0
+          ? NumberUtils.formatCurrency(amount, symbol: symbol, useDecimals: useDecimals)
+          : '',
+      excludeFromSemantics: amount <= 0,
+      child: Container(
+        margin: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          color: intensity > 0 ? expenseColor.withValues(alpha: 0.15 + intensity * 0.55) : null,
+          borderRadius: BorderRadius.circular(6),
+          border: isToday ? Border.all(color: theme.colorScheme.primary, width: 1.5) : null,
+        ),
+        child: Center(
+          child: Text(
+            '${day.day}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: intensity > 0.4
+                  ? Colors.white
+                  : (isOutside
+                      ? theme.textTheme.bodySmall?.color?.withValues(alpha: 0.4)
+                      : theme.textTheme.bodyMedium?.color),
+              fontWeight: intensity > 0 ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Everything that happened on one heatmap day.
+///
+/// Shows income alongside expenses even though the heatmap itself is
+/// expense-only — the question a tap asks is "what happened on this day",
+/// and a salary landing is part of that answer. The header total is
+/// recomputed from the listed transactions rather than read out of
+/// `dailyExpenses`, so the two can't disagree.
+class _DayTransactionsSheet extends StatelessWidget {
+  final DateTime day;
+
+  const _DayTransactionsSheet({required this.day});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
+    final settings = context.watch<SettingsProvider>();
+    final key = AppDateUtils.formatIso(day);
+
+    final transactions = context
+        .watch<TransactionProvider>()
+        .allTransactions
+        .where((t) => AppDateUtils.formatIso(t.date) == key)
+        .toList();
+
+    final spent = transactions
+        .where((t) => !t.isIncome && !t.isTransfer)
+        .fold<double>(0, (sum, t) => sum + t.amount);
+
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.5,
+      maxChildSize: 0.9,
+      builder: (context, scrollController) {
+        return Column(
+          children: [
+            const SizedBox(height: AppConstants.spacingSm),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.outline,
+                borderRadius: BorderRadius.circular(AppConstants.radiusFull),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(AppConstants.spacingLg),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(AppDateUtils.formatFull(day), style: theme.textTheme.titleLarge),
+                        Text(loc.totalSpent, style: theme.textTheme.labelMedium),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    NumberUtils.formatCurrency(
+                      spent,
+                      symbol: settings.currencySymbol,
+                      useDecimals: settings.currencyUseDecimals,
+                    ),
+                    style: AppTypography.amountStyle(
+                      color: theme.textTheme.bodyLarge!.color!,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: transactions.isEmpty
+                  ? EmptyState(
+                      icon: Icons.receipt_long_outlined,
+                      title: loc.noTransactionsOnThisDay,
+                      subtitle: '',
+                    )
+                  : ListView.builder(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(
+                        AppConstants.spacingLg,
+                        0,
+                        AppConstants.spacingLg,
+                        AppConstants.spacingLg,
+                      ),
+                      itemCount: transactions.length,
+                      itemBuilder: (context, index) =>
+                          TransactionTile(transaction: transactions[index], dense: true),
+                    ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

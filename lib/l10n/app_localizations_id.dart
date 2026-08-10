@@ -457,9 +457,6 @@ class AppLocalizationsId extends AppLocalizations {
   String get createFirstRecurring => 'Atur transaksi rutin';
 
   @override
-  String get quarter => 'Kuartal';
-
-  @override
   String get year => 'Tahun';
 
   @override
