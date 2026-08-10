@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../providers/account_provider.dart';
+import '../../../providers/analytics_provider.dart';
+import '../../../providers/budget_provider.dart';
 import '../../../providers/goal_provider.dart';
+import '../../../providers/settings_provider.dart';
 import '../../../providers/transaction_provider.dart';
 import '../../../models/goal_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/formatters/currency_formatter.dart';
 import '../../../core/database/seed_data.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/keypad_amount_field.dart';
 import '../../transactions/widgets/account_picker.dart';
 
 /// Bottom sheet to log a contribution toward a goal. A contribution is
@@ -51,18 +56,32 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
     }
     setState(() => _isSaving = true);
     final loc = AppLocalizations.of(context)!;
+    // A contribution is an ordinary expense, so everything an expense moves
+    // has to be reloaded here too — captured before the first await.
+    // Reloading only the goal used to leave net worth, the account carousel
+    // and any budget covering "Savings & Goals" showing pre-contribution
+    // numbers until the app was restarted.
+    final txProvider = context.read<TransactionProvider>();
+    final goalProvider = context.read<GoalProvider>();
+    final budgetProvider = context.read<BudgetProvider>();
+    final accountProvider = context.read<AccountProvider>();
+    final analytics = context.read<AnalyticsProvider>();
+    final settings = context.read<SettingsProvider>();
     try {
-      await context.read<TransactionProvider>().addTransaction(
-            type: 'expense',
-            amount: parseFormattedAmount(_amountController.text),
-            categoryId: SeedData.savingsGoalsCategoryId,
-            accountId: _accountId!,
-            date: DateTime.now(),
-            note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
-            goalId: widget.goal.id,
-          );
-      if (!mounted) return;
-      await context.read<GoalProvider>().loadGoals();
+      await txProvider.addTransaction(
+        type: 'expense',
+        amount: parseFormattedAmount(_amountController.text),
+        categoryId: SeedData.savingsGoalsCategoryId,
+        accountId: _accountId!,
+        date: DateTime.now(),
+        note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+        goalId: widget.goal.id,
+      );
+      await txProvider.loadTransactions(payday: settings.payday);
+      await budgetProvider.loadBudgets(payday: settings.payday);
+      await accountProvider.loadAccounts();
+      await analytics.loadForCurrentPeriod(settings.payday);
+      await goalProvider.loadGoals();
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
@@ -97,22 +116,15 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
                 style: theme.textTheme.titleLarge,
               ),
               const SizedBox(height: AppConstants.spacingXxl),
-              TextFormField(
+              KeypadAmountField(
                 controller: _amountController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [CurrencyInputFormatter()],
-                autofocus: true,
-                decoration: InputDecoration(
-                  labelText: loc.amount,
-                  filled: true,
-                  fillColor: theme.colorScheme.surfaceContainerHighest,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                validator: (val) =>
-                    parseFormattedAmount(val ?? '') <= 0 ? loc.pleaseEnterValidAmount : null,
+                labelText: loc.amount,
+                keypadLabel: loc.contributeToGoal(widget.goal.name),
+                // The sheet exists to enter one number, so open the keypad
+                // straight away — the same reason this field used to carry
+                // `autofocus: true` when it was an OS-keyboard field.
+                autoOpen: true,
+                validator: requiredAmountValidator(loc),
               ),
               const SizedBox(height: AppConstants.spacingLg),
               AccountPicker(

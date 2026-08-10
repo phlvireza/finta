@@ -950,6 +950,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get contributions => 'Contributions';
+
+  @override
+  String get noContributionsYet => 'No contributions yet';
+
+  @override
+  String get noContributionsYetMessage =>
+      'Every contribution you log shows up here with the wallet it came from';
+
+  @override
   String get debts => 'Debts';
 
   @override
@@ -1025,6 +1035,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String confirmArchiveDebt(String name, int count) {
     return '\"$name\" has $count repayments. It will be archived instead of deleted so your history stays intact.';
   }
+
+  @override
+  String get repayments => 'Repayments';
+
+  @override
+  String get noRepaymentsYet => 'No repayments yet';
+
+  @override
+  String get noRepaymentsYetMessage =>
+      'Every repayment you log shows up here with the wallet it went through';
 
   @override
   String get payoffCalculator => 'Payoff calculator';

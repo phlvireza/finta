@@ -7,6 +7,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/formatters/currency_formatter.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/keypad_amount_field.dart';
 
 /// Form for creating or editing a debt (money lent to, or borrowed from,
 /// someone). The principal is fixed here; repayments are logged separately
@@ -173,21 +174,10 @@ class _DebtFormState extends State<DebtForm> {
                     (val == null || val.trim().isEmpty) ? loc.pleaseEnterName : null,
               ),
               const SizedBox(height: AppConstants.spacingLg),
-              TextFormField(
+              KeypadAmountField(
                 controller: _principalController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [CurrencyInputFormatter()],
-                decoration: InputDecoration(
-                  labelText: loc.principalAmount,
-                  filled: true,
-                  fillColor: theme.colorScheme.surfaceContainerHighest,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                validator: (val) =>
-                    parseFormattedAmount(val ?? '') <= 0 ? loc.pleaseEnterValidAmount : null,
+                labelText: loc.principalAmount,
+                validator: requiredAmountValidator(loc),
               ),
               const SizedBox(height: AppConstants.spacingLg),
               TextFormField(

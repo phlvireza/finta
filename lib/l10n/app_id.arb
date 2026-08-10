@@ -486,6 +486,9 @@
       "count": { "type": "int" }
     }
   },
+  "contributions": "Setoran",
+  "noContributionsYet": "Belum ada setoran",
+  "noContributionsYetMessage": "Setiap setoran yang kamu catat akan muncul di sini beserta dompet asalnya",
 
   "debts": "Utang Piutang",
   "addDebt": "Tambah catatan",
@@ -536,6 +539,9 @@
       "count": { "type": "int" }
     }
   },
+  "repayments": "Pembayaran",
+  "noRepaymentsYet": "Belum ada pembayaran",
+  "noRepaymentsYetMessage": "Setiap pembayaran yang kamu catat akan muncul di sini beserta dompet yang dipakai",
   "payoffCalculator": "Kalkulator pelunasan",
   "payoffOutstandingLabel": "Sisa: {amount}",
   "@payoffOutstandingLabel": {

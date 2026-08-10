@@ -493,6 +493,9 @@
       "count": { "type": "int" }
     }
   },
+  "contributions": "Contributions",
+  "noContributionsYet": "No contributions yet",
+  "noContributionsYetMessage": "Every contribution you log shows up here with the wallet it came from",
 
   "debts": "Debts",
   "addDebt": "Add debt",
@@ -543,6 +546,9 @@
       "count": { "type": "int" }
     }
   },
+  "repayments": "Repayments",
+  "noRepaymentsYet": "No repayments yet",
+  "noRepaymentsYetMessage": "Every repayment you log shows up here with the wallet it went through",
   "payoffCalculator": "Payoff calculator",
   "payoffOutstandingLabel": "Outstanding: {amount}",
   "@payoffOutstandingLabel": {

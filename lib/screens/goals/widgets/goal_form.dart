@@ -7,6 +7,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/formatters/currency_formatter.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/keypad_amount_field.dart';
 
 /// Form for creating or editing a savings goal.
 class GoalForm extends StatefulWidget {
@@ -147,23 +148,10 @@ class _GoalFormState extends State<GoalForm> {
                     (val == null || val.trim().isEmpty) ? loc.pleaseEnterName : null,
               ),
               const SizedBox(height: AppConstants.spacingLg),
-              TextFormField(
+              KeypadAmountField(
                 controller: _targetAmountController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [CurrencyInputFormatter()],
-                decoration: InputDecoration(
-                  labelText: loc.targetAmount,
-                  filled: true,
-                  fillColor: theme.colorScheme.surfaceContainerHighest,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                validator: (val) {
-                  final amount = parseFormattedAmount(val ?? '');
-                  return amount <= 0 ? loc.pleaseEnterValidAmount : null;
-                },
+                labelText: loc.targetAmount,
+                validator: requiredAmountValidator(loc),
               ),
               const SizedBox(height: AppConstants.spacingLg),
               Text(loc.targetDateOptional, style: theme.textTheme.labelMedium),

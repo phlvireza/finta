@@ -6,6 +6,7 @@ import '../../../models/account_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/formatters/currency_formatter.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/keypad_amount_field.dart';
 
 /// Form for creating or editing an account.
 class AccountForm extends StatefulWidget {
@@ -212,36 +213,18 @@ class _AccountFormState extends State<AccountForm> {
               ),
               const SizedBox(height: AppConstants.spacingLg),
 
-              TextFormField(
+              KeypadAmountField(
                 controller: _openingBalanceController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [CurrencyInputFormatter()],
-                decoration: InputDecoration(
-                  labelText: loc.openingBalance,
-                  filled: true,
-                  fillColor: theme.colorScheme.surfaceContainerHighest,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
+                labelText: loc.openingBalance,
+                validator: optionalAmountValidator(loc),
               ),
 
               if (_type == 'credit_card') ...[
                 const SizedBox(height: AppConstants.spacingLg),
-                TextFormField(
+                KeypadAmountField(
                   controller: _creditLimitController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [CurrencyInputFormatter()],
-                  decoration: InputDecoration(
-                    labelText: loc.creditLimitOptional,
-                    filled: true,
-                    fillColor: theme.colorScheme.surfaceContainerHighest,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
+                  labelText: loc.creditLimitOptional,
+                  validator: optionalAmountValidator(loc),
                 ),
               ],
               const SizedBox(height: AppConstants.spacingXxl),

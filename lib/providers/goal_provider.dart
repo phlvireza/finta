@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/goal_model.dart';
+import '../models/transaction_model.dart';
 import '../repositories/goal_repository.dart';
+import '../repositories/transaction_repository.dart';
 import '../core/utils/goal_projection.dart';
 
 /// Manages goal state — load, create, update, archive, and the
 /// derived-from-transactions progress map goal cards read from.
 class GoalProvider extends ChangeNotifier {
   final GoalRepository _repository;
+
+  /// Held so the detail screen can list the contributions behind
+  /// [progressOf] without a screen reaching for a repository itself — the
+  /// same arrangement `BudgetProvider` uses for its transaction queries.
+  final TransactionRepository _transactionRepo;
+
   static const _uuid = Uuid();
 
-  GoalProvider({GoalRepository? repository}) : _repository = repository ?? GoalRepository();
+  GoalProvider({GoalRepository? repository, TransactionRepository? transactionRepository})
+      : _repository = repository ?? GoalRepository(),
+        _transactionRepo = transactionRepository ?? TransactionRepository();
 
   List<GoalModel> _goals = [];
   Map<String, double> _progress = {};
@@ -40,6 +50,11 @@ class GoalProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  /// Every contribution and withdrawal tagged with this goal, newest first —
+  /// the rows that add up to [progressOf].
+  Future<List<TransactionModel>> transactionsFor(String goalId) =>
+      _transactionRepo.getByGoalId(goalId);
 
   GoalModel? getGoalById(String id) {
     try {

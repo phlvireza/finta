@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../providers/account_provider.dart';
+import '../../../providers/analytics_provider.dart';
+import '../../../providers/budget_provider.dart';
 import '../../../providers/debt_provider.dart';
+import '../../../providers/settings_provider.dart';
 import '../../../providers/transaction_provider.dart';
 import '../../../models/debt_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/formatters/currency_formatter.dart';
 import '../../../core/database/seed_data.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/keypad_amount_field.dart';
 import '../../transactions/widgets/account_picker.dart';
 
 /// Bottom sheet to log a repayment against a debt. For a debt you owe
@@ -52,20 +57,35 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
     }
     setState(() => _isSaving = true);
     final loc = AppLocalizations.of(context)!;
+    // A repayment is an ordinary transaction, so everything a transaction
+    // moves has to be reloaded here too — captured before the first await.
+    // Reloading only the debt used to leave net worth and the account
+    // carousel stale until the app was restarted, which is most visible on a
+    // 'lent' debt, where the repayment is income that should *raise* the
+    // account's balance on screen.
+    final txProvider = context.read<TransactionProvider>();
+    final debtProvider = context.read<DebtProvider>();
+    final budgetProvider = context.read<BudgetProvider>();
+    final accountProvider = context.read<AccountProvider>();
+    final analytics = context.read<AnalyticsProvider>();
+    final settings = context.read<SettingsProvider>();
     try {
-      await context.read<TransactionProvider>().addTransaction(
-            type: widget.debt.isBorrowed ? 'expense' : 'income',
-            amount: parseFormattedAmount(_amountController.text),
-            categoryId: widget.debt.isBorrowed
-                ? SeedData.debtPaymentsCategoryId
-                : SeedData.debtRepaymentsCategoryId,
-            accountId: _accountId!,
-            date: DateTime.now(),
-            note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
-            debtId: widget.debt.id,
-          );
-      if (!mounted) return;
-      await context.read<DebtProvider>().loadDebts();
+      await txProvider.addTransaction(
+        type: widget.debt.isBorrowed ? 'expense' : 'income',
+        amount: parseFormattedAmount(_amountController.text),
+        categoryId: widget.debt.isBorrowed
+            ? SeedData.debtPaymentsCategoryId
+            : SeedData.debtRepaymentsCategoryId,
+        accountId: _accountId!,
+        date: DateTime.now(),
+        note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+        debtId: widget.debt.id,
+      );
+      await txProvider.loadTransactions(payday: settings.payday);
+      await budgetProvider.loadBudgets(payday: settings.payday);
+      await accountProvider.loadAccounts();
+      await analytics.loadForCurrentPeriod(settings.payday);
+      await debtProvider.loadDebts();
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
@@ -100,22 +120,18 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
                 style: theme.textTheme.titleLarge,
               ),
               const SizedBox(height: AppConstants.spacingXxl),
-              TextFormField(
+              KeypadAmountField(
                 controller: _amountController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [CurrencyInputFormatter()],
-                autofocus: true,
-                decoration: InputDecoration(
-                  labelText: loc.amount,
-                  filled: true,
-                  fillColor: theme.colorScheme.surfaceContainerHighest,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                validator: (val) =>
-                    parseFormattedAmount(val ?? '') <= 0 ? loc.pleaseEnterValidAmount : null,
+                labelText: loc.amount,
+                keypadLabel: loc.logRepayment(widget.debt.name),
+                // Money coming back on a debt you lent out is income, so the
+                // keypad should read in the income colour.
+                isIncome: !widget.debt.isBorrowed,
+                // The sheet exists to enter one number, so open the keypad
+                // straight away — the same reason this field used to carry
+                // `autofocus: true` when it was an OS-keyboard field.
+                autoOpen: true,
+                validator: requiredAmountValidator(loc),
               ),
               const SizedBox(height: AppConstants.spacingLg),
               AccountPicker(

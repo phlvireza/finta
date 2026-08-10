@@ -951,6 +951,16 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
+  String get contributions => 'Setoran';
+
+  @override
+  String get noContributionsYet => 'Belum ada setoran';
+
+  @override
+  String get noContributionsYetMessage =>
+      'Setiap setoran yang kamu catat akan muncul di sini beserta dompet asalnya';
+
+  @override
   String get debts => 'Utang Piutang';
 
   @override
@@ -1026,6 +1036,16 @@ class AppLocalizationsId extends AppLocalizations {
   String confirmArchiveDebt(String name, int count) {
     return '\"$name\" memiliki $count pembayaran. Catatan ini akan diarsipkan, bukan dihapus, agar riwayatnya tetap utuh.';
   }
+
+  @override
+  String get repayments => 'Pembayaran';
+
+  @override
+  String get noRepaymentsYet => 'Belum ada pembayaran';
+
+  @override
+  String get noRepaymentsYetMessage =>
+      'Setiap pembayaran yang kamu catat akan muncul di sini beserta dompet yang dipakai';
 
   @override
   String get payoffCalculator => 'Kalkulator pelunasan';

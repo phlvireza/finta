@@ -213,6 +213,48 @@ class TransactionRepository {
     }
   }
 
+  /// The rows behind `GoalRepository.getAllProgress` — every transaction
+  /// tagged with this goal, contributions (expense) and withdrawals (income)
+  /// alike. The detail screen prints that aggregate in its header and these
+  /// rows underneath it, so the two `WHERE` clauses must stay in step; any
+  /// divergence reads to the user as a lost contribution.
+  ///
+  /// Deliberately unfiltered by date: a goal is a running total from the day
+  /// it was created, not a per-period figure like a budget.
+  Future<List<TransactionModel>> getByGoalId(String goalId) async {
+    try {
+      final db = await _dbHelper.database;
+      final maps = await db.query(
+        'transactions',
+        where: 'goalId = ?',
+        whereArgs: [goalId],
+        orderBy: 'date DESC, createdAt DESC',
+      );
+      return maps.map((m) => TransactionModel.fromMap(m)).toList();
+    } catch (e) {
+      throw DatabaseException('Failed to get transactions by goal', cause: e);
+    }
+  }
+
+  /// The rows behind `DebtRepository.getAllRepaid` — the debt twin of
+  /// [getByGoalId]. Both directions count: a debt you borrowed is repaid with
+  /// expenses, a debt you lent out is repaid with income, and `getAllRepaid`
+  /// sums `amount` regardless of type, so this must not filter on type either.
+  Future<List<TransactionModel>> getByDebtId(String debtId) async {
+    try {
+      final db = await _dbHelper.database;
+      final maps = await db.query(
+        'transactions',
+        where: 'debtId = ?',
+        whereArgs: [debtId],
+        orderBy: 'date DESC, createdAt DESC',
+      );
+      return maps.map((m) => TransactionModel.fromMap(m)).toList();
+    } catch (e) {
+      throw DatabaseException('Failed to get transactions by debt', cause: e);
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getMonthlySums(int year) async {
     try {
       final db = await _dbHelper.database;

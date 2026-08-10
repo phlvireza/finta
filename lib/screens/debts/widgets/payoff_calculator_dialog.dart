@@ -7,6 +7,7 @@ import '../../../core/formatters/currency_formatter.dart';
 import '../../../core/utils/debt_payoff.dart';
 import '../../../core/utils/number_utils.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/keypad_amount_field.dart';
 
 /// Simple single-debt payoff estimate: "at $X/month, this debt clears in
 /// N months." A flat month-by-month simulation (see monthsToPayOff), not a
@@ -35,7 +36,20 @@ class _PayoffCalculatorDialogState extends State<PayoffCalculatorDialog> {
   final _paymentController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    // The estimate below the field is recomputed on every change to the
+    // amount. It used to hang off the field's `onChanged`, which the keypad
+    // never fires — it writes `controller.text` directly — so listen to the
+    // controller instead.
+    _paymentController.addListener(_onPaymentChanged);
+  }
+
+  void _onPaymentChanged() => setState(() {});
+
+  @override
   void dispose() {
+    _paymentController.removeListener(_onPaymentChanged);
     _paymentController.dispose();
     super.dispose();
   }
@@ -65,16 +79,9 @@ class _PayoffCalculatorDialogState extends State<PayoffCalculatorDialog> {
             ),
           ),
           const SizedBox(height: AppConstants.spacingLg),
-          TextField(
+          KeypadAmountField(
             controller: _paymentController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [CurrencyInputFormatter()],
-            autofocus: true,
-            decoration: InputDecoration(
-              labelText: loc.monthlyPayment,
-              border: const OutlineInputBorder(),
-            ),
-            onChanged: (_) => setState(() {}),
+            labelText: loc.monthlyPayment,
           ),
           const SizedBox(height: AppConstants.spacingLg),
           if (payment > 0)

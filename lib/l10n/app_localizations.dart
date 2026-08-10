@@ -1820,6 +1820,24 @@ abstract class AppLocalizations {
   /// **'\"{name}\" has {count} contributions. It will be archived instead of deleted so your history stays intact.'**
   String confirmArchiveGoal(String name, int count);
 
+  /// No description provided for @contributions.
+  ///
+  /// In en, this message translates to:
+  /// **'Contributions'**
+  String get contributions;
+
+  /// No description provided for @noContributionsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No contributions yet'**
+  String get noContributionsYet;
+
+  /// No description provided for @noContributionsYetMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Every contribution you log shows up here with the wallet it came from'**
+  String get noContributionsYetMessage;
+
   /// No description provided for @debts.
   ///
   /// In en, this message translates to:
@@ -1951,6 +1969,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'\"{name}\" has {count} repayments. It will be archived instead of deleted so your history stays intact.'**
   String confirmArchiveDebt(String name, int count);
+
+  /// No description provided for @repayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Repayments'**
+  String get repayments;
+
+  /// No description provided for @noRepaymentsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No repayments yet'**
+  String get noRepaymentsYet;
+
+  /// No description provided for @noRepaymentsYetMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Every repayment you log shows up here with the wallet it went through'**
+  String get noRepaymentsYetMessage;
 
   /// No description provided for @payoffCalculator.
   ///

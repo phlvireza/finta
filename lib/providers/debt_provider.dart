@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/debt_model.dart';
+import '../models/transaction_model.dart';
 import '../repositories/debt_repository.dart';
+import '../repositories/transaction_repository.dart';
 
 /// Manages debt state — load, create, update, archive, and the
 /// derived-from-transactions repaid/outstanding map debt cards read from.
 class DebtProvider extends ChangeNotifier {
   final DebtRepository _repository;
+
+  /// Held so the detail screen can list the repayments behind [repaidOf]
+  /// without a screen reaching for a repository itself — the same
+  /// arrangement `BudgetProvider` uses for its transaction queries.
+  final TransactionRepository _transactionRepo;
+
   static const _uuid = Uuid();
 
-  DebtProvider({DebtRepository? repository}) : _repository = repository ?? DebtRepository();
+  DebtProvider({DebtRepository? repository, TransactionRepository? transactionRepository})
+      : _repository = repository ?? DebtRepository(),
+        _transactionRepo = transactionRepository ?? TransactionRepository();
 
   List<DebtModel> _debts = [];
   Map<String, double> _repaid = {};
@@ -56,6 +66,11 @@ class DebtProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  /// Every repayment tagged with this debt, newest first — the rows that add
+  /// up to [repaidOf].
+  Future<List<TransactionModel>> transactionsFor(String debtId) =>
+      _transactionRepo.getByDebtId(debtId);
 
   DebtModel? getDebtById(String id) {
     try {
