@@ -127,10 +127,6 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
                 // Money coming back on a debt you lent out is income, so the
                 // keypad should read in the income colour.
                 isIncome: !widget.debt.isBorrowed,
-                // The sheet exists to enter one number, so open the keypad
-                // straight away — the same reason this field used to carry
-                // `autofocus: true` when it was an OS-keyboard field.
-                autoOpen: true,
                 validator: requiredAmountValidator(loc),
               ),
               const SizedBox(height: AppConstants.spacingLg),

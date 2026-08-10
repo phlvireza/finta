@@ -120,10 +120,6 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
                 controller: _amountController,
                 labelText: loc.amount,
                 keypadLabel: loc.contributeToGoal(widget.goal.name),
-                // The sheet exists to enter one number, so open the keypad
-                // straight away — the same reason this field used to carry
-                // `autofocus: true` when it was an OS-keyboard field.
-                autoOpen: true,
                 validator: requiredAmountValidator(loc),
               ),
               const SizedBox(height: AppConstants.spacingLg),

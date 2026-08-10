@@ -22,7 +22,7 @@ import 'amount_keypad.dart';
 /// screens whose whole purpose is one amount. This is the compact sibling for
 /// forms with several fields, where a hero would push everything else below
 /// the fold.
-class KeypadAmountField extends StatefulWidget {
+class KeypadAmountField extends StatelessWidget {
   final TextEditingController controller;
 
   /// Label on the field itself. Also the keypad's heading unless
@@ -36,11 +36,6 @@ class KeypadAmountField extends StatefulWidget {
   /// out or owed.
   final bool isIncome;
 
-  /// Opens the keypad on the first frame. Used only by sheets whose sole
-  /// purpose is entering one amount, which previously carried
-  /// `autofocus: true` to pop the OS keyboard on open.
-  final bool autoOpen;
-
   final FormFieldValidator<String>? validator;
 
   const KeypadAmountField({
@@ -49,31 +44,20 @@ class KeypadAmountField extends StatefulWidget {
     required this.labelText,
     this.keypadLabel,
     this.isIncome = false,
-    this.autoOpen = false,
     this.validator,
   });
 
-  @override
-  State<KeypadAmountField> createState() => _KeypadAmountFieldState();
-}
-
-class _KeypadAmountFieldState extends State<KeypadAmountField> {
-  @override
-  void initState() {
-    super.initState();
-    if (widget.autoOpen) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _openKeypad();
-      });
-    }
-  }
-
-  void _openKeypad() {
+  /// Only ever called from the field's own `onTap`. The keypad is a
+  /// near-full-height modal sheet, so opening it on the first frame would
+  /// bury whatever sheet this field lives in before the user has seen it —
+  /// which is why [AmountInputField] is given `autofocus: false` on the
+  /// transaction screen too. Every amount in the app waits for a tap.
+  void _openKeypad(BuildContext context) {
     AmountKeypad.show(
       context,
-      controller: widget.controller,
-      isIncome: widget.isIncome,
-      labelOverride: widget.keypadLabel ?? widget.labelText,
+      controller: controller,
+      isIncome: isIncome,
+      labelOverride: keypadLabel ?? labelText,
     );
   }
 
@@ -88,14 +72,14 @@ class _KeypadAmountFieldState extends State<KeypadAmountField> {
     // its own. [AmountInputField] needs an explicit listener for this only
     // because it drives a bare TextField — don't copy that hack here.
     return TextFormField(
-      controller: widget.controller,
+      controller: controller,
       readOnly: true,
       showCursor: false,
       enableInteractiveSelection: false,
-      onTap: _openKeypad,
-      validator: widget.validator,
+      onTap: () => _openKeypad(context),
+      validator: validator,
       decoration: InputDecoration(
-        labelText: widget.labelText,
+        labelText: labelText,
         prefixText: '${settings.currencySymbol} ',
         filled: true,
         fillColor: theme.colorScheme.surfaceContainerHighest,
