@@ -531,9 +531,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whereItWent => 'Where it went';
 
   @override
-  String get budgetPerformance => 'Budget performance';
-
-  @override
   String get reports => 'Reports';
 
   @override
@@ -702,6 +699,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get budgetPeriod => 'Period';
+
+  @override
+  String get budgetRepeat => 'Repeat every period';
+
+  @override
+  String budgetRepeatRenewsOn(String date) {
+    return 'Renews $date.';
+  }
+
+  @override
+  String budgetRepeatEndsOn(String date) {
+    return 'Ends $date. Covers this period only.';
+  }
+
+  @override
+  String get endedBudgets => 'Ended';
+
+  @override
+  String budgetEndedOn(String date) {
+    return 'Ended $date';
+  }
 
   @override
   String get budgetRollover => 'Rollover';

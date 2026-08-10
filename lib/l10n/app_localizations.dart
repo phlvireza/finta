@@ -1094,12 +1094,6 @@ abstract class AppLocalizations {
   /// **'Where it went'**
   String get whereItWent;
 
-  /// No description provided for @budgetPerformance.
-  ///
-  /// In en, this message translates to:
-  /// **'Budget performance'**
-  String get budgetPerformance;
-
   /// No description provided for @reports.
   ///
   /// In en, this message translates to:
@@ -1411,6 +1405,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Period'**
   String get budgetPeriod;
+
+  /// No description provided for @budgetRepeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat every period'**
+  String get budgetRepeat;
+
+  /// No description provided for @budgetRepeatRenewsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Renews {date}.'**
+  String budgetRepeatRenewsOn(String date);
+
+  /// No description provided for @budgetRepeatEndsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends {date}. Covers this period only.'**
+  String budgetRepeatEndsOn(String date);
+
+  /// No description provided for @endedBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended'**
+  String get endedBudgets;
+
+  /// No description provided for @budgetEndedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended {date}'**
+  String budgetEndedOn(String date);
 
   /// No description provided for @budgetRollover.
   ///

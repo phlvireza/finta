@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/budget_model.dart';
+import '../models/transaction_model.dart';
 import '../repositories/budget_repository.dart';
 import '../repositories/transaction_repository.dart';
 import '../core/services/budget_rollover_service.dart';
@@ -22,7 +23,19 @@ class BudgetStatus {
   final double spent;
   final double rolloverAmount;
 
-  const BudgetStatus({required this.budget, required this.spent, this.rolloverAmount = 0});
+  /// The date range [spent] was measured over. Carried on the status so
+  /// pace bars and dashboard cards read the same range the number came
+  /// from — recomputing it widget-side would silently disagree for a
+  /// one-off budget, which is pinned to its creation period rather than
+  /// to today's.
+  final ({DateTime start, DateTime end}) period;
+
+  const BudgetStatus({
+    required this.budget,
+    required this.spent,
+    required this.period,
+    this.rolloverAmount = 0,
+  });
 
   /// The limit that actually applies to this period, once rollover from
   /// prior periods is folded in — this is what [ratio]/[remaining] measure
@@ -65,6 +78,15 @@ class BudgetProvider extends ChangeNotifier {
   List<BudgetModel> get activeBudgets =>
       _budgets.where((b) => b.isActive).toList();
 
+  /// One-off budgets that have run their course — retired by
+  /// `BudgetExpiryService` rather than deleted, so the user sees them wind
+  /// down instead of silently vanishing at the period boundary.
+  ///
+  /// Deliberately excludes recurring budgets a user deactivated by other
+  /// means; those aren't "ended", they're switched off.
+  List<BudgetModel> get endedBudgets =>
+      _budgets.where((b) => !b.isActive && !b.isRecurring).toList();
+
   void clearError() {
     _error = null;
     notifyListeners();
@@ -89,26 +111,68 @@ class BudgetProvider extends ChangeNotifier {
   }
 
   /// Recalculate every active budget's spending status for its own
-  /// current period (periods can differ per budget: weekly/monthly/
-  /// quarterly/yearly).
+  /// current period (periods can differ per budget: weekly or monthly).
   Future<void> _calculateStatuses(int payday) async {
     final statuses = <String, BudgetStatus>{};
 
     for (final budget in _budgets.where((b) => b.isActive)) {
-      final period = AppDateUtils.getCurrentPeriodFor(budget.period, payday);
+      final period = _periodFor(budget, payday);
       final spent = await _spentFor(budget, period.start, period.end);
       final rollover = await _rolloverService.getCarriedAmount(budget, payday: payday);
-      statuses[budget.id] = BudgetStatus(budget: budget, spent: spent, rolloverAmount: rollover);
+      statuses[budget.id] =
+          BudgetStatus(budget: budget, spent: spent, period: period, rolloverAmount: rollover);
     }
 
     _budgetStatuses = statuses;
   }
 
+  /// The date range [budget] measures spending over.
+  ///
+  /// A recurring budget always means "right now". A one-off budget stays
+  /// pinned to the period it was created in, so it still reports the right
+  /// numbers if the app wasn't opened before `BudgetExpiryService` could
+  /// retire it — otherwise it would silently start measuring against a
+  /// period it was never meant to cover.
+  ({DateTime start, DateTime end}) _periodFor(BudgetModel budget, int payday) {
+    return AppDateUtils.getCurrentPeriodFor(
+      budget.period,
+      payday,
+      referenceDate: budget.isRecurring ? null : budget.createdAt,
+    );
+  }
+
+  /// What [budget] has spent in a range. Paired with [transactionsFor]:
+  /// whatever this counts, that must list, or the detail screen shows a
+  /// total its own transactions don't add up to. Change one, change both.
   Future<double> _spentFor(BudgetModel budget, DateTime start, DateTime end) {
     if (budget.scope == 'overall') {
       return _transactionRepo.getSumByTypeAndDateRange('expense', start, end);
     }
     return _transactionRepo.getCategoriesSumByDateRange(budget.categoryIds, start, end);
+  }
+
+  /// The transactions behind [BudgetStatus.spent] — the rows [_spentFor]
+  /// summed, newest first.
+  ///
+  /// Fetched on demand rather than held in [_budgetStatuses]: only the
+  /// detail screen needs the rows, and caching a list per budget would mean
+  /// re-loading every budget's transactions on each `loadBudgets`.
+  ///
+  /// Takes the period from the caller's [BudgetStatus] instead of
+  /// recomputing it, for the reason spelled out on [BudgetStatus.period] —
+  /// a one-off budget is pinned to its creation period, not today's.
+  Future<List<TransactionModel>> transactionsFor(
+    BudgetModel budget, {
+    required ({DateTime start, DateTime end}) period,
+  }) {
+    if (budget.scope == 'overall') {
+      return _transactionRepo.getByTypeAndDateRange('expense', period.start, period.end);
+    }
+    return _transactionRepo.getCategoriesByDateRange(
+      budget.categoryIds,
+      period.start,
+      period.end,
+    );
   }
 
   /// The status of whichever active budget covers [categoryId] — a
@@ -168,6 +232,7 @@ class BudgetProvider extends ChangeNotifier {
     required String scope,
     required List<String> categoryIds,
     required int payday,
+    bool isRecurring = false,
   }) async {
     try {
       final now = DateTime.now();
@@ -180,6 +245,7 @@ class BudgetProvider extends ChangeNotifier {
         scope: scope,
         categoryIds: scope == 'overall' ? const [] : categoryIds,
         isActive: true,
+        isRecurring: isRecurring,
         createdAt: now,
         updatedAt: now,
       );
@@ -187,10 +253,11 @@ class BudgetProvider extends ChangeNotifier {
       await _repository.insert(budget);
       _budgets.add(budget);
 
-      final periodRange = AppDateUtils.getCurrentPeriodFor(budget.period, payday);
+      final periodRange = _periodFor(budget, payday);
       final spent = await _spentFor(budget, periodRange.start, periodRange.end);
       final rollover = await _rolloverService.getCarriedAmount(budget, payday: payday);
-      _budgetStatuses[budget.id] = BudgetStatus(budget: budget, spent: spent, rolloverAmount: rollover);
+      _budgetStatuses[budget.id] =
+          BudgetStatus(budget: budget, spent: spent, period: periodRange, rolloverAmount: rollover);
 
       notifyListeners();
     } catch (e) {
@@ -206,10 +273,11 @@ class BudgetProvider extends ChangeNotifier {
       if (index != -1) {
         _budgets[index] = updated;
 
-        final periodRange = AppDateUtils.getCurrentPeriodFor(updated.period, payday);
+        final periodRange = _periodFor(updated, payday);
         final spent = await _spentFor(updated, periodRange.start, periodRange.end);
         final rollover = await _rolloverService.getCarriedAmount(updated, payday: payday);
-        _budgetStatuses[updated.id] = BudgetStatus(budget: updated, spent: spent, rolloverAmount: rollover);
+        _budgetStatuses[updated.id] = BudgetStatus(
+            budget: updated, spent: spent, period: periodRange, rolloverAmount: rollover);
 
         notifyListeners();
       }

@@ -12,19 +12,17 @@ import 'budget_pace_bar.dart';
 
 /// Progress bar visualizing budget usage — works for any scope
 /// (category/group/overall) and any period length, via
-/// [resolveBudgetDisplay] and [AppDateUtils.getCurrentPeriodFor].
+/// [resolveBudgetDisplay] and the range [BudgetStatus] was measured over.
 class BudgetProgressBar extends StatelessWidget {
   final BudgetStatus status;
   final String symbol;
   final bool useDecimals;
-  final int payday;
 
   const BudgetProgressBar({
     super.key,
     required this.status,
     required this.symbol,
     required this.useDecimals,
-    required this.payday,
   });
 
   @override
@@ -48,8 +46,7 @@ class BudgetProgressBar extends StatelessWidget {
     );
 
     final ratio = status.ratio.clamp(0.0, 1.0);
-    final period = AppDateUtils.getCurrentPeriodFor(status.budget.period, payday);
-    final timeElapsed = AppDateUtils.periodElapsedFraction(period);
+    final timeElapsed = AppDateUtils.periodElapsedFraction(status.period);
     final pace = budgetPaceFor(status.ratio, timeElapsed);
     final paceLabel = switch (pace) {
       BudgetPace.ahead => loc.paceAhead,
@@ -120,13 +117,24 @@ class BudgetProgressBar extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppConstants.spacingSm),
+          // "spent of budgeted" rather than a bare spent figure: without the
+          // budget on the row there is nothing to check the percentage
+          // above against. Uses effectiveAmount, not budget.amount, so it
+          // agrees with the ratio — any gap between the two is what the
+          // rollover line below explains.
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '${NumberUtils.formatCurrency(status.spent, symbol: symbol, useDecimals: useDecimals)} ${loc.spentString}',
-                style: theme.textTheme.bodySmall,
+              Flexible(
+                child: Text(
+                  '${NumberUtils.formatCurrency(status.spent, symbol: symbol, useDecimals: useDecimals)} '
+                  '${loc.ofString} '
+                  '${NumberUtils.formatCurrency(status.effectiveAmount, symbol: symbol, useDecimals: useDecimals)}',
+                  style: theme.textTheme.bodySmall,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              const SizedBox(width: AppConstants.spacingSm),
               Text(
                 '${NumberUtils.formatCurrency(status.remaining, symbol: symbol, useDecimals: useDecimals)} ${loc.left}',
                 style: theme.textTheme.bodySmall,

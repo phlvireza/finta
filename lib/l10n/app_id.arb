@@ -238,7 +238,6 @@
     }
   },
   "whereItWent": "Ke mana perginya",
-  "budgetPerformance": "Kinerja anggaran",
   "reports": "Laporan",
   "paceInfoTitle": "Kecepatan belanja",
   "paceExplanation": "Membandingkan seberapa banyak anggaran yang sudah kamu pakai dengan seberapa jauh periode ini sudah berjalan. Garis tegak di batang menandai hari ini — jika warna terisi sudah melewati garis itu, kamu membelanjakan lebih cepat dari waktu yang berjalan (lebih cepat dari perkiraan); jika belum mencapai garis, kamu membelanjakan lebih lambat (lebih lambat dari perkiraan).",
@@ -321,6 +320,32 @@
   "budgetName": "Nama anggaran",
   "budgetNameOptional": "Nama anggaran (opsional)",
   "budgetPeriod": "Periode",
+  "budgetRepeat": "Ulangi setiap periode",
+  "budgetRepeatRenewsOn": "Diperbarui {date}.",
+  "@budgetRepeatRenewsOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetRepeatEndsOn": "Berakhir {date}. Hanya mencakup periode ini.",
+  "@budgetRepeatEndsOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "endedBudgets": "Berakhir",
+  "budgetEndedOn": "Berakhir {date}",
+  "@budgetEndedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "budgetRollover": "Rollover",
   "budgetRolloverExplanation": "Bawa sisa (atau kelebihan) anggaran ke periode berikutnya.",
   "rolloverNone": "Mati",

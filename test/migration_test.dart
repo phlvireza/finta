@@ -511,4 +511,138 @@ void main() {
       await db.close();
     });
   });
+
+  group('v9 — the isRecurring flag on budgets', () {
+    /// A v1 install replayed all the way to v8, with one budget already
+    /// created — the state a real upgrading user is in.
+    Future<Database> upgradedToV8() async {
+      final db = await databaseFactoryFfi.openDatabase(
+        ':memory:',
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: _createV1Schema,
+          onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
+        ),
+      );
+      await db.insert('categories', {
+        'id': 'cat1',
+        'name': 'Groceries',
+        'type': 'expense',
+        'icon': 'shopping_cart',
+        'color': '#C87941',
+        'isDefault': 0,
+        'sortOrder': 0,
+        'createdAt': '2026-01-01T00:00:00.000',
+      });
+      // The v1-shaped budgets table, i.e. what v4 rebuilds from.
+      await db.insert('budgets', {
+        'id': 'budget1',
+        'categoryId': 'cat1',
+        'amount': 750000,
+        'isActive': 1,
+        'createdAt': '2026-01-01T00:00:00.000',
+        'updatedAt': '2026-01-01T00:00:00.000',
+      });
+      await Migrations.v2(db);
+      await Migrations.v3(db);
+      await Migrations.v4(db);
+      await Migrations.v5(db);
+      await Migrations.v6(db);
+      await Migrations.v7(db);
+      await Migrations.v8(db);
+      return db;
+    }
+
+    Future<Set<String>> budgetColumns(Database db) async {
+      final info = await db.rawQuery('PRAGMA table_info(budgets)');
+      return info.map((c) => c['name'] as String).toSet();
+    }
+
+    test('backfills every existing budget as recurring', () async {
+      final db = await upgradedToV8();
+
+      expect(
+        await budgetColumns(db),
+        isNot(contains('isRecurring')),
+        reason: 'the column should not exist before v9 runs',
+      );
+
+      await Migrations.v9(db);
+
+      final budgets = await db.query('budgets');
+      expect(budgets, hasLength(1));
+      // The load-bearing assertion: budgets shipped before v9 have always
+      // re-applied every period, so they must come out of the migration
+      // recurring. A 0 here would silently expire them at the next payday.
+      expect(budgets.first['isRecurring'], 1);
+
+      await db.close();
+    });
+
+    test('preserves the rest of the budget row and its category links', () async {
+      final db = await upgradedToV8();
+      await Migrations.v9(db);
+
+      final budget = (await db.query('budgets', where: "id = 'budget1'")).first;
+      expect(budget['amount'], 750000);
+      expect(budget['period'], 'monthly');
+      expect(budget['rolloverMode'], 'none');
+      expect(budget['scope'], 'category');
+      expect(budget['isActive'], 1);
+      expect(budget['createdAt'], '2026-01-01T00:00:00.000');
+
+      final links = await db.query('budget_categories', where: "budgetId = 'budget1'");
+      expect(links, hasLength(1));
+      expect(links.first['categoryId'], 'cat1');
+
+      await db.close();
+    });
+
+    test('a fresh install has the same budgets columns as an upgraded one', () async {
+      final upgraded = await upgradedToV8();
+      await Migrations.v9(upgraded);
+
+      final fresh = await databaseFactoryFfi.openDatabase(
+        ':memory:',
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (db, _) async {
+            await db.execute(Migrations.createBudgetsTable);
+          },
+          onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
+        ),
+      );
+
+      expect(await budgetColumns(fresh), await budgetColumns(upgraded));
+
+      await upgraded.close();
+      await fresh.close();
+    });
+
+    test('a fresh install defaults the column to 1', () async {
+      // createBudgetsTable and the ALTER must agree on the default, or a
+      // budget inserted without the field would mean different things
+      // depending on how the database was created.
+      final db = await databaseFactoryFfi.openDatabase(
+        ':memory:',
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (db, _) async {
+            await db.execute(Migrations.createBudgetsTable);
+          },
+        ),
+      );
+      await db.insert('budgets', {
+        'id': 'b1',
+        'amount': 100,
+        'isActive': 1,
+        'createdAt': '2026-01-01T00:00:00.000',
+        'updatedAt': '2026-01-01T00:00:00.000',
+      });
+
+      expect((await db.query('budgets')).first['isRecurring'], 1);
+
+      await db.close();
+    });
+  });
 }

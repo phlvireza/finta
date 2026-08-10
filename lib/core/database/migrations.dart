@@ -170,6 +170,26 @@ class Migrations {
     await SeedData.seedDonationCategory(db);
   }
 
+  /// v8 → v9: `isRecurring` on budgets.
+  ///
+  /// Budgets have never had a period anchor — the date range is derived at
+  /// read time from the *current* period, so every budget re-applied
+  /// forever with no way to opt out. This column makes that intent
+  /// explicit and lets a budget cover only the period it was created in.
+  ///
+  /// `DEFAULT 1` is load-bearing: it backfills every already-shipped
+  /// budget as recurring, preserving exactly the behaviour those budgets
+  /// have today. Without it, an upgrading install would see all of its
+  /// budgets expire at the next payday. New budgets default to *off* —
+  /// that choice lives in the form, not in the schema.
+  static Future<void> v9(Database db) async {
+    await db.transaction((txn) async {
+      await txn.execute(
+        'ALTER TABLE budgets ADD COLUMN isRecurring INTEGER NOT NULL DEFAULT 1',
+      );
+    });
+  }
+
   static const String createTemplatesTable = '''
     CREATE TABLE templates (
       id TEXT PRIMARY KEY,
@@ -232,8 +252,14 @@ class Migrations {
     )
   ''';
 
-  /// Shared by `DatabaseHelper._onCreate` (fresh installs) — same shape as
-  /// [createBudgetsTableTemp], under the real table name.
+  /// Shared by `DatabaseHelper._onCreate` (fresh installs) — the v4 shape
+  /// from [createBudgetsTableTemp] plus every column added by a later
+  /// migration.
+  ///
+  /// `isRecurring` sits last, after `updatedAt`, because [v9] adds it with
+  /// `ALTER TABLE … ADD COLUMN`, which always appends. Moving it up beside
+  /// the other flags would make a fresh install's column order diverge
+  /// from an upgraded one.
   static const String createBudgetsTable = '''
     CREATE TABLE budgets (
       id TEXT PRIMARY KEY,
@@ -244,7 +270,8 @@ class Migrations {
       scope TEXT NOT NULL DEFAULT 'category',
       isActive INTEGER NOT NULL DEFAULT 1,
       createdAt TEXT NOT NULL,
-      updatedAt TEXT NOT NULL
+      updatedAt TEXT NOT NULL,
+      isRecurring INTEGER NOT NULL DEFAULT 1
     )
   ''';
 

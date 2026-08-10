@@ -21,6 +21,7 @@ import 'repositories/goal_repository.dart';
 import 'repositories/debt_repository.dart';
 import 'repositories/template_repository.dart';
 import 'core/services/recurring_service.dart';
+import 'core/services/budget_expiry_service.dart';
 import 'l10n/app_localizations.dart';
 import 'app/app.dart';
 
@@ -63,6 +64,9 @@ class FintaRoot extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => InsightsProvider(repository: transactionRepo)),
         Provider<RecurringService>(
           create: (_) => RecurringService(recurringRepo: recurringRepo),
+        ),
+        Provider<BudgetExpiryService>(
+          create: (_) => BudgetExpiryService(budgetRepo: budgetRepo),
         ),
       ],
       child: Consumer<SettingsProvider>(

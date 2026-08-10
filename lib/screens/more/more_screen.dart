@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_constants.dart';
 import '../accounts/manage_accounts_screen.dart';
-import '../budgets/manage_budgets_screen.dart';
+import '../analytics/analytics_screen.dart';
 import '../categories/manage_categories_screen.dart';
 import '../recurring/recurring_list_screen.dart';
 import '../goals/goals_list_screen.dart';
@@ -10,12 +10,12 @@ import '../subscriptions/subscriptions_screen.dart';
 import '../settings/settings_screen.dart';
 import '../../l10n/app_localizations.dart';
 
-/// Hub for the lower-frequency configuration surfaces — budgets,
-/// categories, recurring transactions, and settings (which itself hosts
+/// Hub for the lower-frequency surfaces — accounts, analytics, categories,
+/// recurring transactions, goals, debts, and settings (which itself hosts
 /// currency, theme, payday, and data export). Keeping these off the main
-/// tab bar means the four primary destinations (Home, Records, +,
-/// Insights) stay one tap away, and every surface here is reachable from
-/// anywhere in the app instead of only from the dashboard.
+/// tab bar means the four primary destinations (Home, Transactions,
+/// Budgets, More) stay one tap away, and every surface here is reachable
+/// from anywhere in the app instead of only from the dashboard.
 class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});
 
@@ -39,10 +39,10 @@ class MoreScreen extends StatelessWidget {
               ),
               const Divider(),
               _MoreTile(
-                icon: Icons.track_changes,
-                label: loc.budgets,
+                icon: Icons.pie_chart_outline,
+                label: loc.analytics,
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const ManageBudgetsScreen()),
+                  MaterialPageRoute(builder: (_) => const AnalyticsScreen()),
                 ),
               ),
               const Divider(),

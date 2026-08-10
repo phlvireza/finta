@@ -9,11 +9,20 @@ class BudgetModel {
   final String id;
   final String? name; // user label — mainly for group/overall budgets
   final double amount;
-  final String period; // weekly|monthly|quarterly|yearly
+  final String period; // weekly|monthly
   final String rolloverMode; // none|positive|full
   final String scope; // category|group|overall
   final List<String> categoryIds; // empty for scope == 'overall'
   final bool isActive;
+
+  /// Whether this budget re-applies every period. When false it covers
+  /// only the period containing [createdAt], and `BudgetExpiryService`
+  /// deactivates it once that period ends.
+  ///
+  /// Defaults to true here to match the column default, which backfills
+  /// every pre-v9 budget as recurring. The *form* defaults new budgets to
+  /// false — the two defaults intentionally differ.
+  final bool isRecurring;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -26,6 +35,7 @@ class BudgetModel {
     this.scope = 'category',
     this.categoryIds = const [],
     required this.isActive,
+    this.isRecurring = true,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -43,6 +53,7 @@ class BudgetModel {
       'isActive': isActive ? 1 : 0,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'isRecurring': isRecurring ? 1 : 0,
     };
   }
 
@@ -56,6 +67,9 @@ class BudgetModel {
       scope: (map['scope'] as String?) ?? 'category',
       categoryIds: categoryIds,
       isActive: (map['isActive'] as int) == 1,
+      // Default true, like the column — a row read back from a database
+      // that predates v9 is one that has always been recurring.
+      isRecurring: ((map['isRecurring'] as int?) ?? 1) == 1,
       createdAt: DateTime.parse(map['createdAt'] as String),
       updatedAt: DateTime.parse(map['updatedAt'] as String),
     );
@@ -71,6 +85,7 @@ class BudgetModel {
     String? scope,
     List<String>? categoryIds,
     bool? isActive,
+    bool? isRecurring,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -83,6 +98,7 @@ class BudgetModel {
       scope: scope ?? this.scope,
       categoryIds: categoryIds ?? this.categoryIds,
       isActive: isActive ?? this.isActive,
+      isRecurring: isRecurring ?? this.isRecurring,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

@@ -8,10 +8,14 @@ import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import '../../core/utils/number_utils.dart';
+import '../../core/utils/date_utils.dart';
 import '../../core/utils/budget_display.dart';
+import '../../models/budget_model.dart';
 import '../../widgets/empty_state.dart';
-import '../../widgets/confirm_dialog.dart';
 import '../../widgets/form_sheet.dart';
+import '../../widgets/masked_amount.dart';
+import 'budget_actions.dart';
+import 'budget_detail_screen.dart';
 import 'widgets/budget_form.dart';
 import 'widgets/budget_progress_bar.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -19,7 +23,13 @@ import '../../l10n/app_localizations.dart';
 
 /// Screen to list, create, and manage budgets.
 class ManageBudgetsScreen extends StatelessWidget {
-  const ManageBudgetsScreen({super.key});
+  /// True when hosted as a tab in the app shell rather than pushed from
+  /// [MoreScreen]. The shell already docks a FAB over the nav bar, so an
+  /// embedded instance moves its add action into the app bar instead of
+  /// raising a second FAB on top of it.
+  final bool embedded;
+
+  const ManageBudgetsScreen({super.key, this.embedded = false});
 
   @override
   Widget build(BuildContext context) {
@@ -29,14 +39,24 @@ class ManageBudgetsScreen extends StatelessWidget {
     final settings = context.watch<SettingsProvider>();
 
     final budgets = budgetProvider.activeBudgets;
+    final ended = budgetProvider.endedBudgets;
 
     final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.manageBudgets),
+        actions: embedded
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  tooltip: loc.newBudget,
+                  onPressed: () => _showBudgetForm(context),
+                ),
+              ]
+            : null,
       ),
-      body: budgets.isEmpty
+      body: budgets.isEmpty && ended.isEmpty
           ? EmptyState(
               icon: Icons.track_changes,
               title: loc.noBudgetsYet,
@@ -53,11 +73,52 @@ class ManageBudgetsScreen extends StatelessWidget {
           // whatever space is left under a pinned chart.
           : ListView.builder(
               padding: const EdgeInsets.only(bottom: AppConstants.fabClearance),
-              itemCount: budgets.length + 1,
+              // [chart] + active budgets + optional ["Ended" header] + ended
+              // budgets.
+              itemCount: budgets.length + 1 + (ended.isEmpty ? 0 : ended.length + 1),
               itemBuilder: (context, index) {
                 if (index == 0) {
-                  return _BudgetChart(budgetProvider: budgetProvider, settings: settings);
+                  // Nothing active to chart — the donut would render as an
+                  // empty ring over "0 of 0" above a list of ended budgets.
+                  return budgets.isEmpty
+                      ? const SizedBox.shrink()
+                      : _BudgetChart(budgetProvider: budgetProvider, settings: settings);
                 }
+
+                final endedSectionStart = budgets.length + 1;
+                if (index == endedSectionStart && ended.isNotEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppConstants.spacingLg,
+                      AppConstants.spacingXl,
+                      AppConstants.spacingLg,
+                      AppConstants.spacingSm,
+                    ),
+                    child: Text(
+                      loc.endedBudgets,
+                      style: theme.textTheme.labelMedium,
+                    ),
+                  );
+                }
+                if (index > endedSectionStart) {
+                  final endedBudget = ended[index - endedSectionStart - 1];
+                  return _EndedBudgetRow(
+                    budget: endedBudget,
+                    display: resolveBudgetDisplay(
+                      budget: endedBudget,
+                      categories: categories,
+                      loc: loc,
+                      fallbackColor: theme.colorScheme.primary,
+                    ),
+                    settings: settings,
+                    onDelete: (title) => confirmDeleteBudget(
+                      context,
+                      budgetId: endedBudget.id,
+                      title: title,
+                    ),
+                  );
+                }
+
                 final budget = budgets[index - 1];
                 final status = budgetProvider.budgetStatuses[budget.id];
                 final display = resolveBudgetDisplay(
@@ -78,7 +139,11 @@ class ManageBudgetsScreen extends StatelessWidget {
                     extentRatio: 0.25,
                     children: [
                       SlidableAction(
-                        onPressed: (_) => _deleteBudget(context, budget.id, display.title),
+                        onPressed: (_) => confirmDeleteBudget(
+                          context,
+                          budgetId: budget.id,
+                          title: display.title,
+                        ),
                         backgroundColor: theme.colorScheme.error,
                         foregroundColor: theme.colorScheme.onError,
                         icon: Icons.delete,
@@ -87,7 +152,14 @@ class ManageBudgetsScreen extends StatelessWidget {
                     ],
                   ),
                   child: InkWell(
-                    onTap: () => _showBudgetForm(context, budgetId: budget.id),
+                    // Tap opens the detail rather than the edit form: the
+                    // question a budget row prompts is "what did I spend it
+                    // on", and edit is one tap further in from there.
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => BudgetDetailScreen(budgetId: budget.id),
+                      ),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppConstants.spacingLg,
@@ -97,18 +169,21 @@ class ManageBudgetsScreen extends StatelessWidget {
                         status: status,
                         symbol: settings.currencySymbol,
                         useDecimals: settings.currencyUseDecimals,
-                        payday: settings.payday,
                       ),
                     ),
                   ),
                 );
               },
             ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: null,
-        onPressed: () => _showBudgetForm(context),
-        child: const Icon(Icons.add),
-      ),
+      // Embedded, the shell's docked FAB owns this corner — the add action
+      // lives in the app bar instead.
+      floatingActionButton: embedded
+          ? null
+          : FloatingActionButton(
+              heroTag: null,
+              onPressed: () => _showBudgetForm(context),
+              child: const Icon(Icons.add),
+            ),
     );
   }
 
@@ -123,27 +198,67 @@ class ManageBudgetsScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _deleteBudget(BuildContext context, String id, String categoryName) async {
-    final loc = AppLocalizations.of(context)!;
-    final confirmed = await ConfirmDialog.show(
-      context,
-      title: loc.deleteBudget,
-      message: loc.removeBudgetFor(categoryName),
-      confirmText: loc.delete,
-    );
+}
 
-    if (confirmed && context.mounted) {
-      try {
-        await context.read<BudgetProvider>().deleteBudget(id);
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(loc.errorFailedToDelete)),
-          );
-        }
-      }
-    }
+/// A one-off budget that has run its course. Rendered dimmed rather than
+/// dropped from the list: a budget the user set silently disappearing at
+/// the period boundary reads as data loss, even though it is exactly what
+/// "repeat off" was asked to do. Still swipe-to-delete, so the list can be
+/// cleared deliberately.
+class _EndedBudgetRow extends StatelessWidget {
+  final BudgetModel budget;
+  final ({String title, IconData icon, Color color}) display;
+  final SettingsProvider settings;
+  final void Function(String title) onDelete;
+
+  const _EndedBudgetRow({
+    required this.budget,
+    required this.display,
+    required this.settings,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
+    final mutedColor = theme.colorScheme.onSurfaceVariant;
+
+    return Slidable(
+      key: ValueKey('ended-${budget.id}'),
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        extentRatio: 0.25,
+        children: [
+          SlidableAction(
+            onPressed: (_) => onDelete(display.title),
+            backgroundColor: theme.colorScheme.error,
+            foregroundColor: theme.colorScheme.onError,
+            icon: Icons.delete,
+            label: loc.delete,
+          ),
+        ],
+      ),
+      child: Opacity(
+        opacity: 0.6,
+        child: ListTile(
+          leading: Icon(display.icon, color: mutedColor),
+          title: Text(display.title),
+          subtitle: Text(
+            loc.budgetEndedOn(AppDateUtils.formatFull(budget.updatedAt)),
+            style: theme.textTheme.bodySmall?.copyWith(color: mutedColor),
+          ),
+          trailing: MaskedAmount(
+            text: NumberUtils.formatCurrency(
+              budget.amount,
+              symbol: settings.currencySymbol,
+              useDecimals: settings.currencyUseDecimals,
+            ),
+            style: theme.textTheme.bodyMedium?.copyWith(color: mutedColor),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -159,7 +274,8 @@ class _BudgetChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+    final loc = AppLocalizations.of(context)!;
+
     double totalBudget = 0;
     double totalSpent = 0;
 
@@ -185,8 +301,11 @@ class _BudgetChart extends StatelessWidget {
     );
     final remainingColor = theme.colorScheme.surfaceContainerHighest;
 
-    double remaining = totalBudget - totalSpent;
-    if (remaining < 0) remaining = 0;
+    // The chart section can't be negative, but the caption should be: a
+    // clamped zero would read as "nothing left" whether the user is exactly
+    // on budget or 2M over it.
+    final netRemaining = totalBudget - totalSpent;
+    final remaining = netRemaining < 0 ? 0.0 : netRemaining;
 
     return Container(
       padding: const EdgeInsets.all(AppConstants.spacingXl),
@@ -218,12 +337,12 @@ class _BudgetChart extends StatelessWidget {
             ),
           ),
           SizedBox(
-            width: 120,
+            width: 124,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  AppLocalizations.of(context)!.totalSpent,
+                  loc.totalSpent,
                   style: theme.textTheme.labelMedium,
                 ),
                 const SizedBox(height: 4),
@@ -245,9 +364,25 @@ class _BudgetChart extends StatelessWidget {
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    '${AppLocalizations.of(context)!.ofString} ${NumberUtils.formatCurrency(totalBudget, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals)}',
+                    '${loc.ofString} ${NumberUtils.formatCurrency(totalBudget, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals)}',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                // Spent answers "where did it go"; remaining answers "what
+                // can I still spend". Both belong here — the second is the
+                // one that actually drives a decision.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    netRemaining < 0
+                        ? '${NumberUtils.formatCurrency(-netRemaining, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals)} ${loc.overString}'
+                        : '${NumberUtils.formatCurrency(netRemaining, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals)} ${loc.left}',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: netRemaining < 0 ? spentColor : theme.textTheme.bodySmall?.color,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),

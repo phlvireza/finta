@@ -160,6 +160,59 @@ class TransactionRepository {
     }
   }
 
+  /// The rows behind [getCategoriesSumByDateRange] — same categories, same
+  /// range, same transfer exclusion, so summing this list reproduces that
+  /// number exactly. The budget detail screen shows both side by side, and
+  /// any divergence between the two `WHERE` clauses would read as the app
+  /// having lost a transaction.
+  Future<List<TransactionModel>> getCategoriesByDateRange(
+    List<String> categoryIds,
+    DateTime start,
+    DateTime end,
+  ) async {
+    if (categoryIds.isEmpty) return [];
+    try {
+      final db = await _dbHelper.database;
+      final startStr = start.toIso8601String().substring(0, 10);
+      final endStr = end.toIso8601String().substring(0, 10);
+      final placeholders = List.filled(categoryIds.length, '?').join(',');
+      final maps = await db.query(
+        'transactions',
+        where: 'categoryId IN ($placeholders) AND date >= ? AND date <= ? AND isTransfer = 0',
+        whereArgs: [...categoryIds, startStr, endStr],
+        orderBy: 'date DESC, createdAt DESC',
+      );
+      return maps.map((m) => TransactionModel.fromMap(m)).toList();
+    } catch (e) {
+      throw DatabaseException('Failed to get transactions by categories and date range', cause: e);
+    }
+  }
+
+  /// The rows behind [getSumByTypeAndDateRange] — the overall-budget twin of
+  /// [getCategoriesByDateRange]. Unlike [getByDateRange] this excludes
+  /// transfer legs, which are movements between the user's own accounts and
+  /// were never spending.
+  Future<List<TransactionModel>> getByTypeAndDateRange(
+    String type,
+    DateTime start,
+    DateTime end,
+  ) async {
+    try {
+      final db = await _dbHelper.database;
+      final startStr = start.toIso8601String().substring(0, 10);
+      final endStr = end.toIso8601String().substring(0, 10);
+      final maps = await db.query(
+        'transactions',
+        where: 'type = ? AND date >= ? AND date <= ? AND isTransfer = 0',
+        whereArgs: [type, startStr, endStr],
+        orderBy: 'date DESC, createdAt DESC',
+      );
+      return maps.map((m) => TransactionModel.fromMap(m)).toList();
+    } catch (e) {
+      throw DatabaseException('Failed to get transactions by type and date range', cause: e);
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getMonthlySums(int year) async {
     try {
       final db = await _dbHelper.database;

@@ -245,7 +245,6 @@
     }
   },
   "whereItWent": "Where it went",
-  "budgetPerformance": "Budget performance",
   "reports": "Reports",
   "paceInfoTitle": "Spending pace",
   "paceExplanation": "Compares how much of the budget you've spent to how far through the period you are. The tick on the bar marks today — if the colored fill has passed it, you're spending faster than the days are passing (ahead of pace); if it hasn't reached the tick yet, you're spending slower (under pace).",
@@ -328,6 +327,32 @@
   "budgetName": "Budget name",
   "budgetNameOptional": "Budget name (optional)",
   "budgetPeriod": "Period",
+  "budgetRepeat": "Repeat every period",
+  "budgetRepeatRenewsOn": "Renews {date}.",
+  "@budgetRepeatRenewsOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetRepeatEndsOn": "Ends {date}. Covers this period only.",
+  "@budgetRepeatEndsOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "endedBudgets": "Ended",
+  "budgetEndedOn": "Ended {date}",
+  "@budgetEndedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "budgetRollover": "Rollover",
   "budgetRolloverExplanation": "Carry unspent (or overspent) budget into the next period.",
   "rolloverNone": "Off",

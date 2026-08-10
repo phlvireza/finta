@@ -532,9 +532,6 @@ class AppLocalizationsId extends AppLocalizations {
   String get whereItWent => 'Ke mana perginya';
 
   @override
-  String get budgetPerformance => 'Kinerja anggaran';
-
-  @override
   String get reports => 'Laporan';
 
   @override
@@ -703,6 +700,27 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get budgetPeriod => 'Periode';
+
+  @override
+  String get budgetRepeat => 'Ulangi setiap periode';
+
+  @override
+  String budgetRepeatRenewsOn(String date) {
+    return 'Diperbarui $date.';
+  }
+
+  @override
+  String budgetRepeatEndsOn(String date) {
+    return 'Berakhir $date. Hanya mencakup periode ini.';
+  }
+
+  @override
+  String get endedBudgets => 'Berakhir';
+
+  @override
+  String budgetEndedOn(String date) {
+    return 'Berakhir $date';
+  }
 
   @override
   String get budgetRollover => 'Rollover';

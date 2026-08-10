@@ -9,6 +9,7 @@ import '../../../core/utils/number_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../core/utils/budget_display.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../budgets/budget_detail_screen.dart';
 import '../../budgets/widgets/budget_pace_bar.dart';
 
 /// Budget overview — shows top budget progress bars on the dashboard.
@@ -97,58 +98,68 @@ class _BudgetItem extends StatelessWidget {
     );
 
     final ratio = status.ratio.clamp(0.0, 1.0);
-    final timeElapsed = AppDateUtils.periodElapsedFraction(
-      AppDateUtils.getCurrentPeriodFor(status.budget.period, settings.payday),
-    );
+    final timeElapsed = AppDateUtils.periodElapsedFraction(status.period);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppConstants.spacingMd),
-      child: Container(
-        padding: const EdgeInsets.all(AppConstants.spacingMd),
+      // Ink rather than a plain Container so the ripple paints above the
+      // card's own fill instead of behind it.
+      child: Ink(
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(AppConstants.radiusSm),
           border: Border.all(color: theme.colorScheme.outline),
         ),
-        child: Column(
-          children: [
-            Row(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppConstants.radiusSm),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => BudgetDetailScreen(budgetId: status.budget.id),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppConstants.spacingMd),
+            child: Column(
               children: [
-                Icon(display.icon, size: 18, color: display.color),
-                const SizedBox(width: AppConstants.spacingSm),
-                Expanded(
-                  child: Text(
-                    display.title,
-                    style: theme.textTheme.titleSmall,
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                Row(
                   children: [
-                    Text(
-                      '${NumberUtils.formatCurrency(status.spent, symbol: settings.currencySymbol)} / ${NumberUtils.formatCurrency(status.effectiveAmount, symbol: settings.currencySymbol)}',
-                      style: theme.textTheme.labelSmall,
-                    ),
-                    if (status.isExceeded)
-                      Text(
-                        AppLocalizations.of(context)!.overBudget,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: barColor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    Icon(display.icon, size: 18, color: display.color),
+                    const SizedBox(width: AppConstants.spacingSm),
+                    Expanded(
+                      child: Text(
+                        display.title,
+                        style: theme.textTheme.titleSmall,
                       ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${NumberUtils.formatCurrency(status.spent, symbol: settings.currencySymbol)} / ${NumberUtils.formatCurrency(status.effectiveAmount, symbol: settings.currencySymbol)}',
+                          style: theme.textTheme.labelSmall,
+                        ),
+                        if (status.isExceeded)
+                          Text(
+                            loc.overBudget,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: barColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
+                ),
+                const SizedBox(height: AppConstants.spacingSm),
+                BudgetPaceBar(
+                  ratio: ratio,
+                  timeElapsedFraction: timeElapsed,
+                  barColor: barColor,
+                  height: 6,
                 ),
               ],
             ),
-            const SizedBox(height: AppConstants.spacingSm),
-            BudgetPaceBar(
-              ratio: ratio,
-              timeElapsedFraction: timeElapsed,
-              barColor: barColor,
-              height: 6,
-            ),
-          ],
+          ),
         ),
       ),
     );

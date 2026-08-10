@@ -90,6 +90,25 @@ class BudgetRepository {
     }
   }
 
+  /// Flip a budget to inactive without touching its category links.
+  ///
+  /// [update] rewrites the whole `budget_categories` set for the budget,
+  /// which is pointless churn when the only thing changing is a flag —
+  /// and it needs a fully-populated model the caller may not have.
+  Future<void> deactivate(String id, {required DateTime updatedAt}) async {
+    try {
+      final db = await _dbHelper.database;
+      await db.update(
+        'budgets',
+        {'isActive': 0, 'updatedAt': updatedAt.toIso8601String()},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } catch (e) {
+      throw DatabaseException('Failed to deactivate budget', cause: e);
+    }
+  }
+
   Future<void> delete(String id) async {
     try {
       final db = await _dbHelper.database;

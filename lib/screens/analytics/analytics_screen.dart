@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/analytics_provider.dart';
-import '../../providers/budget_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../core/constants/app_constants.dart';
@@ -12,7 +11,6 @@ import 'widgets/yearly_report.dart';
 import 'widgets/trends_report.dart';
 import '../insights/insights_hub_screen.dart';
 import '../insights/monthly_recap_screen.dart';
-import '../budgets/widgets/budget_progress_bar.dart';
 import '../transactions/add_transaction_screen.dart';
 import '../transactions/widgets/type_toggle.dart';
 import '../../widgets/empty_state.dart';
@@ -21,9 +19,13 @@ import '../../widgets/error_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/constants/app_colors.dart';
 
-/// Insights — a single scrollable report (donut breakdown, budget
-/// performance, reports) instead of the old Expense/Income tab pair, so
-/// the period selector applies to the whole page rather than one tab.
+/// Insights — a single scrollable report (donut breakdown, reports)
+/// instead of the old Expense/Income tab pair, so the period selector
+/// applies to the whole page rather than one tab.
+///
+/// Deliberately does *not* repeat the budget progress bars: they were a
+/// second copy of the Budgets tab, from the same `BudgetProvider` state,
+/// with no analysis layered on top.
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
 
@@ -136,9 +138,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                               ),
                             ),
                             const SizedBox(height: AppConstants.spacingXxxl),
-                            _SectionTitle(loc.budgetPerformance),
-                            const _BudgetPerformanceSection(),
-                            const SizedBox(height: AppConstants.spacingXxxl),
                             _SectionTitle(loc.reports),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
@@ -174,7 +173,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                     const Divider(height: 1),
                                     ListTile(
                                       leading: const Icon(Icons.card_giftcard_outlined),
-                                      title: Text(loc.monthlyRecap),
+                                      title: Text(loc.periodRecap),
                                       trailing: const Icon(Icons.chevron_right),
                                       onTap: () => Navigator.of(context).push(
                                         MaterialPageRoute(builder: (_) => const MonthlyRecapScreen()),
@@ -256,10 +255,10 @@ class _BreakdownSection extends StatelessWidget {
     return Column(
       children: [
         const SizedBox(height: AppConstants.spacingLg),
-        SizedBox(
-          height: 240,
-          child: BreakdownChart(data: data, total: total),
-        ),
+        // No fixed height: BreakdownChart sizes its own donut, and the
+        // legend beneath it wraps to as many rows as the category count
+        // needs — clamping the height here would just clip that legend.
+        BreakdownChart(data: data, total: total),
         const SizedBox(height: AppConstants.spacingMd),
         Center(
           child: _buildComparison(
@@ -332,39 +331,3 @@ class _BreakdownSection extends StatelessWidget {
   }
 }
 
-class _BudgetPerformanceSection extends StatelessWidget {
-  const _BudgetPerformanceSection();
-
-  @override
-  Widget build(BuildContext context) {
-    final budgetProvider = context.watch<BudgetProvider>();
-    final settings = context.watch<SettingsProvider>();
-    final loc = AppLocalizations.of(context)!;
-    final statuses = budgetProvider.budgetStatuses.values.toList();
-
-    if (statuses.isEmpty) {
-      return EmptyState(
-        icon: Icons.pie_chart_outline,
-        title: loc.createFirstBudget,
-        subtitle: '',
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
-      child: Column(
-        children: statuses.map((status) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: AppConstants.spacingMd),
-            child: BudgetProgressBar(
-              status: status,
-              symbol: settings.currencySymbol,
-              useDecimals: settings.currencyUseDecimals,
-              payday: settings.payday,
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-}

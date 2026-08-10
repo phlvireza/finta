@@ -5,8 +5,10 @@ import '../../../providers/category_provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/formatters/currency_formatter.dart';
+import '../../../core/utils/date_utils.dart';
 import '../../../models/budget_model.dart';
-import '../../transactions/widgets/amount_input_field.dart';
+import '../../../widgets/amount_input_field.dart';
+import '../../../widgets/amount_keypad.dart';
 import '../../transactions/widgets/category_picker.dart';
 import '../../../widgets/form_sheet.dart';
 import '../../../l10n/app_localizations.dart';
@@ -32,6 +34,10 @@ class _BudgetFormState extends State<BudgetForm> {
   String _scope = 'category';
   String _period = 'monthly';
   String _rolloverMode = 'none';
+  /// Off by default: a budget the user has to opt into repeating is the
+  /// one they can reason about. Existing budgets predate the flag and were
+  /// migrated as recurring, so editing one shows the switch already on.
+  bool _isRecurring = false;
   BudgetModel? _editingBudget;
   bool _autoValidate = false;
 
@@ -45,6 +51,7 @@ class _BudgetFormState extends State<BudgetForm> {
         _scope = _editingBudget!.scope;
         _period = _editingBudget!.period;
         _rolloverMode = _editingBudget!.rolloverMode;
+        _isRecurring = _editingBudget!.isRecurring;
         _nameController.text = _editingBudget!.name ?? '';
         _selectedCategoryIds = _editingBudget!.categoryIds.toSet();
         _selectedCategoryId =
@@ -99,6 +106,7 @@ class _BudgetFormState extends State<BudgetForm> {
             rolloverMode: _rolloverMode,
             scope: _scope,
             categoryIds: categoryIds,
+            isRecurring: _isRecurring,
           ),
           payday: settings.payday,
         );
@@ -110,6 +118,7 @@ class _BudgetFormState extends State<BudgetForm> {
           rolloverMode: _rolloverMode,
           scope: _scope,
           categoryIds: categoryIds,
+          isRecurring: _isRecurring,
           payday: settings.payday,
         );
       }
@@ -131,6 +140,17 @@ class _BudgetFormState extends State<BudgetForm> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
+    final payday = context.select<SettingsProvider, int>((s) => s.payday);
+
+    // Resolved the same way BudgetProvider._periodFor does, so the date
+    // shown here can't disagree with the period the budget is actually
+    // measured over: a one-off budget being edited stays pinned to the
+    // period it was created in, everything else resolves from today.
+    final periodRange = AppDateUtils.getCurrentPeriodFor(
+      _period,
+      payday,
+      referenceDate: _isRecurring ? null : _editingBudget?.createdAt,
+    );
 
     return Form(
       key: _formKey,
@@ -183,9 +203,20 @@ class _BudgetFormState extends State<BudgetForm> {
               controller: _amountController,
               isIncome: false, // Budgets use expense colors
               labelOverride: loc.budgetAmount,
+              // Same keypad as an expense amount, opened over this sheet —
+              // a modal sheet on top of a modal sheet, exactly as quick add
+              // already does it.
+              onKeypadRequested: () => AmountKeypad.show(
+                context,
+                controller: _amountController,
+                isIncome: false,
+                labelOverride: loc.budgetAmount,
+              ),
               validator: (val) {
                 final amount = parseFormattedAmount(val ?? '');
-                if (amount <= 0 || amount > 999999999999) return loc.pleaseEnterValidAmount;
+                if (amount <= 0 || amount > AppConstants.maxAmount) {
+                  return loc.pleaseEnterValidAmount;
+                }
                 return null;
               },
             ),
@@ -253,47 +284,76 @@ class _BudgetFormState extends State<BudgetForm> {
                         selected: _period == 'monthly',
                         onSelected: (_) => setState(() => _period = 'monthly'),
                       ),
-                      ChoiceChip(
-                        label: Text(loc.quarter),
-                        selected: _period == 'quarterly',
-                        onSelected: (_) => setState(() => _period = 'quarterly'),
-                      ),
-                      ChoiceChip(
-                        label: Text(loc.year),
-                        selected: _period == 'yearly',
-                        onSelected: (_) => setState(() => _period = 'yearly'),
-                      ),
                     ],
                   ),
                   const SizedBox(height: AppConstants.spacingXxl),
 
-                  Text(loc.budgetRollover, style: theme.textTheme.labelMedium),
-                  const SizedBox(height: AppConstants.spacingXs),
-                  Text(
-                    loc.budgetRolloverExplanation,
-                    style: theme.textTheme.bodySmall,
+                  // Applies to every scope — it's one switch with no
+                  // per-category state, so "One category", "Group" and
+                  // "Everything" all render it identically.
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: _isRecurring,
+                    onChanged: (value) => setState(() {
+                      _isRecurring = value;
+                      // Rollover carries unspent money between periods,
+                      // which is meaningless for a budget that only has
+                      // one. Reset it so a user who toggles repeat off
+                      // can't save a contradictory pair.
+                      if (!value) _rolloverMode = 'none';
+                    }),
+                    title: Text(loc.budgetRepeat, style: theme.textTheme.labelMedium),
+                    // Name the actual boundary rather than "each period":
+                    // that phrase is period-agnostic precisely because it
+                    // says nothing, and a weekly budget renewing next
+                    // Monday reads very differently from a monthly one
+                    // renewing on the payday anchor. The next boundary is
+                    // the day after this period ends — guaranteed by
+                    // getCurrentPeriod's contiguity.
+                    subtitle: Text(
+                      _isRecurring
+                          ? loc.budgetRepeatRenewsOn(
+                              AppDateUtils.formatFull(
+                                periodRange.end.add(const Duration(days: 1)),
+                              ),
+                            )
+                          : loc.budgetRepeatEndsOn(
+                              AppDateUtils.formatFull(periodRange.end),
+                            ),
+                      style: theme.textTheme.bodySmall,
+                    ),
                   ),
-                  const SizedBox(height: AppConstants.spacingSm),
-                  Wrap(
-                    spacing: AppConstants.spacingSm,
-                    children: [
-                      ChoiceChip(
-                        label: Text(loc.rolloverNone),
-                        selected: _rolloverMode == 'none',
-                        onSelected: (_) => setState(() => _rolloverMode = 'none'),
-                      ),
-                      ChoiceChip(
-                        label: Text(loc.rolloverPositiveOnly),
-                        selected: _rolloverMode == 'positive',
-                        onSelected: (_) => setState(() => _rolloverMode = 'positive'),
-                      ),
-                      ChoiceChip(
-                        label: Text(loc.rolloverFull),
-                        selected: _rolloverMode == 'full',
-                        onSelected: (_) => setState(() => _rolloverMode = 'full'),
-                      ),
-                    ],
-                  ),
+
+                  if (_isRecurring) ...[
+                    const SizedBox(height: AppConstants.spacingXxl),
+                    Text(loc.budgetRollover, style: theme.textTheme.labelMedium),
+                    const SizedBox(height: AppConstants.spacingXs),
+                    Text(
+                      loc.budgetRolloverExplanation,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: AppConstants.spacingSm),
+                    Wrap(
+                      spacing: AppConstants.spacingSm,
+                      children: [
+                        ChoiceChip(
+                          label: Text(loc.rolloverNone),
+                          selected: _rolloverMode == 'none',
+                          onSelected: (_) => setState(() => _rolloverMode = 'none'),
+                        ),
+                        ChoiceChip(
+                          label: Text(loc.rolloverPositiveOnly),
+                          selected: _rolloverMode == 'positive',
+                          onSelected: (_) => setState(() => _rolloverMode = 'positive'),
+                        ),
+                        ChoiceChip(
+                          label: Text(loc.rolloverFull),
+                          selected: _rolloverMode == 'full',
+                          onSelected: (_) => setState(() => _rolloverMode = 'full'),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
