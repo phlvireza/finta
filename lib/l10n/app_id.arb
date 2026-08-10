@@ -41,6 +41,8 @@
   "expenseBreakdown": "Rincian Pengeluaran",
   "noDataForThisPeriod": "Tidak ada data untuk periode ini",
   "totalSpent": "Total Pengeluaran",
+  "chartTotal": "Total",
+  "heatmapTapHint": "Ketuk tanggal untuk melihat transaksinya",
   "totalIncome": "Total Pemasukan",
   "totalExpense": "Total Pengeluaran",
 
@@ -138,6 +140,7 @@
   "used": "terpakai",
   "spentString": "terpakai",
   "left": "tersisa",
+  "overString": "melebihi",
   "recurringTransactions": "Transaksi Rutin",
   "noRecurringTransactions": "Belum ada transaksi rutin",
   "enableRecurringWhenAdding": "Aktifkan \"rutin\" saat menambah transaksi",

@@ -41,6 +41,8 @@
   "expenseBreakdown": "Expense Breakdown",
   "noDataForThisPeriod": "No data for this period",
   "totalSpent": "Total Spent",
+  "chartTotal": "Total",
+  "heatmapTapHint": "Tap a day to see its transactions",
   "totalIncome": "Total Income",
   "totalExpense": "Total Expense",
 
@@ -145,6 +147,7 @@
   "used": "used",
   "spentString": "spent",
   "left": "left",
+  "overString": "over",
   "recurringTransactions": "Recurring Transactions",
   "noRecurringTransactions": "No recurring transactions",
   "enableRecurringWhenAdding": "Enable \"recurring\" when adding a transaction",

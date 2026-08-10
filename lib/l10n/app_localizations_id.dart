@@ -111,6 +111,12 @@ class AppLocalizationsId extends AppLocalizations {
   String get totalSpent => 'Total Pengeluaran';
 
   @override
+  String get chartTotal => 'Total';
+
+  @override
+  String get heatmapTapHint => 'Ketuk tanggal untuk melihat transaksinya';
+
+  @override
   String get totalIncome => 'Total Pemasukan';
 
   @override
@@ -339,6 +345,9 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get left => 'tersisa';
+
+  @override
+  String get overString => 'melebihi';
 
   @override
   String get noRecurringTransactions => 'Belum ada transaksi rutin';

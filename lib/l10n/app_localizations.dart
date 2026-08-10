@@ -302,6 +302,18 @@ abstract class AppLocalizations {
   /// **'Total Spent'**
   String get totalSpent;
 
+  /// No description provided for @chartTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get chartTotal;
+
+  /// No description provided for @heatmapTapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a day to see its transactions'**
+  String get heatmapTapHint;
+
   /// No description provided for @totalIncome.
   ///
   /// In en, this message translates to:
@@ -745,6 +757,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'left'**
   String get left;
+
+  /// No description provided for @overString.
+  ///
+  /// In en, this message translates to:
+  /// **'over'**
+  String get overString;
 
   /// No description provided for @noRecurringTransactions.
   ///

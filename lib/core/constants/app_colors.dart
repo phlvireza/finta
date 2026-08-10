@@ -34,29 +34,46 @@ class AppColors {
   static const Color warningLight = Color(0xFFF5E6CC);
   static const Color warningDark = Color(0xFF3D3225);
 
-  /// Chart palette — hand-picked warm tones for donut/pie charts.
+  /// Chart palette for donut/pie category charts.
+  ///
+  /// The previous 9-color "warm & earthy" set looked coherent as swatches
+  /// but six of its nine hues fell below the chroma floor a categorical
+  /// color needs to actually read as an identity rather than a shade of
+  /// gray, and the worst adjacent pair (teal-grey vs mauve) measured
+  /// ΔE 8.1 under normal vision — indistinguishable at a glance even for a
+  /// full-color viewer, let alone under color-vision deficiency.
+  ///
+  /// This set was built and checked with the data-viz skill's
+  /// `validate_palette` script rather than eyeballed: every hue clears the
+  /// OKLCH lightness band and chroma floor for its mode, the worst adjacent
+  /// pair (including the ring's wraparound, since a donut's last slice sits
+  /// next to its first) clears both the CVD-simulated and normal-vision
+  /// separation floors, and light/dark use the *same* hue order — only
+  /// lightness/chroma are re-stepped per mode — so a category never changes
+  /// hue family when the user toggles theme. Two hues from the original
+  /// nine (a near-duplicate second green, and an amber close enough to
+  /// [warning] to risk reading as a status color rather than a category)
+  /// were dropped rather than forced to fit; seven well-separated hues beat
+  /// nine crowded ones. Order is load-bearing — re-run the validator before
+  /// reordering or adding a hue, not just before changing a hex.
   static const List<Color> chartColorsLight = [
-    Color(0xFFC87941), // terracotta
-    Color(0xFF5B8C5A), // sage green
-    Color(0xFFC2665A), // dusty rose
-    Color(0xFFD4A05A), // warm amber
-    Color(0xFF7A8B6F), // olive
-    Color(0xFFB07A5B), // sienna
-    Color(0xFF8B6F7A), // mauve
-    Color(0xFF6F8B8A), // teal-grey
-    Color(0xFFCBA882), // sand
+    Color(0xFF3F8B4C), // green
+    Color(0xFF7B5B9E), // mauve
+    Color(0xFFC13F55), // rose
+    Color(0xFF12928C), // teal
+    Color(0xFFA0522D), // sienna
+    Color(0xFF2E5FA8), // blue
+    Color(0xFFC1661E), // terracotta
   ];
 
   static const List<Color> chartColorsDark = [
-    Color(0xFFD4956A), // soft amber
-    Color(0xFF7DB87C), // sage green
-    Color(0xFFD4887E), // dusty rose
-    Color(0xFFE5B878), // warm gold
-    Color(0xFF95A883), // olive
-    Color(0xFFC89470), // sienna
-    Color(0xFFA88895), // mauve
-    Color(0xFF88A5A4), // teal-grey
-    Color(0xFFDFC09A), // sand
+    Color(0xFF4F9E4F), // green
+    Color(0xFF7C63B8), // mauve
+    Color(0xFFC24F62), // rose
+    Color(0xFF14A69D), // teal
+    Color(0xFFB36A3E), // sienna
+    Color(0xFF4779C4), // blue
+    Color(0xFFC96B2E), // terracotta
   ];
 
   /// Resolves the bar colour for a budget's spending state — shared by

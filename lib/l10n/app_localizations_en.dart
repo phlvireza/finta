@@ -111,6 +111,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get totalSpent => 'Total Spent';
 
   @override
+  String get chartTotal => 'Total';
+
+  @override
+  String get heatmapTapHint => 'Tap a day to see its transactions';
+
+  @override
   String get totalIncome => 'Total Income';
 
   @override
@@ -338,6 +344,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get left => 'left';
+
+  @override
+  String get overString => 'over';
 
   @override
   String get noRecurringTransactions => 'No recurring transactions';
