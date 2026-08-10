@@ -2174,17 +2174,17 @@ abstract class AppLocalizations {
   /// **'Delete the \"{name}\" template? This won\'t affect past transactions.'**
   String confirmDeleteTemplate(String name);
 
-  /// No description provided for @calculator.
-  ///
-  /// In en, this message translates to:
-  /// **'Calculator'**
-  String get calculator;
-
   /// No description provided for @invalidExpression.
   ///
   /// In en, this message translates to:
   /// **'Not a valid expression'**
   String get invalidExpression;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
 
   /// No description provided for @selectedCount.
   ///

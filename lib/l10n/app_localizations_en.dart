@@ -1170,10 +1170,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get calculator => 'Calculator';
+  String get invalidExpression => 'Not a valid expression';
 
   @override
-  String get invalidExpression => 'Not a valid expression';
+  String get done => 'Done';
 
   @override
   String selectedCount(int count) {

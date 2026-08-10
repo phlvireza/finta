@@ -13,7 +13,8 @@ import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/formatters/currency_formatter.dart';
 import '../../core/utils/number_utils.dart';
-import 'widgets/amount_input_field.dart';
+import '../../widgets/amount_input_field.dart';
+import '../../widgets/amount_keypad.dart';
 import 'widgets/category_picker.dart';
 import 'widgets/account_picker.dart';
 import 'widgets/merchant_field.dart';
@@ -73,8 +74,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   /// Defaults the account picker to whatever account the user's most
-  /// recent transaction used — the same "MRU" convenience the category
-  /// picker already gives new entries.
+  /// recent transaction used. The category picker deliberately gets no
+  /// equivalent default — see [MerchantField] for why.
   String? _mostRecentAccountId() {
     final recent = context.read<TransactionProvider>().recentTransactions;
     if (recent.isNotEmpty) return recent.first.accountId;
@@ -244,6 +245,22 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     );
   }
 
+  void _showTemplateInfo(BuildContext context, AppLocalizations loc) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(loc.saveAsTemplate),
+        content: Text(loc.saveAsTemplateHelp),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(loc.gotIt),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -267,12 +284,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   tooltip: loc.saveAsTemplate,
                   onPressed: _saveAsTemplate,
                 ),
-                Tooltip(
-                  message: loc.saveAsTemplateHelp,
-                  child: Icon(
-                    Icons.info_outline,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.primary.withAlpha(180),
+                InkWell(
+                  borderRadius: BorderRadius.circular(AppConstants.radiusFull),
+                  onTap: () => _showTemplateInfo(context, loc),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2),
+                    child: Icon(
+                      Icons.info_outline,
+                      size: 20,
+                      color: theme.colorScheme.primary.withAlpha(180),
+                    ),
                   ),
                 ),
               ],
@@ -284,6 +305,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           padding: EdgeInsets.only(
             left: AppConstants.spacingLg,
             right: AppConstants.spacingLg,
+            // The amount opens a full-screen sheet rather than the OS
+            // keyboard, but the note and merchant fields still do.
             bottom: AppConstants.spacingLg + MediaQuery.of(context).viewInsets.bottom,
             top: AppConstants.spacingSm,
           ),
@@ -321,16 +344,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               AmountInputField(
                 controller: _amountController,
                 isIncome: _isIncome,
-                // Autofocus only for a brand-new entry — the amount is the
-                // single most repeated field in the app, so opening the
-                // keyboard on it immediately removes a tap from every add.
-                // Editing an existing transaction shouldn't grab focus the
-                // same way, since the user is reviewing, not necessarily
-                // about to retype the amount.
-                autofocus: !isEditing,
+                // The field is a tap target for the full-screen keypad
+                // sheet now, not something the OS keyboard can autofocus
+                // into — opening that sheet the instant the screen appears
+                // would cover the form before the user has seen it, so
+                // entry now waits for an explicit tap either way.
+                onKeypadRequested: () => AmountKeypad.show(
+                  context,
+                  controller: _amountController,
+                  isIncome: _isIncome,
+                ),
                 validator: (val) {
                   final amount = parseFormattedAmount(val ?? '');
-                  if (amount <= 0 || amount > 999999999999) return loc.pleaseEnterValidAmount;
+                  if (amount <= 0 || amount > AppConstants.maxAmount) {
+                    return loc.pleaseEnterValidAmount;
+                  }
                   return null;
                 },
               ),
@@ -340,10 +368,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               MerchantField(
                 initialValue: _merchant,
                 onChanged: (val) => _merchant = val,
-                onMerchantDefaults: (categoryId, accountId) => setState(() {
-                  _categoryId = categoryId;
-                  _accountId = accountId;
-                }),
+                onAccountDefault: (accountId) => setState(() => _accountId = accountId),
               ),
               const SizedBox(height: AppConstants.spacingXxl),
 
@@ -388,8 +413,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     TextField(
                       controller: _noteController,
                       maxLength: AppConstants.maxNoteLength,
-                      decoration: const InputDecoration(
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecoration(
                         hintText: '',
+                        filled: true,
+                        fillColor: theme.colorScheme.surfaceContainerHighest,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
                     ),
                     const SizedBox(height: AppConstants.spacingXl),

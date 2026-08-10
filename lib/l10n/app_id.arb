@@ -617,8 +617,8 @@
       "name": { "type": "String" }
     }
   },
-  "calculator": "Kalkulator",
   "invalidExpression": "Bukan ekspresi yang valid",
+  "done": "Selesai",
 
   "selectedCount": "{count, plural, =1{1 dipilih} other{{count} dipilih}}",
   "@selectedCount": {

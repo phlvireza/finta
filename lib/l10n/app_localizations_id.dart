@@ -1172,10 +1172,10 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String get calculator => 'Kalkulator';
+  String get invalidExpression => 'Bukan ekspresi yang valid';
 
   @override
-  String get invalidExpression => 'Bukan ekspresi yang valid';
+  String get done => 'Selesai';
 
   @override
   String selectedCount(int count) {

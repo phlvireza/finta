@@ -28,6 +28,12 @@ class AppConstants {
   static const int maxDecimalPlaces = 2;
   static const int maxNoteLength = 200;
 
+  /// Upper bound every amount validator enforces. Well under what
+  /// [maxAmountDigits] allows to be typed — the formatter's job is masking,
+  /// this is the sanity check that a fat-fingered extra digit run doesn't
+  /// silently become a real balance.
+  static const double maxAmount = 999999999999;
+
   // ── Dashboard ─────────────────────────────────────────────
   static const int recentTransactionCount = 10;
   static const int budgetOverviewCount = 5;

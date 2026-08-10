@@ -2,8 +2,8 @@
 // visible instead of scrolling out of the row.
 //
 // The field renders at a fixed 48px by default, which only fits ~7
-// characters once the currency symbol and calculator button have taken
-// their share of a phone-width row. Anything longer used to scroll
+// characters once the currency symbol has taken its share of a
+// phone-width row. Anything longer used to scroll
 // horizontally inside the TextField, hiding the leading digits behind the
 // currency symbol — so `Rp 1,500,000` read as `500,000`.
 //
