@@ -71,57 +71,65 @@ class RecurringProvider extends ChangeNotifier {
     DateTime? endDate,
     bool isSubscription = false,
   }) async {
-    try {
-      final recurring = RecurringTransactionModel(
-        id: _uuid.v4(),
-        type: type,
-        amount: amount,
-        categoryId: categoryId,
-        accountId: accountId,
-        merchant: merchant,
-        note: note,
-        frequency: frequency,
-        startDate: startDate,
-        endDate: endDate,
-        isActive: true,
-        isSubscription: isSubscription,
-        createdAt: DateTime.now(),
-      );
+    final recurring = RecurringTransactionModel(
+      id: _uuid.v4(),
+      type: type,
+      amount: amount,
+      categoryId: categoryId,
+      accountId: accountId,
+      merchant: merchant,
+      note: note,
+      frequency: frequency,
+      startDate: startDate,
+      endDate: endDate,
+      isActive: true,
+      isSubscription: isSubscription,
+      createdAt: DateTime.now(),
+    );
 
-      await _repository.insert(recurring);
-      _recurringTransactions.insert(0, recurring);
-      notifyListeners();
-      return recurring;
-    } catch (e) {
-      rethrow;
-    }
+    await _repository.insert(recurring);
+    _recurringTransactions.insert(0, recurring);
+    notifyListeners();
+    return recurring;
   }
 
   Future<void> updateRecurring(RecurringTransactionModel recurring) async {
-    try {
-      await _repository.update(recurring);
-      final index = _recurringTransactions.indexWhere((r) => r.id == recurring.id);
-      if (index != -1) {
-        _recurringTransactions[index] = recurring;
-        notifyListeners();
-      }
-    } catch (e) {
-      rethrow;
+    await _repository.update(recurring);
+    final index = _recurringTransactions.indexWhere((r) => r.id == recurring.id);
+    if (index != -1) {
+      _recurringTransactions[index] = recurring;
+      notifyListeners();
     }
   }
 
   Future<void> deleteRecurring(String id) async {
+    await _repository.delete(id);
+    final index = _recurringTransactions.indexWhere((r) => r.id == id);
+    if (index != -1) {
+      _recurringTransactions[index] =
+          _recurringTransactions[index].copyWith(isActive: false);
+    }
+    // Unconditional: the row changed in the database whether or not this
+    // provider happened to be holding it, and the list has to reflect that.
+    notifyListeners();
+    await _cancelReminderQuietly(id);
+  }
+
+  /// Cancels a reminder without letting a notification-plugin failure
+  /// masquerade as a failed database write.
+  ///
+  /// This used to be an ordinary `await` at the end of [deleteRecurring].
+  /// The delete had already committed and the row had already vanished from
+  /// the list by then, so a throw from the plugin surfaced to the user as
+  /// "Failed to delete" for a delete that plainly worked. A stranded
+  /// reminder is not a failed delete — the template is inactive and will
+  /// never generate another occurrence, and the reminder is re-derived from
+  /// active templates on next launch anyway.
+  Future<void> _cancelReminderQuietly(String id) async {
     try {
-      await _repository.delete(id);
-      final index = _recurringTransactions.indexWhere((r) => r.id == id);
-      if (index != -1) {
-        _recurringTransactions[index] =
-            _recurringTransactions[index].copyWith(isActive: false);
-        notifyListeners();
-      }
       await _notificationService.cancelReminder(id);
-    } catch (e) {
-      rethrow;
+    } catch (_) {
+      // Intentionally swallowed — see above.
     }
   }
 
@@ -139,7 +147,7 @@ class RecurringProvider extends ChangeNotifier {
     final current = _findById(id);
     if (current == null) return;
     await updateRecurring(current.copyWith(isSubscription: value));
-    if (!value) await _notificationService.cancelReminder(id);
+    if (!value) await _cancelReminderQuietly(id);
   }
 
   /// Pauses a subscription: it stops generating charges (and its reminder
@@ -148,7 +156,7 @@ class RecurringProvider extends ChangeNotifier {
     final current = _findById(id);
     if (current == null) return;
     await updateRecurring(current.copyWith(isPaused: true));
-    await _notificationService.cancelReminder(id);
+    await _cancelReminderQuietly(id);
   }
 
   /// Resumes a paused subscription. `lastRunDate` is bumped to today
@@ -176,15 +184,11 @@ class RecurringProvider extends ChangeNotifier {
   }
 
   Future<void> updateLastRunDate(String id, DateTime date) async {
-    try {
-      await _repository.updateLastRunDate(id, date);
-      final index = _recurringTransactions.indexWhere((r) => r.id == id);
-      if (index != -1) {
-        _recurringTransactions[index] =
-            _recurringTransactions[index].copyWith(lastRunDate: date);
-      }
-    } catch (e) {
-      rethrow;
+    await _repository.updateLastRunDate(id, date);
+    final index = _recurringTransactions.indexWhere((r) => r.id == id);
+    if (index != -1) {
+      _recurringTransactions[index] =
+          _recurringTransactions[index].copyWith(lastRunDate: date);
     }
   }
 }

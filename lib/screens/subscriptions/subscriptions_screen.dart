@@ -256,30 +256,56 @@ class _SubscriptionTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppConstants.radiusMd),
         side: BorderSide(color: theme.colorScheme.outline),
       ),
-      child: ListTile(
-        leading: Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: (category?.colorValue ?? theme.colorScheme.primary).withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-          ),
-          child: Icon(category?.iconData ?? Icons.subscriptions, color: category?.colorValue ?? theme.colorScheme.primary),
+      // Deliberately not a ListTile. ListTile hands `trailing` whatever
+      // width it asks for and squeezes the title column with the remainder,
+      // so an amount plus a 48px overflow menu left the subtitle no room and
+      // the "Overdue" badge ran straight into the amount. Laying the row out
+      // directly keeps the gap under our control, and the Wrap lets the
+      // badge drop to its own line rather than collide on narrow screens.
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppConstants.spacingMd,
+          AppConstants.spacingMd,
+          AppConstants.spacingSm,
+          AppConstants.spacingMd,
         ),
-        title: Text(name, style: theme.textTheme.titleMedium),
-        subtitle: Row(
+        child: Row(
           children: [
-            Text(
-              subscription.frequencyLabel,
-              style: theme.textTheme.bodySmall,
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: (category?.colorValue ?? theme.colorScheme.primary).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+              ),
+              child: Icon(category?.iconData ?? Icons.subscriptions, color: category?.colorValue ?? theme.colorScheme.primary),
             ),
-            const SizedBox(width: AppConstants.spacingSm),
-            _StatusBadge(subscription: subscription, daysUntil: daysUntil),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+            const SizedBox(width: AppConstants.spacingMd),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    name,
+                    style: theme.textTheme.titleMedium,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Wrap(
+                    spacing: AppConstants.spacingSm,
+                    runSpacing: AppConstants.spacingXs,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(subscription.frequencyLabel, style: theme.textTheme.bodySmall),
+                      _StatusBadge(subscription: subscription, daysUntil: daysUntil),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppConstants.spacingMd),
             Text(
               NumberUtils.formatCurrency(
                 subscription.amount,
@@ -288,6 +314,7 @@ class _SubscriptionTile extends StatelessWidget {
               ),
               style: theme.textTheme.titleMedium,
             ),
+            const SizedBox(width: AppConstants.spacingXs),
             _SubscriptionMenu(subscription: subscription),
           ],
         ),
@@ -345,6 +372,9 @@ class _SubscriptionMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     return PopupMenuButton<String>(
+      // The default 48px tap target is width the amount next to it needs
+      // more than the menu does.
+      padding: EdgeInsets.zero,
       onSelected: (value) => _handle(context, value),
       itemBuilder: (context) => [
         PopupMenuItem(

@@ -370,6 +370,9 @@ class AppLocalizationsId extends AppLocalizations {
       'Ini akan menghentikan pembuatan transaksi otomatis di masa depan. Transaksi yang ada akan tetap dipertahankan.';
 
   @override
+  String get recurringStopped => 'Transaksi berulang dihentikan';
+
+  @override
   String get stop => 'Hentikan';
 
   @override

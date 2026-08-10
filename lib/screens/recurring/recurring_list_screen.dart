@@ -161,15 +161,14 @@ class RecurringListScreen extends StatelessWidget {
     );
 
     if (confirmed && context.mounted) {
+      final messenger = ScaffoldMessenger.of(context);
       try {
         await context.read<RecurringProvider>().deleteRecurring(id);
+        messenger.hideCurrentSnackBar();
+        messenger.showSnackBar(SnackBar(content: Text(loc.recurringStopped)));
       } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(loc.errorFailedToDelete)),
-          );
-        }
+        messenger.hideCurrentSnackBar();
+        messenger.showSnackBar(SnackBar(content: Text(loc.errorFailedToDelete)));
       }
     }
   }

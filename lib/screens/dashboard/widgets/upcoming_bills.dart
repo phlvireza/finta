@@ -59,12 +59,20 @@ class _UpcomingItem extends StatelessWidget {
 
   const _UpcomingItem({required this.template});
 
-  String _dueLabel(AppLocalizations loc, DateTime next) {
+  int _daysUntil(DateTime next) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final date = DateTime(next.year, next.month, next.day);
-    final days = date.difference(today).inDays;
-    if (days <= 0) return loc.dueToday;
+    return date.difference(today).inDays;
+  }
+
+  String _dueLabel(AppLocalizations loc, int days, DateTime next) {
+    // Was `days <= 0 → dueToday`, which mislabeled anything overdue as
+    // merely "due today". Subscriptions already distinguishes the two
+    // (_StatusBadge in subscriptions_screen.dart); this brings Upcoming in
+    // line so the warning icon below has a real "overdue" state to key off.
+    if (days < 0) return loc.overdue;
+    if (days == 0) return loc.dueToday;
     if (days == 1) return loc.dueTomorrow;
     if (days < 7) return loc.dueInDays(days);
     return AppDateUtils.formatFull(next);
@@ -83,6 +91,10 @@ class _UpcomingItem extends StatelessWidget {
     final amountColor = isIncome
         ? (isDark ? AppColors.darkIncome : AppColors.lightIncome)
         : (isDark ? AppColors.darkExpense : AppColors.lightExpense);
+
+    final days = _daysUntil(template.nextOccurrence);
+    final isOverdue = days < 0;
+    final dueColor = isOverdue ? AppColors.warning : theme.textTheme.bodySmall?.color;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppConstants.spacingMd),
@@ -107,10 +119,34 @@ class _UpcomingItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(category?.name ?? loc.unknown, style: theme.textTheme.titleSmall),
+                // Merchant first, same as the Subscriptions list. Leading
+                // with the category made every row read as its category
+                // ("Bills — due in 3 days"), which names no actual charge.
                 Text(
-                  _dueLabel(loc, template.nextOccurrence),
-                  style: theme.textTheme.bodySmall,
+                  template.merchant ?? category?.name ?? loc.unknown,
+                  style: theme.textTheme.titleSmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Icon-plus-warning-color pairing matches the urgency
+                    // treatment already used for insight callouts
+                    // (insights_hub_screen.dart) — color alone isn't
+                    // enough of a signal on its own.
+                    if (isOverdue) ...[
+                      Icon(Icons.error_outline, size: 14, color: AppColors.warning),
+                      const SizedBox(width: 4),
+                    ],
+                    Text(
+                      _dueLabel(loc, days, template.nextOccurrence),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: dueColor,
+                        fontWeight: isOverdue ? FontWeight.w600 : null,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

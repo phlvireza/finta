@@ -369,6 +369,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'This will stop future transactions from being generated automatically. Existing transactions will remain.';
 
   @override
+  String get recurringStopped => 'Recurring transaction stopped';
+
+  @override
   String get stop => 'Stop';
 
   @override

@@ -800,6 +800,12 @@ abstract class AppLocalizations {
   /// **'This will stop future transactions from being generated automatically. Existing transactions will remain.'**
   String get stopRecurringMessage;
 
+  /// No description provided for @recurringStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Recurring transaction stopped'**
+  String get recurringStopped;
+
   /// No description provided for @stop.
   ///
   /// In en, this message translates to:

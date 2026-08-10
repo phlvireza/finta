@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -22,6 +23,13 @@ import '../../models/recurring_transaction_model.dart';
 class NotificationService {
   NotificationService._();
   static final NotificationService instance = NotificationService._();
+
+  /// Subclass hook for tests. The production path is the [instance]
+  /// singleton; this exists only so a test can stand in a version whose
+  /// methods fail on demand, which is how the "reminder failure must not
+  /// look like a failed delete" guarantee in [RecurringProvider] is proved.
+  @visibleForTesting
+  NotificationService.forTesting();
 
   static const _channelId = 'subscription_reminders';
   static const _channelName = 'Subscription reminders';

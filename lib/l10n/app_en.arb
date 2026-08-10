@@ -155,6 +155,7 @@
   "next": "Next",
   "stopRecurring": "Stop Recurring",
   "stopRecurringMessage": "This will stop future transactions from being generated automatically. Existing transactions will remain.",
+  "recurringStopped": "Recurring transaction stopped",
   "stop": "Stop",
   "skip": "Skip",
   "trackYourMoney": "Track your money,\nnot your stress",

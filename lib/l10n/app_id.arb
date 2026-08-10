@@ -148,6 +148,7 @@
   "next": "Berikutnya",
   "stopRecurring": "Hentikan Rutin",
   "stopRecurringMessage": "Ini akan menghentikan pembuatan transaksi otomatis di masa depan. Transaksi yang ada akan tetap dipertahankan.",
+  "recurringStopped": "Transaksi berulang dihentikan",
   "stop": "Hentikan",
   "skip": "Lewati",
   "trackYourMoney": "Lacak uang Anda,\nbukan stres Anda",
