@@ -1319,22 +1319,23 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String get monthlyRecap => 'Rekap Bulanan';
+  String get periodRecap => 'Rekap Periode';
 
   @override
-  String yourMonthRecapTitle(String month) {
-    return '$month Anda';
+  String yourPeriodRecapTitle(String range) {
+    return '$range Anda';
   }
 
   @override
-  String topCategoryLabel(String category, String amount) {
-    return 'Kategori teratas: $category ($amount)';
+  String periodInProgress(int day, int total) {
+    return 'Sedang berjalan · hari ke-$day dari $total';
   }
 
   @override
-  String savingsRateLabel(Object percent) {
-    return 'Tingkat tabungan: $percent';
-  }
+  String get topCategories => 'Kategori teratas';
+
+  @override
+  String get savingsRate => 'Tingkat tabungan';
 
   @override
   String get systemDefault => 'Default Sistem';

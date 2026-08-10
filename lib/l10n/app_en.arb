@@ -725,21 +725,22 @@
     }
   },
 
-  "monthlyRecap": "Monthly Recap",
-  "yourMonthRecapTitle": "Your {month}",
-  "@yourMonthRecapTitle": {
+  "periodRecap": "Period Recap",
+  "yourPeriodRecapTitle": "Your {range}",
+  "@yourPeriodRecapTitle": {
     "placeholders": {
-      "month": { "type": "String" }
+      "range": { "type": "String" }
     }
   },
-  "topCategoryLabel": "Top category: {category} ({amount})",
-  "@topCategoryLabel": {
+  "periodInProgress": "In progress · day {day} of {total}",
+  "@periodInProgress": {
     "placeholders": {
-      "category": { "type": "String" },
-      "amount": { "type": "String" }
+      "day": { "type": "int" },
+      "total": { "type": "int" }
     }
   },
-  "savingsRateLabel": "Savings rate: {percent}",
+  "topCategories": "Top categories",
+  "savingsRate": "Savings rate",
 
   "systemDefault": "System Default",
   "selectPayday": "Select Payday",

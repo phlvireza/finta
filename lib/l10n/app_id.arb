@@ -718,21 +718,22 @@
     }
   },
 
-  "monthlyRecap": "Rekap Bulanan",
-  "yourMonthRecapTitle": "{month} Anda",
-  "@yourMonthRecapTitle": {
+  "periodRecap": "Rekap Periode",
+  "yourPeriodRecapTitle": "{range} Anda",
+  "@yourPeriodRecapTitle": {
     "placeholders": {
-      "month": { "type": "String" }
+      "range": { "type": "String" }
     }
   },
-  "topCategoryLabel": "Kategori teratas: {category} ({amount})",
-  "@topCategoryLabel": {
+  "periodInProgress": "Sedang berjalan · hari ke-{day} dari {total}",
+  "@periodInProgress": {
     "placeholders": {
-      "category": { "type": "String" },
-      "amount": { "type": "String" }
+      "day": { "type": "int" },
+      "total": { "type": "int" }
     }
   },
-  "savingsRateLabel": "Tingkat tabungan: {percent}",
+  "topCategories": "Kategori teratas",
+  "savingsRate": "Tingkat tabungan",
 
   "systemDefault": "Default Sistem",
   "selectPayday": "Pilih Tanggal Gajian",

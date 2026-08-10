@@ -2390,29 +2390,35 @@ abstract class AppLocalizations {
   /// **'You spent {percent}% less on {category} than last period'**
   String insightSpendingDecreased(String category, String percent);
 
-  /// No description provided for @monthlyRecap.
+  /// No description provided for @periodRecap.
   ///
   /// In en, this message translates to:
-  /// **'Monthly Recap'**
-  String get monthlyRecap;
+  /// **'Period Recap'**
+  String get periodRecap;
 
-  /// No description provided for @yourMonthRecapTitle.
+  /// No description provided for @yourPeriodRecapTitle.
   ///
   /// In en, this message translates to:
-  /// **'Your {month}'**
-  String yourMonthRecapTitle(String month);
+  /// **'Your {range}'**
+  String yourPeriodRecapTitle(String range);
 
-  /// No description provided for @topCategoryLabel.
+  /// No description provided for @periodInProgress.
   ///
   /// In en, this message translates to:
-  /// **'Top category: {category} ({amount})'**
-  String topCategoryLabel(String category, String amount);
+  /// **'In progress · day {day} of {total}'**
+  String periodInProgress(int day, int total);
 
-  /// No description provided for @savingsRateLabel.
+  /// No description provided for @topCategories.
   ///
   /// In en, this message translates to:
-  /// **'Savings rate: {percent}'**
-  String savingsRateLabel(Object percent);
+  /// **'Top categories'**
+  String get topCategories;
+
+  /// No description provided for @savingsRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Savings rate'**
+  String get savingsRate;
 
   /// No description provided for @systemDefault.
   ///

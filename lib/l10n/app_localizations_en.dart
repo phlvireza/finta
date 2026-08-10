@@ -1316,22 +1316,23 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get monthlyRecap => 'Monthly Recap';
+  String get periodRecap => 'Period Recap';
 
   @override
-  String yourMonthRecapTitle(String month) {
-    return 'Your $month';
+  String yourPeriodRecapTitle(String range) {
+    return 'Your $range';
   }
 
   @override
-  String topCategoryLabel(String category, String amount) {
-    return 'Top category: $category ($amount)';
+  String periodInProgress(int day, int total) {
+    return 'In progress · day $day of $total';
   }
 
   @override
-  String savingsRateLabel(Object percent) {
-    return 'Savings rate: $percent';
-  }
+  String get topCategories => 'Top categories';
+
+  @override
+  String get savingsRate => 'Savings rate';
 
   @override
   String get systemDefault => 'System Default';

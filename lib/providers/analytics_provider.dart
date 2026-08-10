@@ -106,9 +106,14 @@ class AnalyticsProvider extends ChangeNotifier {
   }
 
   /// Load category breakdowns for a given period.
+  ///
+  /// [comparedTo] additionally fills the `previousTotal*` getters, so a
+  /// caller that needs a "versus last period" line doesn't have to reach
+  /// past this provider into the repository for it.
   Future<void> loadAnalytics({
     required DateTime start,
     required DateTime end,
+    ({DateTime start, DateTime end})? comparedTo,
   }) async {
     _isLoading = true;
     _error = null;
@@ -138,6 +143,15 @@ class AnalyticsProvider extends ChangeNotifier {
           percentage: _totalIncome > 0 ? total / _totalIncome : 0,
         );
       }).toList();
+
+      // Always reassigned, never left over from an earlier range — a stale
+      // comparison is worse than no comparison.
+      _previousTotalExpense = comparedTo == null
+          ? 0
+          : await _repository.getSumByTypeAndDateRange('expense', comparedTo.start, comparedTo.end);
+      _previousTotalIncome = comparedTo == null
+          ? 0
+          : await _repository.getSumByTypeAndDateRange('income', comparedTo.start, comparedTo.end);
     } catch (e) {
       _error = e.toString();
       rethrow;
@@ -165,13 +179,8 @@ class AnalyticsProvider extends ChangeNotifier {
     }
 
     final previous = AppDateUtils.getPreviousPeriod(current);
-    
-    await loadAnalytics(start: current.start, end: current.end);
-    
-    // Fetch previous period totals for comparison
-    _previousTotalExpense = await _repository.getSumByTypeAndDateRange('expense', previous.start, previous.end);
-    _previousTotalIncome = await _repository.getSumByTypeAndDateRange('income', previous.start, previous.end);
-    notifyListeners();
+
+    await loadAnalytics(start: current.start, end: current.end, comparedTo: previous);
   }
 
   void setPeriodFilter(AnalyticsPeriod period, int payday) {
