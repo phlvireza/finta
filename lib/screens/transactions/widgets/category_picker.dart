@@ -5,6 +5,7 @@ import '../../../models/category_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../categories/widgets/category_form.dart';
 import '../../../widgets/form_sheet.dart';
+import '../../../widgets/picker_sheet.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Form field that opens a searchable bottom sheet for category selection.
@@ -23,9 +24,8 @@ class CategoryPicker extends StatelessWidget {
   });
 
   void _openCategorySheet(BuildContext context, FormFieldState<String> state) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
+    PickerSheet.show<void>(
+      context,
       builder: (_) => _CategorySearchSheet(
         isIncome: isIncome,
         selectedCategoryId: selectedCategoryId,
@@ -200,76 +200,63 @@ class _CategorySearchSheetState extends State<_CategorySearchSheet> {
 
     final loc = AppLocalizations.of(context)!;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        top: AppConstants.spacingLg,
-        left: AppConstants.spacingLg,
-        right: AppConstants.spacingLg,
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.6,
-        child: Column(
-          children: [
-            // Search Bar
-            TextField(
-              controller: _searchController,
-              autofocus: true,
-              decoration: InputDecoration(
-                hintText: loc.searchCategories,
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: theme.colorScheme.surfaceContainerHighest,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: AppConstants.spacingMd),
-            
-            // Create New Category Button
-            ListTile(
-              leading: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.secondary,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.add, color: theme.colorScheme.onSecondary),
-              ),
-              title: Text(
-                loc.createNewCategory,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              onTap: () => _createNewCategory(),
-            ),
-            const Divider(),
-            
-            // Categories List — top-level categories followed immediately
-            // by their own children, indented, rather than a flat
-            // alphabetical/sortOrder mix that scatters a parent from its
-            // sub-categories. Search still matches by name across both
-            // levels, since [filtered] is a flat name-matched list.
-            Expanded(
-              child: filtered.isEmpty
-                  ? Center(
-                      child: Text(
-                        loc.noCategoriesFound,
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                    )
-                  : ListView(
-                      children: _buildGroupedTiles(context, filtered, theme, loc),
-                    ),
-            ),
-          ],
+    return PickerSheet(
+      title: loc.selectACategory,
+      pinnedHeader: TextField(
+        controller: _searchController,
+        autofocus: true,
+        decoration: InputDecoration(
+          hintText: loc.searchCategories,
+          prefixIcon: const Icon(Icons.search),
+          filled: true,
+          fillColor: theme.colorScheme.surfaceContainerHighest,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+            borderSide: BorderSide.none,
+          ),
         ),
       ),
+      children: [
+        // Create New Category Button
+        ListTile(
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.secondary,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.add, color: theme.colorScheme.onSecondary),
+          ),
+          title: Text(
+            loc.createNewCategory,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          onTap: () => _createNewCategory(),
+        ),
+        const Divider(),
+
+        // Categories List — top-level categories followed immediately
+        // by their own children, indented, rather than a flat
+        // alphabetical/sortOrder mix that scatters a parent from its
+        // sub-categories. Search still matches by name across both
+        // levels, since [filtered] is a flat name-matched list.
+        if (filtered.isEmpty)
+          Padding(
+            padding: const EdgeInsets.all(AppConstants.spacingXxl),
+            child: Center(
+              child: Text(
+                loc.noCategoriesFound,
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
+          )
+        else
+          ..._buildGroupedTiles(context, filtered, theme, loc),
+      ],
     );
   }
 

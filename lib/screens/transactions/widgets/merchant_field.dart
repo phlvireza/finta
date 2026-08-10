@@ -6,18 +6,24 @@ import '../../../l10n/app_localizations.dart';
 
 /// Free-text merchant/payee field with an autocomplete dropdown built from
 /// transaction history, ranked by frequency. Picking a suggestion fires
-/// [onMerchantDefaults] with that merchant's most common category/account
-/// pairing, so the caller can pre-fill the rest of the form.
+/// [onAccountDefault] with that merchant's most common account, so the
+/// caller can pre-fill it.
+///
+/// Deliberately does *not* pre-fill the category, even though history knows
+/// it: a silently pre-selected category is the one field users stop reading,
+/// and a wrong guess is only visible after the transaction is saved. The
+/// account has no such failure mode — it is almost always the same one, and
+/// picking it wrong is obvious on the balance immediately.
 class MerchantField extends StatefulWidget {
   final String? initialValue;
   final ValueChanged<String> onChanged;
-  final void Function(String categoryId, String accountId)? onMerchantDefaults;
+  final ValueChanged<String>? onAccountDefault;
 
   const MerchantField({
     super.key,
     this.initialValue,
     required this.onChanged,
-    this.onMerchantDefaults,
+    this.onAccountDefault,
   });
 
   @override
@@ -48,7 +54,7 @@ class _MerchantFieldState extends State<MerchantField> {
               widget.onChanged(selection);
               final defaults = await txProvider.getMerchantDefaults(selection);
               if (defaults != null) {
-                widget.onMerchantDefaults?.call(defaults.categoryId, defaults.accountId);
+                widget.onAccountDefault?.call(defaults.accountId);
               }
             },
             fieldViewBuilder: (context, controller, focusNode, onSubmit) {

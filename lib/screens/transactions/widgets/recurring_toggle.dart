@@ -85,12 +85,16 @@ class RecurringToggle extends StatelessWidget {
                 children: [
                   Text(loc.markAsSubscription, style: theme.textTheme.titleMedium),
                   const SizedBox(width: AppConstants.spacingSm),
-                  Tooltip(
-                    message: loc.markAsSubscriptionHelp,
-                    child: Icon(
-                      Icons.info_outline,
-                      size: 20,
-                      color: theme.colorScheme.primary.withAlpha(180),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(AppConstants.radiusFull),
+                    onTap: () => _showSubscriptionInfo(context, loc),
+                    child: Padding(
+                      padding: const EdgeInsets.all(2),
+                      child: Icon(
+                        Icons.info_outline,
+                        size: 20,
+                        color: theme.colorScheme.primary.withAlpha(180),
+                      ),
                     ),
                   ),
                 ],
@@ -103,6 +107,22 @@ class RecurringToggle extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+
+  void _showSubscriptionInfo(BuildContext context, AppLocalizations loc) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(loc.subscriptions),
+        content: Text(loc.markAsSubscriptionHelp),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(loc.gotIt),
+          ),
+        ],
+      ),
     );
   }
 }

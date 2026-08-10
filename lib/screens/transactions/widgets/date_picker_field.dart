@@ -38,6 +38,14 @@ class DatePickerField extends StatelessWidget {
       },
     );
 
+    if (!context.mounted) return;
+
+    // A modal route hands focus back to whatever held it before it opened —
+    // which on the add-transaction form is the autofocused amount field. Left
+    // alone, choosing a date pops the keypad/keyboard straight back up over
+    // the form. Drop focus explicitly instead.
+    FocusManager.instance.primaryFocus?.unfocus();
+
     if (date != null) {
       onDateSelected(date);
     }

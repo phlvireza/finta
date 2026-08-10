@@ -20,6 +20,7 @@ import '../../widgets/date_group_header.dart';
 import '../../widgets/skeleton_box.dart';
 import '../../widgets/confirm_dialog.dart';
 import '../../widgets/error_state.dart';
+import '../../widgets/picker_sheet.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -580,59 +581,83 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 }
 
-/// Minimal category picker for bulk recategorize — a flat, type-scoped
-/// list with no search or create-new, since this is a one-off action on
-/// an already-selected batch, not the primary entry-form picker.
-class _BulkRecategorizeSheet extends StatelessWidget {
+/// Category picker for bulk recategorize — a flat, type-scoped list with no
+/// create-new, since this is a one-off action on an already-selected batch,
+/// not the primary entry-form picker.
+///
+/// Presented through [PickerSheet] so it sizes and reads exactly like the
+/// entry-form picker; the search field is not autofocused here, because the
+/// list is the answer to "which category" far more often than typing is.
+class _BulkRecategorizeSheet extends StatefulWidget {
   final bool isIncome;
 
   const _BulkRecategorizeSheet({required this.isIncome});
 
   static Future<String?> show(BuildContext context, {required bool isIncome}) {
-    return showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
+    return PickerSheet.show<String>(
+      context,
       builder: (_) => _BulkRecategorizeSheet(isIncome: isIncome),
     );
   }
 
   @override
+  State<_BulkRecategorizeSheet> createState() => _BulkRecategorizeSheetState();
+}
+
+class _BulkRecategorizeSheetState extends State<_BulkRecategorizeSheet> {
+  final _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
     final categories = context.watch<CategoryProvider>();
     final List<CategoryModel> options =
-        isIncome ? categories.incomeCategories : categories.expenseCategories;
+        widget.isIncome ? categories.incomeCategories : categories.expenseCategories;
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.only(top: AppConstants.spacingLg),
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.6,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
-                child: Text(loc.recategorize, style: Theme.of(context).textTheme.titleLarge),
-              ),
-              const SizedBox(height: AppConstants.spacingSm),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: options.length,
-                  itemBuilder: (context, index) {
-                    final cat = options[index];
-                    return ListTile(
-                      leading: Icon(cat.iconData, color: cat.colorValue),
-                      title: Text(cat.name),
-                      onTap: () => Navigator.of(context).pop(cat.id),
-                    );
-                  },
-                ),
-              ),
-            ],
+    final query = _searchController.text.toLowerCase();
+    final filtered = query.isEmpty
+        ? options
+        : options.where((c) => c.name.toLowerCase().contains(query)).toList();
+
+    return PickerSheet(
+      title: loc.recategorize,
+      pinnedHeader: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          hintText: loc.searchCategories,
+          prefixIcon: const Icon(Icons.search),
+          filled: true,
+          fillColor: theme.colorScheme.surfaceContainerHighest,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+            borderSide: BorderSide.none,
           ),
         ),
       ),
+      emptyState: Padding(
+        padding: const EdgeInsets.all(AppConstants.spacingXxl),
+        child: Text(loc.noCategoriesFound, style: theme.textTheme.bodyMedium),
+      ),
+      children: filtered
+          .map((cat) => ListTile(
+                leading: Icon(cat.iconData, color: cat.colorValue),
+                title: Text(cat.name),
+                onTap: () => Navigator.of(context).pop(cat.id),
+              ))
+          .toList(),
     );
   }
 }

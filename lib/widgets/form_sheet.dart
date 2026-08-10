@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/constants/app_constants.dart';
+import 'sheet_shell.dart';
 
 /// Layout scaffold for the app's long bottom-sheet forms — budget,
 /// category, quick add.
@@ -11,10 +12,10 @@ import '../core/constants/app_constants.dart';
 /// header and the action are pinned and only [body] scrolls, so the button
 /// is always reachable no matter how much the form grows.
 ///
-/// The keyboard inset is applied *once*, here — callers must not wrap the
-/// sheet in another `viewInsets.bottom` padding (doing so both doubles the
-/// offset and, when read from the launching screen's context, never
-/// updates as the keyboard opens).
+/// The handle, title row and sizing come from [SheetShell]; this widget is
+/// only "scrolling body + pinned footer". The keyboard inset is applied once,
+/// in the shell — callers must not wrap the sheet in another
+/// `viewInsets.bottom` padding.
 class FormSheet extends StatelessWidget {
   final String title;
 
@@ -44,78 +45,37 @@ class FormSheet extends StatelessWidget {
     BuildContext context, {
     required WidgetBuilder builder,
   }) {
-    return showModalBottomSheet<T>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: builder,
-    );
+    return SheetShell.show<T>(context, builder: builder);
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final maxHeight = MediaQuery.sizeOf(context).height * maxHeightFactor;
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: maxHeight),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: AppConstants.spacingSm),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.outline,
-                  borderRadius: BorderRadius.circular(AppConstants.radiusFull),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppConstants.spacingLg,
-                  AppConstants.spacingMd,
-                  AppConstants.spacingLg,
-                  AppConstants.spacingSm,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(title, style: theme.textTheme.titleLarge),
-                    ),
-                    ?headerAction,
-                  ],
-                ),
-              ),
-              Flexible(
-                child: SingleChildScrollView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  child: body,
-                ),
-              ),
-              if (action != null)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppConstants.spacingLg,
-                    AppConstants.spacingMd,
-                    AppConstants.spacingLg,
-                    AppConstants.spacingLg,
-                  ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: action,
-                  ),
-                ),
-            ],
+    return SheetShell(
+      title: title,
+      headerAction: headerAction,
+      maxHeightFactor: maxHeightFactor,
+      children: [
+        Flexible(
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            child: body,
           ),
         ),
-      ),
+        if (action != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppConstants.spacingLg,
+              AppConstants.spacingMd,
+              AppConstants.spacingLg,
+              AppConstants.spacingLg,
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: action,
+            ),
+          ),
+      ],
     );
   }
 }

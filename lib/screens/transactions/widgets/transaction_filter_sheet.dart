@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/category_provider.dart';
 import '../../../providers/account_provider.dart';
+import '../../../models/category_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -173,6 +174,18 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
     setState(() => _filter = _filter.copyWith(categoryIds: updated));
   }
 
+  /// Switches the type and drops any category selection that type no longer
+  /// shows. Without the pruning, an expense category picked under "All"
+  /// would keep filtering the results after switching to Income, with no
+  /// chip left on screen to explain why nothing matches.
+  void _setType(String type, List<CategoryModel> visible) {
+    final visibleIds = visible.map((c) => c.id).toSet();
+    setState(() => _filter = _filter.copyWith(
+          type: type,
+          categoryIds: _filter.categoryIds.intersection(visibleIds),
+        ));
+  }
+
   void _toggleAccount(String id) {
     final updated = Set<String>.from(_filter.accountIds);
     if (!updated.add(id)) updated.remove(id);
@@ -204,7 +217,14 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
-    final categories = context.watch<CategoryProvider>().categories;
+    // The type-scoped getters, not the raw list: they drop archived and
+    // system rows, so the internal "Transfer" category stops showing up as
+    // something you can filter by. The two remaining "Other" chips are the
+    // real expense and income categories of that name — telling them apart
+    // is what the type sections below are for.
+    final categoryProvider = context.watch<CategoryProvider>();
+    final expenseCategories = categoryProvider.expenseCategories;
+    final incomeCategories = categoryProvider.incomeCategories;
     final accounts = context.watch<AccountProvider>().activeAccounts;
     final preset = _activePreset;
 
@@ -272,17 +292,17 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                   _PresetChip(
                     label: loc.all,
                     isSelected: _filter.type == 'all',
-                    onTap: () => setState(() => _filter = _filter.copyWith(type: 'all')),
+                    onTap: () => _setType('all', [...expenseCategories, ...incomeCategories]),
                   ),
                   _PresetChip(
                     label: loc.expense,
                     isSelected: _filter.type == 'expense',
-                    onTap: () => setState(() => _filter = _filter.copyWith(type: 'expense')),
+                    onTap: () => _setType('expense', expenseCategories),
                   ),
                   _PresetChip(
                     label: loc.income,
                     isSelected: _filter.type == 'income',
-                    onTap: () => setState(() => _filter = _filter.copyWith(type: 'income')),
+                    onTap: () => _setType('income', incomeCategories),
                   ),
                 ],
               ),
@@ -290,17 +310,26 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
 
               Text(loc.category, style: theme.textTheme.titleSmall),
               const SizedBox(height: AppConstants.spacingSm),
-              Wrap(
-                spacing: AppConstants.spacingSm,
-                runSpacing: AppConstants.spacingSm,
-                children: categories.map((c) {
-                  return _PresetChip(
-                    label: c.name,
-                    isSelected: _filter.categoryIds.contains(c.id),
-                    onTap: () => _toggleCategory(c.id),
-                  );
-                }).toList(),
-              ),
+              // Scoped to the type above, so picking "Expense" can't leave
+              // income categories on offer. Under "All" both are listed, but
+              // split and labelled — that is the only place the expense and
+              // income "Other" appear together, and unlabelled they read as
+              // a duplicate.
+              if (_filter.type != 'income')
+                _CategorySection(
+                  label: _filter.type == 'all' ? loc.expense : null,
+                  categories: expenseCategories,
+                  selectedIds: _filter.categoryIds,
+                  onToggle: _toggleCategory,
+                ),
+              if (_filter.type == 'all') const SizedBox(height: AppConstants.spacingMd),
+              if (_filter.type != 'expense')
+                _CategorySection(
+                  label: _filter.type == 'all' ? loc.income : null,
+                  categories: incomeCategories,
+                  selectedIds: _filter.categoryIds,
+                  onToggle: _toggleCategory,
+                ),
               const SizedBox(height: AppConstants.spacingLg),
 
               if (accounts.isNotEmpty) ...[
@@ -355,6 +384,55 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
           );
         },
       ),
+    );
+  }
+}
+
+/// One type's worth of category chips, under an optional type label. The
+/// label is only drawn when both sections are on screen at once — with a
+/// single section the "Category" heading above already says everything.
+class _CategorySection extends StatelessWidget {
+  final String? label;
+  final List<CategoryModel> categories;
+  final Set<String> selectedIds;
+  final ValueChanged<String> onToggle;
+
+  const _CategorySection({
+    required this.label,
+    required this.categories,
+    required this.selectedIds,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (categories.isEmpty) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (label != null) ...[
+          Text(
+            label!,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.textTheme.bodySmall?.color,
+            ),
+          ),
+          const SizedBox(height: AppConstants.spacingSm),
+        ],
+        Wrap(
+          spacing: AppConstants.spacingSm,
+          runSpacing: AppConstants.spacingSm,
+          children: categories
+              .map((c) => _PresetChip(
+                    label: c.name,
+                    isSelected: selectedIds.contains(c.id),
+                    onTap: () => onToggle(c.id),
+                  ))
+              .toList(),
+        ),
+      ],
     );
   }
 }
