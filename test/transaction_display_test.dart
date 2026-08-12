@@ -98,6 +98,52 @@ void main() {
       );
     });
 
+    test('appends the goal or debt last, after the account', () {
+      expect(
+        transactionSubtitle(
+          categoryName: 'Savings & Goals',
+          accountName: 'My Wallet',
+          goalOrDebtName: 'New Laptop',
+        ),
+        'Savings & Goals · My Wallet · New Laptop',
+      );
+    });
+
+    test('an ordinary transaction reads exactly as it did before', () {
+      // Regression guard: the goal part is opt-in, so the common case must be
+      // byte-identical to the two-part subtitle.
+      expect(
+        transactionSubtitle(
+          categoryName: 'Food & Drinks',
+          accountName: 'My Wallet',
+          goalOrDebtName: null,
+        ),
+        'Food & Drinks · My Wallet',
+      );
+    });
+
+    test('treats a blank goal name as absent', () {
+      expect(
+        transactionSubtitle(
+          categoryName: 'Food & Drinks',
+          accountName: 'My Wallet',
+          goalOrDebtName: '  ',
+        ),
+        'Food & Drinks · My Wallet',
+      );
+    });
+
+    test('survives a missing account, keeping category and goal', () {
+      expect(
+        transactionSubtitle(
+          categoryName: 'Savings & Goals',
+          accountName: null,
+          goalOrDebtName: 'New Laptop',
+        ),
+        'Savings & Goals · New Laptop',
+      );
+    });
+
     test('never repeats the note that the title already carries', () {
       // Regression guard: the note used to be the third subtitle part and
       // was the first thing lost to the single-line ellipsis.

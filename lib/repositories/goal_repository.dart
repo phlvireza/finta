@@ -56,6 +56,16 @@ class GoalRepository {
     }
   }
 
+  /// Bring an archived goal back into the active list.
+  Future<void> unarchive(String id) async {
+    try {
+      final db = await _dbHelper.database;
+      await db.update('goals', {'isArchived': 0}, where: 'id = ?', whereArgs: [id]);
+    } catch (e) {
+      throw DatabaseException('Failed to unarchive goal', cause: e);
+    }
+  }
+
   /// Count how many transactions still reference this goal.
   Future<int> countUsage(String id) async {
     try {
@@ -78,6 +88,29 @@ class GoalRepository {
       await db.delete('goals', where: 'id = ?', whereArgs: [id]);
     } catch (e) {
       throw DatabaseException('Failed to delete goal', cause: e);
+    }
+  }
+
+  /// Permanently remove a goal *and* every transaction tagged with it — the
+  /// "I created this by mistake" path, which has to give the money back.
+  ///
+  /// Both statements run in one transaction because `transactions.goalId` has
+  /// no foreign key (it was added by `ALTER TABLE`, which can't declare one),
+  /// so nothing at the schema level would catch a half-applied delete: the
+  /// goal row would be gone and its contributions left pointing at an id that
+  /// resolves to nothing, invisible in every screen.
+  ///
+  /// Callers must reload accounts, budgets and analytics afterwards —
+  /// deleting expenses moves balances, and those are all derived.
+  Future<void> deleteWithTransactions(String id) async {
+    try {
+      final db = await _dbHelper.database;
+      await db.transaction((txn) async {
+        await txn.delete('transactions', where: 'goalId = ?', whereArgs: [id]);
+        await txn.delete('goals', where: 'id = ?', whereArgs: [id]);
+      });
+    } catch (e) {
+      throw DatabaseException('Failed to delete goal with transactions', cause: e);
     }
   }
 

@@ -6,6 +6,7 @@ import '../../models/debt_model.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/number_utils.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/masked_amount.dart';
 import '../../l10n/app_localizations.dart';
 import 'debt_actions.dart';
 import 'debt_detail_screen.dart';
@@ -34,10 +35,14 @@ class DebtsListScreen extends StatelessWidget {
     final settings = context.watch<SettingsProvider>();
     final provider = context.watch<DebtProvider>();
     final debts = provider.activeDebts;
+    final archived = provider.archivedDebts;
 
     return Scaffold(
       appBar: AppBar(title: Text(loc.debts)),
-      body: debts.isEmpty
+      // The empty state only applies when there is genuinely nothing here.
+      // Archived debts alone used to fall into it, hiding the very debts the
+      // delete flow promised were kept.
+      body: debts.isEmpty && archived.isEmpty
           ? EmptyState(
               icon: Icons.handshake_outlined,
               title: loc.noDebtsYet,
@@ -87,12 +92,77 @@ class DebtsListScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: AppConstants.spacingMd),
                 ],
+                if (archived.isNotEmpty) _ArchivedDebts(debts: archived),
               ],
             ),
       floatingActionButton: FloatingActionButton(
         heroTag: null,
         onPressed: () => showDebtForm(context),
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+/// Debts that were archived instead of deleted, kept collapsed below the
+/// active ones — the debt half of the same gap the goals list had: archiving
+/// preserved the repayments but nothing ever showed them again.
+class _ArchivedDebts extends StatelessWidget {
+  final List<DebtModel> debts;
+
+  const _ArchivedDebts({required this.debts});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
+    final provider = context.watch<DebtProvider>();
+    final settings = context.watch<SettingsProvider>();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppConstants.spacingLg),
+      child: Card(
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        color: theme.colorScheme.surface,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+          side: BorderSide(color: theme.colorScheme.outline),
+        ),
+        child: ExpansionTile(
+          shape: const Border(),
+          collapsedShape: const Border(),
+          leading: const Icon(Icons.inventory_2_outlined),
+          title: Text(loc.archivedCount(debts.length), style: theme.textTheme.titleSmall),
+          children: [
+            for (final debt in debts)
+              ListTile(
+                title: Text(debt.name),
+                subtitle: MaskedAmount(
+                  text: NumberUtils.formatCurrency(
+                    provider.repaidOf(debt.id),
+                    symbol: settings.currencySymbol,
+                    useDecimals: settings.currencyUseDecimals,
+                  ),
+                  style: theme.textTheme.bodySmall,
+                ),
+                trailing: PopupMenuButton<String>(
+                  onSelected: (value) {
+                    if (value == 'restore') provider.unarchiveDebt(debt.id);
+                    if (value == 'purge') confirmPurgeDebt(context, debt);
+                  },
+                  itemBuilder: (_) => [
+                    PopupMenuItem(value: 'restore', child: Text(loc.restore)),
+                    PopupMenuItem(value: 'purge', child: Text(loc.deletePermanently)),
+                  ],
+                ),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => DebtDetailScreen(debtId: debt.id)),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

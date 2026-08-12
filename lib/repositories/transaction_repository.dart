@@ -337,27 +337,37 @@ class TransactionRepository {
     }
   }
 
-  /// The [limit] merchants with the highest total spend of [type] across
-  /// [start]..[end], ranked descending.
-  Future<List<Map<String, dynamic>>> getTopMerchants(
+  /// Per-merchant totals of [type] across [start]..[end], one row per *raw*
+  /// merchant spelling.
+  ///
+  /// Deliberately unranked and unlimited. Spellings that differ only by case
+  /// or spacing are one merchant, and folding them is `normalizeMerchant`'s
+  /// job in Dart — SQLite's `LOWER` is ASCII-only and can't collapse internal
+  /// whitespace, so a SQL-side fold would disagree with the drill-down that
+  /// has to re-match those rows. Ranking and any top-N cut must therefore
+  /// happen *after* the fold: a `LIMIT` here would drop a merchant that only
+  /// reaches the top once its variants are added together.
+  ///
+  /// Distinct merchant spellings within one period is a small number, so
+  /// returning them all costs nothing.
+  Future<List<Map<String, dynamic>>> getMerchantTotals(
     String type,
     DateTime start,
-    DateTime end, {
-    int limit = 10,
-  }) async {
+    DateTime end,
+  ) async {
     try {
       final db = await _dbHelper.database;
       final startStr = start.toIso8601String().substring(0, 10);
       final endStr = end.toIso8601String().substring(0, 10);
       return db.rawQuery(
         'SELECT merchant, SUM(amount) as total, COUNT(*) as cnt FROM transactions '
-        "WHERE type = ? AND isTransfer = 0 AND merchant IS NOT NULL AND merchant != '' "
+        "WHERE type = ? AND isTransfer = 0 AND merchant IS NOT NULL AND TRIM(merchant) != '' "
         'AND date >= ? AND date <= ? '
-        'GROUP BY merchant ORDER BY total DESC LIMIT ?',
-        [type, startStr, endStr, limit],
+        'GROUP BY merchant',
+        [type, startStr, endStr],
       );
     } catch (e) {
-      throw DatabaseException('Failed to get top merchants', cause: e);
+      throw DatabaseException('Failed to get merchant totals', cause: e);
     }
   }
 

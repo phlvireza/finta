@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../repositories/transaction_repository.dart';
 import '../core/utils/date_utils.dart';
+import '../core/utils/merchant_utils.dart';
 
 enum AnalyticsPeriod { weekly, biweekly, monthly, yearly }
 
@@ -44,14 +45,6 @@ class CashflowMonth {
   double get net => income - expense;
 }
 
-class MerchantAnalytics {
-  final String merchant;
-  final double total;
-  final int count;
-
-  const MerchantAnalytics({required this.merchant, required this.total, required this.count});
-}
-
 /// One month's total for a single category — the category trend chart's
 /// data point.
 class MonthlyCategoryTotal {
@@ -84,6 +77,16 @@ class AnalyticsProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
+  /// The range the currently-loaded breakdowns describe. Retained so a
+  /// section added to the analytics screen — or a drill-down opened from one
+  /// — can query the *same* window the user is looking at instead of
+  /// recomputing it from the period enum and risking a different answer.
+  DateTime? _rangeStart;
+  DateTime? _rangeEnd;
+
+  /// Which side of the ledger the merchant list is showing.
+  String _merchantType = 'expense';
+
   List<CategoryAnalytics> get expenseBreakdown => _expenseBreakdown;
   List<CategoryAnalytics> get incomeBreakdown => _incomeBreakdown;
   List<MonthlyData> get monthlyData => _monthlyData;
@@ -97,6 +100,8 @@ class AnalyticsProvider extends ChangeNotifier {
   double get previousTotalExpense => _previousTotalExpense;
   double get previousTotalIncome => _previousTotalIncome;
   AnalyticsPeriod get selectedPeriod => _selectedPeriod;
+  DateTime? get rangeStart => _rangeStart;
+  DateTime? get rangeEnd => _rangeEnd;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -117,6 +122,8 @@ class AnalyticsProvider extends ChangeNotifier {
   }) async {
     _isLoading = true;
     _error = null;
+    _rangeStart = start;
+    _rangeEnd = end;
     notifyListeners();
 
     try {
@@ -181,6 +188,20 @@ class AnalyticsProvider extends ChangeNotifier {
     final previous = AppDateUtils.getPreviousPeriod(current);
 
     await loadAnalytics(start: current.start, end: current.end, comparedTo: previous);
+    await loadTopMerchants(_merchantType, current.start, current.end);
+  }
+
+  /// Switch the merchant list between expense and income without touching the
+  /// period. Kept on the provider rather than in the screen's local toggle
+  /// state so a later period change reloads the type the user actually has
+  /// selected instead of snapping back to expenses.
+  Future<void> setMerchantType(String type) async {
+    if (_merchantType == type) return;
+    _merchantType = type;
+    final start = _rangeStart;
+    final end = _rangeEnd;
+    if (start == null || end == null) return;
+    await loadTopMerchants(type, start, end);
   }
 
   void setPeriodFilter(AnalyticsPeriod period, int payday) {
@@ -343,17 +364,23 @@ class AnalyticsProvider extends ChangeNotifier {
     }
   }
 
-  /// The highest-spend merchants of [type] across [start]..[end].
+  /// The highest-spend merchants of [type] across [start]..[end], with
+  /// spellings that differ only by case or spacing added together.
+  ///
+  /// The fold happens here rather than in SQL, and strictly before the
+  /// top-[limit] cut — a merchant can be the biggest spend of the period and
+  /// still miss the cut on every individual spelling.
   Future<void> loadTopMerchants(String type, DateTime start, DateTime end, {int limit = 10}) async {
     try {
-      final rows = await _repository.getTopMerchants(type, start, end, limit: limit);
-      _topMerchants = rows
-          .map((row) => MerchantAnalytics(
-                merchant: row['merchant'] as String,
-                total: (row['total'] as num).toDouble(),
-                count: row['cnt'] as int,
-              ))
-          .toList();
+      final rows = await _repository.getMerchantTotals(type, start, end);
+      _topMerchants = foldMerchantTotals(
+        rows.map((row) => (
+              merchant: row['merchant'] as String,
+              total: (row['total'] as num).toDouble(),
+              count: row['cnt'] as int,
+            )),
+        limit: limit,
+      );
       notifyListeners();
     } catch (e) {
       _error = e.toString();

@@ -87,6 +87,13 @@
   "getStarted": "Get Started",
   "confirmDelete": "Are you sure you want to delete this?",
   "archive": "Archive",
+  "archivedCount": "Archived ({count})",
+  "@archivedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "deletePermanently": "Delete permanently",
   "archiveCategory": "Archive Category",
   "confirmDeleteCategory": "Delete \"{name}\"? This category has no transactions, so it can be safely removed.",
   "@confirmDeleteCategory": {
@@ -486,8 +493,17 @@
       "name": { "type": "String" }
     }
   },
-  "confirmArchiveGoal": "\"{name}\" has {count} contributions. It will be archived instead of deleted so your history stays intact.",
-  "@confirmArchiveGoal": {
+  "confirmDeleteGoalWithContributions": "\"{name}\" has {count} contribution(s). Keeping them archives the goal and leaves your account balances alone. Deleting them removes those transactions too and gives the money back.",
+  "@confirmDeleteGoalWithContributions": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "keepContributions": "Keep contributions",
+  "deleteContributionsToo": "Delete contributions too",
+  "confirmPurgeGoal": "Delete \"{name}\" and its {count} contribution(s)? Those transactions are removed and your account balances change. This can't be undone.",
+  "@confirmPurgeGoal": {
     "placeholders": {
       "name": { "type": "String" },
       "count": { "type": "int" }
@@ -539,8 +555,17 @@
       "name": { "type": "String" }
     }
   },
-  "confirmArchiveDebt": "\"{name}\" has {count} repayments. It will be archived instead of deleted so your history stays intact.",
-  "@confirmArchiveDebt": {
+  "confirmDeleteDebtWithRepayments": "\"{name}\" has {count} repayment(s). Keeping them archives the debt and leaves your account balances alone. Deleting them removes those transactions too and gives the money back.",
+  "@confirmDeleteDebtWithRepayments": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "keepRepayments": "Keep repayments",
+  "deleteRepaymentsToo": "Delete repayments too",
+  "confirmPurgeDebt": "Delete \"{name}\" and its {count} repayment(s)? Those transactions are removed and your account balances change. This can't be undone.",
+  "@confirmPurgeDebt": {
     "placeholders": {
       "name": { "type": "String" },
       "count": { "type": "int" }
@@ -630,7 +655,8 @@
     }
   },
   "spendingHeatmap": "Spending heatmap",
-  "topMerchantsLast3Months": "Top merchants (last 3 months)",
+  "topMerchants": "Top merchants",
+  "noMerchantsForThisPeriod": "No merchants recorded in this period",
   "timesCount": "{count, plural, =1{1 time} other{{count} times}}",
   "@timesCount": {
     "placeholders": {

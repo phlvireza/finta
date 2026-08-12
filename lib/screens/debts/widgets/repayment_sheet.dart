@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../providers/account_provider.dart';
 import '../../../providers/analytics_provider.dart';
 import '../../../providers/budget_provider.dart';
+import '../../../providers/category_provider.dart';
 import '../../../providers/debt_provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../providers/transaction_provider.dart';
@@ -13,12 +14,21 @@ import '../../../core/database/seed_data.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/keypad_amount_field.dart';
 import '../../transactions/widgets/account_picker.dart';
+import '../../transactions/widgets/category_picker.dart';
+import '../../transactions/widgets/date_picker_field.dart';
 
 /// Bottom sheet to log a repayment against a debt. For a debt you owe
 /// ('borrowed'), a repayment is money leaving one of your accounts — an
 /// expense. For a debt owed to you ('lent'), a repayment is money coming
 /// back — income. Either way it's an ordinary transaction tagged with this
 /// debt's id, so it shows up in Records/analytics/CSV export for free.
+///
+/// The category defaults to "Debt Payments"/"Debt Repayments" but is
+/// editable, and so is the date. Repaid totals are derived from `debtId`,
+/// never from the category (`DebtRepository.getAllRepaid`), so neither field
+/// can put a debt's balance out of step with its repayments. Making it
+/// editable matters most once there is more than one debt, where every
+/// payment otherwise collapses into a single category in analytics.
 class RepaymentSheet extends StatefulWidget {
   final DebtModel debt;
 
@@ -41,7 +51,33 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
   String? _accountId;
+  late String _categoryId;
+  DateTime _date = DateTime.now();
   bool _isSaving = false;
+
+  /// A repayment on a debt you owe is spending; a repayment on money you lent
+  /// out is income coming back. The picker has to be filtered to the matching
+  /// side or it would offer categories the transaction type can never use.
+  bool get _isIncome => !widget.debt.isBorrowed;
+
+  @override
+  void initState() {
+    super.initState();
+    _categoryId = widget.debt.isBorrowed
+        ? SeedData.debtPaymentsCategoryId
+        : SeedData.debtRepaymentsCategoryId;
+    // The debt categories are seeded as ordinary categories, so a user can
+    // archive them. CategoryPicker renders blank for an id it can't resolve,
+    // which would look like an unset field with no explanation — fall back to
+    // any category of the right type instead.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final provider = context.read<CategoryProvider>();
+      final categories = _isIncome ? provider.incomeCategories : provider.expenseCategories;
+      if (categories.any((c) => c.id == _categoryId) || categories.isEmpty) return;
+      setState(() => _categoryId = categories.first.id);
+    });
+  }
 
   @override
   void dispose() {
@@ -73,11 +109,9 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
       await txProvider.addTransaction(
         type: widget.debt.isBorrowed ? 'expense' : 'income',
         amount: parseFormattedAmount(_amountController.text),
-        categoryId: widget.debt.isBorrowed
-            ? SeedData.debtPaymentsCategoryId
-            : SeedData.debtRepaymentsCategoryId,
+        categoryId: _categoryId,
         accountId: _accountId!,
-        date: DateTime.now(),
+        date: _date,
         note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
         debtId: widget.debt.id,
       );
@@ -126,7 +160,7 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
                 keypadLabel: loc.logRepayment(widget.debt.name),
                 // Money coming back on a debt you lent out is income, so the
                 // keypad should read in the income colour.
-                isIncome: !widget.debt.isBorrowed,
+                isIncome: _isIncome,
                 validator: requiredAmountValidator(loc),
               ),
               const SizedBox(height: AppConstants.spacingLg),
@@ -135,6 +169,22 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
                 selectedAccountId: _accountId,
                 onAccountSelected: (id) => setState(() => _accountId = id),
                 validator: (_) => _accountId == null ? loc.selectAnAccount : null,
+              ),
+              const SizedBox(height: AppConstants.spacingLg),
+              CategoryPicker(
+                isIncome: _isIncome,
+                selectedCategoryId: _categoryId,
+                onCategorySelected: (id) => setState(() => _categoryId = id),
+              ),
+              const SizedBox(height: AppConstants.spacingLg),
+              // Padded to line up with AccountPicker and CategoryPicker,
+              // which both inset themselves; DatePickerField doesn't.
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+                child: DatePickerField(
+                  selectedDate: _date,
+                  onDateSelected: (date) => setState(() => _date = date),
+                ),
               ),
               const SizedBox(height: AppConstants.spacingLg),
               TextFormField(

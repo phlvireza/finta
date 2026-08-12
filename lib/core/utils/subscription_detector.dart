@@ -1,4 +1,5 @@
 import '../../models/transaction_model.dart';
+import 'merchant_utils.dart';
 
 /// A merchant whose spending pattern looks like a subscription: repeated
 /// charges roughly the same amount, roughly once a month.
@@ -40,15 +41,18 @@ List<SubscriptionCandidate> detectSubscriptionCandidates(
   int minSpacingDays = 25,
   int maxSpacingDays = 35,
 }) {
-  final excludeLower = excludeMerchants.map((m) => m.toLowerCase()).toSet();
+  // Grouped by the normalized key, not the raw string: a subscription charged
+  // to "Netflix" one month and "netflix" the next used to look like two
+  // merchants with one charge each and fell under [minOccurrences].
+  final excludeKeys = excludeMerchants.map(normalizeMerchant).toSet();
   final byMerchant = <String, List<TransactionModel>>{};
 
   for (final t in transactions) {
     if (t.isTransfer || !t.isExpense) continue;
-    final merchant = t.merchant?.trim();
-    if (merchant == null || merchant.isEmpty) continue;
-    if (excludeLower.contains(merchant.toLowerCase())) continue;
-    byMerchant.putIfAbsent(merchant, () => []).add(t);
+    if (!hasMerchant(t.merchant)) continue;
+    final key = normalizeMerchant(t.merchant!);
+    if (excludeKeys.contains(key)) continue;
+    byMerchant.putIfAbsent(key, () => []).add(t);
   }
 
   final candidates = <SubscriptionCandidate>[];
@@ -76,7 +80,11 @@ List<SubscriptionCandidate> detectSubscriptionCandidates(
     final last = recent.last;
     final avgGap = gaps.reduce((a, b) => a + b) / gaps.length;
     candidates.add(SubscriptionCandidate(
-      merchant: entry.key,
+      // The most recent spelling rather than the normalized key — the key is
+      // lowercased and would render "netflix" back at a user who typed
+      // "Netflix". Everything downstream that has to match this merchant
+      // again normalizes it itself.
+      merchant: displayMerchant(last.merchant!),
       categoryId: last.categoryId,
       accountId: last.accountId,
       amount: last.amount,

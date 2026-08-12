@@ -18,9 +18,13 @@ import '../../../widgets/empty_state.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Full-screen trends report: rolling 12-month cashflow, a per-category
-/// spend trend with a vs-average callout, a spending intensity heatmap,
-/// and the current top merchants — everything the dashboard's burn rate
-/// and budget pace don't already cover.
+/// spend trend with a vs-average callout, and a spending intensity heatmap —
+/// everything the dashboard's burn rate and budget pace don't already cover.
+///
+/// Top merchants deliberately does *not* live here. It was pinned to a
+/// hardcoded three-month window while this screen has no period selector,
+/// so it now sits on the analytics screen and follows the period the user
+/// actually picked.
 class TrendsReportScreen extends StatefulWidget {
   const TrendsReportScreen({super.key});
 
@@ -40,14 +44,10 @@ class _TrendsReportScreenState extends State<TrendsReportScreen> {
 
   Future<void> _loadInitial() async {
     final analytics = context.read<AnalyticsProvider>();
-    final now = DateTime.now();
-    final merchantsStart = DateTime(now.year, now.month - 2, 1);
-    final merchantsEnd = DateTime(now.year, now.month + 1, 0);
 
     await Future.wait([
       analytics.loadCashflow(),
       analytics.loadDailyExpenses(_heatmapMonth, DateTime(_heatmapMonth.year, _heatmapMonth.month + 1, 0)),
-      analytics.loadTopMerchants('expense', merchantsStart, merchantsEnd),
     ]);
 
     if (!mounted) return;
@@ -126,15 +126,6 @@ class _TrendsReportScreenState extends State<TrendsReportScreen> {
             focusedMonth: _heatmapMonth,
             onPageChanged: _onHeatmapPageChanged,
             onDaySelected: _showDayTransactions,
-            symbol: settings.currencySymbol,
-            useDecimals: settings.currencyUseDecimals,
-          ),
-          const SizedBox(height: AppConstants.spacingXxxl),
-
-          Text(loc.topMerchantsLast3Months, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: AppConstants.spacingMd),
-          _TopMerchantsList(
-            data: analytics.topMerchants,
             symbol: settings.currencySymbol,
             useDecimals: settings.currencyUseDecimals,
           ),
@@ -565,68 +556,3 @@ class _DayTransactionsSheet extends StatelessWidget {
   }
 }
 
-class _TopMerchantsList extends StatelessWidget {
-  final List<MerchantAnalytics> data;
-  final String symbol;
-  final bool useDecimals;
-
-  const _TopMerchantsList({required this.data, required this.symbol, required this.useDecimals});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final loc = AppLocalizations.of(context)!;
-    final isDark = theme.brightness == Brightness.dark;
-    final palette = isDark ? AppColors.chartColorsDark : AppColors.chartColorsLight;
-
-    if (data.isEmpty) {
-      return EmptyState(icon: Icons.storefront_outlined, title: loc.noDataForThisPeriod, subtitle: '');
-    }
-
-    return Column(
-      children: [
-        for (var i = 0; i < data.length; i++)
-          Padding(
-            padding: const EdgeInsets.only(bottom: AppConstants.spacingMd),
-            child: Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: palette[i % palette.length].withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    '${i + 1}',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: palette[i % palette.length],
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppConstants.spacingMd),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(data[i].merchant, style: theme.textTheme.titleSmall),
-                      Text(
-                        loc.timesCount(data[i].count),
-                        style: theme.textTheme.labelSmall,
-                      ),
-                    ],
-                  ),
-                ),
-                Text(
-                  NumberUtils.formatCurrency(data[i].total, symbol: symbol, useDecimals: useDecimals),
-                  style: AppTypography.amountStyle(color: theme.textTheme.bodyLarge!.color!, fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
-}

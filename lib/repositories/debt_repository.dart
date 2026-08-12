@@ -56,6 +56,16 @@ class DebtRepository {
     }
   }
 
+  /// Bring an archived debt back into the active list.
+  Future<void> unarchive(String id) async {
+    try {
+      final db = await _dbHelper.database;
+      await db.update('debts', {'isArchived': 0}, where: 'id = ?', whereArgs: [id]);
+    } catch (e) {
+      throw DatabaseException('Failed to unarchive debt', cause: e);
+    }
+  }
+
   /// Count how many transactions still reference this debt.
   Future<int> countUsage(String id) async {
     try {
@@ -78,6 +88,27 @@ class DebtRepository {
       await db.delete('debts', where: 'id = ?', whereArgs: [id]);
     } catch (e) {
       throw DatabaseException('Failed to delete debt', cause: e);
+    }
+  }
+
+  /// Permanently remove a debt *and* every repayment tagged with it — the
+  /// "I created this by mistake" path, which has to give the money back.
+  ///
+  /// One transaction for the same reason as `GoalRepository`: `debtId` has no
+  /// foreign key, so a half-applied delete leaves repayments pointing at a
+  /// debt that no longer exists and nothing in the schema objects.
+  ///
+  /// Callers must reload accounts, budgets and analytics afterwards —
+  /// deleting repayments moves balances, and those are all derived.
+  Future<void> deleteWithTransactions(String id) async {
+    try {
+      final db = await _dbHelper.database;
+      await db.transaction((txn) async {
+        await txn.delete('transactions', where: 'debtId = ?', whereArgs: [id]);
+        await txn.delete('debts', where: 'id = ?', whereArgs: [id]);
+      });
+    } catch (e) {
+      throw DatabaseException('Failed to delete debt with transactions', cause: e);
     }
   }
 

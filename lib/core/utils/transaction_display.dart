@@ -35,14 +35,27 @@ String transactionTitle({
 /// The muted second line: the classification behind the title. The note is
 /// deliberately absent — [transactionTitle] already shows it, and
 /// repeating it would push the account name off the end of the line.
+///
+/// [goalOrDebtName] is the goal or debt this transaction was logged against,
+/// when it was one. It goes last because it is the rarest part, and it is
+/// here at all because a contribution used to be indistinguishable from any
+/// other "Savings & Goals" expense — which made an archived goal's history
+/// impossible to find, and the category now being user-selectable would have
+/// removed the last hint that a transaction was a contribution.
+///
+/// Resolved by the caller rather than looked up here: this file is pure
+/// string assembly and reaching for a provider would make it untestable
+/// without a widget tree.
 String transactionSubtitle({
   required String categoryName,
   required String? accountName,
+  String? goalOrDebtName,
   bool isTransfer = false,
 }) {
   final parts = [
     if (!isTransfer) categoryName,
     if (_isNotBlank(accountName)) accountName!.trim(),
+    if (_isNotBlank(goalOrDebtName)) goalOrDebtName!.trim(),
   ];
   return parts.join(transactionPartSeparator);
 }

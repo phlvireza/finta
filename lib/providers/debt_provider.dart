@@ -28,6 +28,12 @@ class DebtProvider extends ChangeNotifier {
 
   List<DebtModel> get debts => _debts;
   List<DebtModel> get activeDebts => _debts.where((d) => !d.isArchived).toList();
+
+  /// Debts that were archived rather than deleted because they still had
+  /// repayments. Surfaced so the archive is somewhere the user can reach —
+  /// an archived debt used to vanish from every screen, which made the
+  /// promise that "your history stays intact" impossible to verify.
+  List<DebtModel> get archivedDebts => _debts.where((d) => d.isArchived).toList();
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -110,15 +116,33 @@ class DebtProvider extends ChangeNotifier {
 
   Future<int> countUsage(String id) => _repository.countUsage(id);
 
-  /// Remove a debt. If any transaction still references it, it's archived
-  /// instead so those repayments keep a resolvable debt name.
-  Future<void> deleteDebt(String id) async {
+  /// Remove a debt.
+  ///
+  /// By default a debt with repayments is archived rather than deleted: the
+  /// repayments were real money movements, and dropping them would leave
+  /// every past account balance wrong.
+  ///
+  /// [deleteRepayments] is the explicit opt-out for a debt created by
+  /// mistake. It removes the tagged transactions too, so callers must reload
+  /// the providers that derive from them (accounts, budgets, analytics,
+  /// transactions).
+  Future<void> deleteDebt(String id, {bool deleteRepayments = false}) async {
+    if (deleteRepayments) {
+      await _repository.deleteWithTransactions(id);
+      await loadDebts();
+      return;
+    }
     final usage = await _repository.countUsage(id);
     if (usage > 0) {
       await _repository.archive(id);
     } else {
       await _repository.deleteUnused(id);
     }
+    await loadDebts();
+  }
+
+  Future<void> unarchiveDebt(String id) async {
+    await _repository.unarchive(id);
     await loadDebts();
   }
 }

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/goal_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../../models/goal_model.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/number_utils.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/masked_amount.dart';
 import '../../l10n/app_localizations.dart';
 import 'goal_actions.dart';
 import 'goal_detail_screen.dart';
@@ -28,10 +31,14 @@ class GoalsListScreen extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
     final provider = context.watch<GoalProvider>();
     final goals = provider.activeGoals;
+    final archived = provider.archivedGoals;
 
     return Scaffold(
       appBar: AppBar(title: Text(loc.goals)),
-      body: goals.isEmpty
+      // The empty state only applies when there is genuinely nothing here.
+      // Archived goals alone used to fall into it, hiding the very goals the
+      // delete flow promised were kept.
+      body: goals.isEmpty && archived.isEmpty
           ? EmptyState(
               icon: Icons.savings_outlined,
               title: loc.noGoalsYet,
@@ -57,12 +64,82 @@ class GoalsListScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: AppConstants.spacingMd),
                 ],
+                if (archived.isNotEmpty) _ArchivedGoals(goals: archived),
               ],
             ),
       floatingActionButton: FloatingActionButton(
         heroTag: null,
         onPressed: () => showGoalForm(context),
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+/// Goals that were archived instead of deleted, kept collapsed below the
+/// active ones.
+///
+/// This section is the other half of the delete flow's promise. Archiving was
+/// already the behavior for a goal with contributions, but with nothing
+/// listing archived goals the result was indistinguishable from a delete that
+/// had failed to give the money back — the goal was gone, the spending
+/// wasn't, and there was nothing left to point at.
+class _ArchivedGoals extends StatelessWidget {
+  final List<GoalModel> goals;
+
+  const _ArchivedGoals({required this.goals});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
+    final provider = context.watch<GoalProvider>();
+    final settings = context.watch<SettingsProvider>();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppConstants.spacingLg),
+      child: Card(
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        color: theme.colorScheme.surface,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+          side: BorderSide(color: theme.colorScheme.outline),
+        ),
+        child: ExpansionTile(
+          shape: const Border(),
+          collapsedShape: const Border(),
+          leading: const Icon(Icons.inventory_2_outlined),
+          title: Text(loc.archivedCount(goals.length), style: theme.textTheme.titleSmall),
+          children: [
+            for (final goal in goals)
+              ListTile(
+                title: Text(goal.name),
+                subtitle: MaskedAmount(
+                  text: NumberUtils.formatCurrency(
+                    provider.progressOf(goal.id),
+                    symbol: settings.currencySymbol,
+                    useDecimals: settings.currencyUseDecimals,
+                  ),
+                  style: theme.textTheme.bodySmall,
+                ),
+                trailing: PopupMenuButton<String>(
+                  onSelected: (value) {
+                    if (value == 'restore') provider.unarchiveGoal(goal.id);
+                    if (value == 'purge') confirmPurgeGoal(context, goal);
+                  },
+                  itemBuilder: (_) => [
+                    PopupMenuItem(value: 'restore', child: Text(loc.restore)),
+                    PopupMenuItem(value: 'purge', child: Text(loc.deletePermanently)),
+                  ],
+                ),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => GoalDetailScreen(goalId: goal.id)),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

@@ -234,6 +234,14 @@ class AppLocalizationsId extends AppLocalizations {
   String get archive => 'Arsipkan';
 
   @override
+  String archivedCount(int count) {
+    return 'Diarsipkan ($count)';
+  }
+
+  @override
+  String get deletePermanently => 'Hapus permanen';
+
+  @override
   String get archiveCategory => 'Arsipkan Kategori';
 
   @override
@@ -946,8 +954,19 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String confirmArchiveGoal(String name, int count) {
-    return '\"$name\" memiliki $count setoran. Target ini akan diarsipkan, bukan dihapus, agar riwayatnya tetap utuh.';
+  String confirmDeleteGoalWithContributions(String name, int count) {
+    return '\"$name\" memiliki $count setoran. Menyimpannya akan mengarsipkan target dan saldo dompet Anda tidak berubah. Menghapusnya juga menghapus transaksi tersebut dan mengembalikan uangnya.';
+  }
+
+  @override
+  String get keepContributions => 'Simpan setoran';
+
+  @override
+  String get deleteContributionsToo => 'Hapus setoran juga';
+
+  @override
+  String confirmPurgeGoal(String name, int count) {
+    return 'Hapus \"$name\" beserta $count setorannya? Transaksi tersebut ikut dihapus dan saldo dompet Anda akan berubah. Tindakan ini tidak bisa dibatalkan.';
   }
 
   @override
@@ -1033,8 +1052,19 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String confirmArchiveDebt(String name, int count) {
-    return '\"$name\" memiliki $count pembayaran. Catatan ini akan diarsipkan, bukan dihapus, agar riwayatnya tetap utuh.';
+  String confirmDeleteDebtWithRepayments(String name, int count) {
+    return '\"$name\" memiliki $count pembayaran. Menyimpannya akan mengarsipkan catatan ini dan saldo dompet Anda tidak berubah. Menghapusnya juga menghapus transaksi tersebut dan mengembalikan uangnya.';
+  }
+
+  @override
+  String get keepRepayments => 'Simpan pembayaran';
+
+  @override
+  String get deleteRepaymentsToo => 'Hapus pembayaran juga';
+
+  @override
+  String confirmPurgeDebt(String name, int count) {
+    return 'Hapus \"$name\" beserta $count pembayarannya? Transaksi tersebut ikut dihapus dan saldo dompet Anda akan berubah. Tindakan ini tidak bisa dibatalkan.';
   }
 
   @override
@@ -1169,7 +1199,11 @@ class AppLocalizationsId extends AppLocalizations {
   String get spendingHeatmap => 'Peta panas pengeluaran';
 
   @override
-  String get topMerchantsLast3Months => 'Pedagang teratas (3 bulan terakhir)';
+  String get topMerchants => 'Pedagang teratas';
+
+  @override
+  String get noMerchantsForThisPeriod =>
+      'Belum ada pedagang tercatat pada periode ini';
 
   @override
   String timesCount(int count) {

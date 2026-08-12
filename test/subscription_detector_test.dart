@@ -90,6 +90,46 @@ void main() {
       expect(candidates, isEmpty, reason: 'exclusion should be case-insensitive');
     });
 
+    test('folds spellings that differ only by case or spacing into one merchant', () {
+      // Typed slightly differently each month. Grouped on the raw string these
+      // are three merchants with one charge each, all below minOccurrences,
+      // and the subscription is never flagged.
+      final transactions = [
+        _tx(merchant: 'Netflix', amount: 54000, date: DateTime(2026, 4, 15)),
+        _tx(merchant: 'netflix', amount: 54000, date: DateTime(2026, 5, 15)),
+        _tx(merchant: ' NETFLIX ', amount: 54000, date: DateTime(2026, 6, 14)),
+      ];
+      final candidates = detectSubscriptionCandidates(transactions);
+
+      expect(candidates, hasLength(1));
+      expect(candidates.single.occurrenceCount, 3);
+    });
+
+    test('reports the most recent spelling, not the normalized key', () {
+      final transactions = [
+        _tx(merchant: 'netflix', amount: 54000, date: DateTime(2026, 4, 15)),
+        _tx(merchant: 'netflix', amount: 54000, date: DateTime(2026, 5, 15)),
+        _tx(merchant: 'Netflix', amount: 54000, date: DateTime(2026, 6, 14)),
+      ];
+      final candidate = detectSubscriptionCandidates(transactions).single;
+
+      expect(candidate.merchant, 'Netflix');
+    });
+
+    test('exclusion matches across spelling variants too', () {
+      final transactions = [
+        _tx(merchant: 'Spotify', amount: 55000, date: DateTime(2026, 4, 15)),
+        _tx(merchant: 'spotify ', amount: 55000, date: DateTime(2026, 5, 15)),
+        _tx(merchant: 'SPOTIFY', amount: 55000, date: DateTime(2026, 6, 15)),
+      ];
+      final candidates = detectSubscriptionCandidates(
+        transactions,
+        excludeMerchants: {'  Spotify  '},
+      );
+
+      expect(candidates, isEmpty);
+    });
+
     test('predicts the next date from the average spacing of recent charges', () {
       final transactions = [
         _tx(merchant: 'Gym', amount: 300000, date: DateTime(2026, 4, 1)),

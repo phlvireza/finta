@@ -548,6 +548,18 @@ abstract class AppLocalizations {
   /// **'Archive'**
   String get archive;
 
+  /// No description provided for @archivedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived ({count})'**
+  String archivedCount(int count);
+
+  /// No description provided for @deletePermanently.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete permanently'**
+  String get deletePermanently;
+
   /// No description provided for @archiveCategory.
   ///
   /// In en, this message translates to:
@@ -1814,11 +1826,29 @@ abstract class AppLocalizations {
   /// **'Delete \"{name}\"? This can\'t be undone.'**
   String confirmDeleteGoal(String name);
 
-  /// No description provided for @confirmArchiveGoal.
+  /// No description provided for @confirmDeleteGoalWithContributions.
   ///
   /// In en, this message translates to:
-  /// **'\"{name}\" has {count} contributions. It will be archived instead of deleted so your history stays intact.'**
-  String confirmArchiveGoal(String name, int count);
+  /// **'\"{name}\" has {count} contribution(s). Keeping them archives the goal and leaves your account balances alone. Deleting them removes those transactions too and gives the money back.'**
+  String confirmDeleteGoalWithContributions(String name, int count);
+
+  /// No description provided for @keepContributions.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep contributions'**
+  String get keepContributions;
+
+  /// No description provided for @deleteContributionsToo.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete contributions too'**
+  String get deleteContributionsToo;
+
+  /// No description provided for @confirmPurgeGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\" and its {count} contribution(s)? Those transactions are removed and your account balances change. This can\'t be undone.'**
+  String confirmPurgeGoal(String name, int count);
 
   /// No description provided for @contributions.
   ///
@@ -1964,11 +1994,29 @@ abstract class AppLocalizations {
   /// **'Delete \"{name}\"? This can\'t be undone.'**
   String confirmDeleteDebt(String name);
 
-  /// No description provided for @confirmArchiveDebt.
+  /// No description provided for @confirmDeleteDebtWithRepayments.
   ///
   /// In en, this message translates to:
-  /// **'\"{name}\" has {count} repayments. It will be archived instead of deleted so your history stays intact.'**
-  String confirmArchiveDebt(String name, int count);
+  /// **'\"{name}\" has {count} repayment(s). Keeping them archives the debt and leaves your account balances alone. Deleting them removes those transactions too and gives the money back.'**
+  String confirmDeleteDebtWithRepayments(String name, int count);
+
+  /// No description provided for @keepRepayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep repayments'**
+  String get keepRepayments;
+
+  /// No description provided for @deleteRepaymentsToo.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete repayments too'**
+  String get deleteRepaymentsToo;
+
+  /// No description provided for @confirmPurgeDebt.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\" and its {count} repayment(s)? Those transactions are removed and your account balances change. This can\'t be undone.'**
+  String confirmPurgeDebt(String name, int count);
 
   /// No description provided for @repayments.
   ///
@@ -2180,11 +2228,17 @@ abstract class AppLocalizations {
   /// **'Spending heatmap'**
   String get spendingHeatmap;
 
-  /// No description provided for @topMerchantsLast3Months.
+  /// No description provided for @topMerchants.
   ///
   /// In en, this message translates to:
-  /// **'Top merchants (last 3 months)'**
-  String get topMerchantsLast3Months;
+  /// **'Top merchants'**
+  String get topMerchants;
+
+  /// No description provided for @noMerchantsForThisPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'No merchants recorded in this period'**
+  String get noMerchantsForThisPeriod;
 
   /// No description provided for @timesCount.
   ///

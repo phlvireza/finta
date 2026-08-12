@@ -87,6 +87,13 @@
   "getStarted": "Mulai",
   "confirmDelete": "Apakah Anda yakin ingin menghapus ini?",
   "archive": "Arsipkan",
+  "archivedCount": "Diarsipkan ({count})",
+  "@archivedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "deletePermanently": "Hapus permanen",
   "archiveCategory": "Arsipkan Kategori",
   "confirmDeleteCategory": "Hapus \"{name}\"? Kategori ini belum memiliki transaksi, jadi aman untuk dihapus.",
   "@confirmDeleteCategory": {
@@ -479,8 +486,17 @@
       "name": { "type": "String" }
     }
   },
-  "confirmArchiveGoal": "\"{name}\" memiliki {count} setoran. Target ini akan diarsipkan, bukan dihapus, agar riwayatnya tetap utuh.",
-  "@confirmArchiveGoal": {
+  "confirmDeleteGoalWithContributions": "\"{name}\" memiliki {count} setoran. Menyimpannya akan mengarsipkan target dan saldo dompet Anda tidak berubah. Menghapusnya juga menghapus transaksi tersebut dan mengembalikan uangnya.",
+  "@confirmDeleteGoalWithContributions": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "keepContributions": "Simpan setoran",
+  "deleteContributionsToo": "Hapus setoran juga",
+  "confirmPurgeGoal": "Hapus \"{name}\" beserta {count} setorannya? Transaksi tersebut ikut dihapus dan saldo dompet Anda akan berubah. Tindakan ini tidak bisa dibatalkan.",
+  "@confirmPurgeGoal": {
     "placeholders": {
       "name": { "type": "String" },
       "count": { "type": "int" }
@@ -532,8 +548,17 @@
       "name": { "type": "String" }
     }
   },
-  "confirmArchiveDebt": "\"{name}\" memiliki {count} pembayaran. Catatan ini akan diarsipkan, bukan dihapus, agar riwayatnya tetap utuh.",
-  "@confirmArchiveDebt": {
+  "confirmDeleteDebtWithRepayments": "\"{name}\" memiliki {count} pembayaran. Menyimpannya akan mengarsipkan catatan ini dan saldo dompet Anda tidak berubah. Menghapusnya juga menghapus transaksi tersebut dan mengembalikan uangnya.",
+  "@confirmDeleteDebtWithRepayments": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "keepRepayments": "Simpan pembayaran",
+  "deleteRepaymentsToo": "Hapus pembayaran juga",
+  "confirmPurgeDebt": "Hapus \"{name}\" beserta {count} pembayarannya? Transaksi tersebut ikut dihapus dan saldo dompet Anda akan berubah. Tindakan ini tidak bisa dibatalkan.",
+  "@confirmPurgeDebt": {
     "placeholders": {
       "name": { "type": "String" },
       "count": { "type": "int" }
@@ -623,7 +648,8 @@
     }
   },
   "spendingHeatmap": "Peta panas pengeluaran",
-  "topMerchantsLast3Months": "Pedagang teratas (3 bulan terakhir)",
+  "topMerchants": "Pedagang teratas",
+  "noMerchantsForThisPeriod": "Belum ada pedagang tercatat pada periode ini",
   "timesCount": "{count, plural, =1{1 kali} other{{count} kali}}",
   "@timesCount": {
     "placeholders": {

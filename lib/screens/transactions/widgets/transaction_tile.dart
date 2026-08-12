@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../../models/transaction_model.dart';
 import '../../../providers/category_provider.dart';
 import '../../../providers/account_provider.dart';
+import '../../../providers/debt_provider.dart';
+import '../../../providers/goal_provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../providers/transaction_provider.dart';
 import '../../../core/constants/app_constants.dart';
@@ -28,6 +30,21 @@ class TransactionTile extends StatelessWidget {
     this.onTap,
     this.dense = false,
   });
+
+  /// The goal or debt this transaction was logged against, or null when it
+  /// was an ordinary transaction. `watch` rather than `read` so a rename or a
+  /// restore redraws the rows that mention it.
+  String? _goalOrDebtName(BuildContext context) {
+    final goalId = transaction.goalId;
+    if (goalId != null) {
+      return context.watch<GoalProvider>().getGoalById(goalId)?.name;
+    }
+    final debtId = transaction.debtId;
+    if (debtId != null) {
+      return context.watch<DebtProvider>().getDebtById(debtId)?.name;
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,9 +79,13 @@ class TransactionTile extends StatelessWidget {
       isTransfer: transaction.isTransfer,
       transferLabel: loc.transfer,
     );
+    // Resolved from the providers that hold *all* goals and debts, archived
+    // ones included — an archived goal's contributions are exactly the rows
+    // that most need to say which goal they belonged to.
     final subtitle = transactionSubtitle(
       categoryName: categoryName,
       accountName: account?.name,
+      goalOrDebtName: _goalOrDebtName(context),
       isTransfer: transaction.isTransfer,
     );
 

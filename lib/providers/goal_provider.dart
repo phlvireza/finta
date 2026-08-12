@@ -29,6 +29,12 @@ class GoalProvider extends ChangeNotifier {
 
   List<GoalModel> get goals => _goals;
   List<GoalModel> get activeGoals => _goals.where((g) => !g.isArchived).toList();
+
+  /// Goals that were archived rather than deleted because they still had
+  /// contributions. Surfaced so the archive is somewhere the user can reach:
+  /// an archived goal used to vanish from every screen, which made the
+  /// promise that "your history stays intact" impossible to verify.
+  List<GoalModel> get archivedGoals => _goals.where((g) => g.isArchived).toList();
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -104,15 +110,34 @@ class GoalProvider extends ChangeNotifier {
 
   Future<int> countUsage(String id) => _repository.countUsage(id);
 
-  /// Remove a goal. If any transaction still references it, it's archived
-  /// instead so those contributions keep a resolvable goal name.
-  Future<void> deleteGoal(String id) async {
+  /// Remove a goal.
+  ///
+  /// By default a goal with contributions is archived rather than deleted:
+  /// the money genuinely left the account, so dropping those transactions
+  /// would rewrite history and leave every past account balance wrong.
+  ///
+  /// [deleteContributions] is the explicit opt-out for the one case where
+  /// that reasoning doesn't hold — a goal created by mistake, whose
+  /// contributions were never real spending. It removes the tagged
+  /// transactions too, so callers must reload the providers that derive from
+  /// them (accounts, budgets, analytics, transactions).
+  Future<void> deleteGoal(String id, {bool deleteContributions = false}) async {
+    if (deleteContributions) {
+      await _repository.deleteWithTransactions(id);
+      await loadGoals();
+      return;
+    }
     final usage = await _repository.countUsage(id);
     if (usage > 0) {
       await _repository.archive(id);
     } else {
       await _repository.deleteUnused(id);
     }
+    await loadGoals();
+  }
+
+  Future<void> unarchiveGoal(String id) async {
+    await _repository.unarchive(id);
     await loadGoals();
   }
 }

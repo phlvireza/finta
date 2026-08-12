@@ -7,6 +7,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/utils/category_rollup.dart';
 import 'widgets/breakdown_chart.dart';
 import 'widgets/category_rank_list.dart';
+import 'widgets/top_merchants_list.dart';
 import 'widgets/yearly_report.dart';
 import 'widgets/trends_report.dart';
 import '../insights/insights_hub_screen.dart';
@@ -50,6 +51,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     await context.read<AnalyticsProvider>().loadForCurrentPeriod(settings.payday);
   }
 
+  /// The toggle drives two things: the breakdown, which is already loaded for
+  /// both sides, and the merchant list, which is a separate aggregate and has
+  /// to be re-queried. The type is pushed into the provider rather than kept
+  /// only here so a later period change reloads the side the user is on.
+  void _onTypeChanged(bool isIncome) {
+    setState(() => _isIncome = isIncome);
+    context.read<AnalyticsProvider>().setMerchantType(isIncome ? 'income' : 'expense');
+  }
+
   void _openYearlyReport() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -62,6 +72,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final analytics = context.watch<AnalyticsProvider>();
+    final settings = context.watch<SettingsProvider>();
 
     return Scaffold(
       appBar: AppBar(title: Text(loc.analytics)),
@@ -125,7 +136,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                               padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
                               child: TypeToggle(
                                 isIncome: _isIncome,
-                                onChanged: (val) => setState(() => _isIncome = val),
+                                onChanged: _onTypeChanged,
                                 expenseLabel: loc.expense,
                                 incomeLabel: loc.income,
                               ),
@@ -135,6 +146,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                               expandSubcategories: _expandSubcategories,
                               onToggleExpand: () => setState(
                                 () => _expandSubcategories = !_expandSubcategories,
+                              ),
+                            ),
+                            const SizedBox(height: AppConstants.spacingXxxl),
+                            _SectionTitle(loc.topMerchants),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppConstants.spacingLg,
+                              ),
+                              child: TopMerchantsList(
+                                data: analytics.topMerchants,
+                                symbol: settings.currencySymbol,
+                                useDecimals: settings.currencyUseDecimals,
+                                rangeStart: analytics.rangeStart,
+                                rangeEnd: analytics.rangeEnd,
+                                isIncome: _isIncome,
                               ),
                             ),
                             const SizedBox(height: AppConstants.spacingXxxl),

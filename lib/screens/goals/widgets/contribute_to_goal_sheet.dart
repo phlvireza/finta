@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../providers/account_provider.dart';
 import '../../../providers/analytics_provider.dart';
 import '../../../providers/budget_provider.dart';
+import '../../../providers/category_provider.dart';
 import '../../../providers/goal_provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../providers/transaction_provider.dart';
@@ -13,11 +14,17 @@ import '../../../core/database/seed_data.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/keypad_amount_field.dart';
 import '../../transactions/widgets/account_picker.dart';
+import '../../transactions/widgets/category_picker.dart';
+import '../../transactions/widgets/date_picker_field.dart';
 
 /// Bottom sheet to log a contribution toward a goal. A contribution is
-/// just an ordinary expense transaction — filed under the "Savings & Goals"
-/// category and tagged with this goal's id — so it shows up in Records,
-/// analytics, and CSV export like any other transaction.
+/// just an ordinary expense transaction — tagged with this goal's id — so it
+/// shows up in Records, analytics, and CSV export like any other transaction.
+///
+/// The category defaults to "Savings & Goals" but is editable, and so is the
+/// date. Progress is derived from `goalId`, never from the category
+/// (`GoalRepository.getAllProgress`), so neither field can put a goal's total
+/// out of step with the transactions behind it.
 class ContributeToGoalSheet extends StatefulWidget {
   final GoalModel goal;
 
@@ -40,7 +47,25 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
   String? _accountId;
+  String _categoryId = SeedData.savingsGoalsCategoryId;
+  DateTime _date = DateTime.now();
   bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // "Savings & Goals" is seeded as an ordinary category, so a user can
+    // archive it. CategoryPicker only resolves non-archived categories and
+    // renders blank when the id doesn't match one, which would leave the
+    // field looking unset with no way to tell why — fall back to any expense
+    // category instead.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final categories = context.read<CategoryProvider>().expenseCategories;
+      if (categories.any((c) => c.id == _categoryId) || categories.isEmpty) return;
+      setState(() => _categoryId = categories.first.id);
+    });
+  }
 
   @override
   void dispose() {
@@ -71,9 +96,9 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
       await txProvider.addTransaction(
         type: 'expense',
         amount: parseFormattedAmount(_amountController.text),
-        categoryId: SeedData.savingsGoalsCategoryId,
+        categoryId: _categoryId,
         accountId: _accountId!,
-        date: DateTime.now(),
+        date: _date,
         note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
         goalId: widget.goal.id,
       );
@@ -128,6 +153,22 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
                 selectedAccountId: _accountId,
                 onAccountSelected: (id) => setState(() => _accountId = id),
                 validator: (_) => _accountId == null ? loc.selectAnAccount : null,
+              ),
+              const SizedBox(height: AppConstants.spacingLg),
+              CategoryPicker(
+                isIncome: false,
+                selectedCategoryId: _categoryId,
+                onCategorySelected: (id) => setState(() => _categoryId = id),
+              ),
+              const SizedBox(height: AppConstants.spacingLg),
+              // Padded to line up with AccountPicker and CategoryPicker,
+              // which both inset themselves; DatePickerField doesn't.
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+                child: DatePickerField(
+                  selectedDate: _date,
+                  onDateSelected: (date) => setState(() => _date = date),
+                ),
               ),
               const SizedBox(height: AppConstants.spacingLg),
               TextFormField(

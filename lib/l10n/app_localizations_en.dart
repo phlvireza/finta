@@ -234,6 +234,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get archive => 'Archive';
 
   @override
+  String archivedCount(int count) {
+    return 'Archived ($count)';
+  }
+
+  @override
+  String get deletePermanently => 'Delete permanently';
+
+  @override
   String get archiveCategory => 'Archive Category';
 
   @override
@@ -945,8 +953,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String confirmArchiveGoal(String name, int count) {
-    return '\"$name\" has $count contributions. It will be archived instead of deleted so your history stays intact.';
+  String confirmDeleteGoalWithContributions(String name, int count) {
+    return '\"$name\" has $count contribution(s). Keeping them archives the goal and leaves your account balances alone. Deleting them removes those transactions too and gives the money back.';
+  }
+
+  @override
+  String get keepContributions => 'Keep contributions';
+
+  @override
+  String get deleteContributionsToo => 'Delete contributions too';
+
+  @override
+  String confirmPurgeGoal(String name, int count) {
+    return 'Delete \"$name\" and its $count contribution(s)? Those transactions are removed and your account balances change. This can\'t be undone.';
   }
 
   @override
@@ -1032,8 +1051,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String confirmArchiveDebt(String name, int count) {
-    return '\"$name\" has $count repayments. It will be archived instead of deleted so your history stays intact.';
+  String confirmDeleteDebtWithRepayments(String name, int count) {
+    return '\"$name\" has $count repayment(s). Keeping them archives the debt and leaves your account balances alone. Deleting them removes those transactions too and gives the money back.';
+  }
+
+  @override
+  String get keepRepayments => 'Keep repayments';
+
+  @override
+  String get deleteRepaymentsToo => 'Delete repayments too';
+
+  @override
+  String confirmPurgeDebt(String name, int count) {
+    return 'Delete \"$name\" and its $count repayment(s)? Those transactions are removed and your account balances change. This can\'t be undone.';
   }
 
   @override
@@ -1168,7 +1198,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get spendingHeatmap => 'Spending heatmap';
 
   @override
-  String get topMerchantsLast3Months => 'Top merchants (last 3 months)';
+  String get topMerchants => 'Top merchants';
+
+  @override
+  String get noMerchantsForThisPeriod => 'No merchants recorded in this period';
 
   @override
   String timesCount(int count) {
