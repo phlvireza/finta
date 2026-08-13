@@ -293,7 +293,7 @@ class _BudgetChart extends StatelessWidget {
     // user at 20% of their aggregate budget should not see a warning
     // colour just because this chart is drawn separately from those.
     final spentColor = AppColors.budgetBarColor(
-      isExceeded: ratio >= AppConstants.budgetExceededThreshold,
+      isExceeded: ratio > AppConstants.budgetExceededThreshold,
       isWarning: ratio >= AppConstants.budgetWarningThreshold &&
           ratio < AppConstants.budgetExceededThreshold,
       categoryColor: theme.colorScheme.primary,

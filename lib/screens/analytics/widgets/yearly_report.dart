@@ -80,7 +80,11 @@ class _YearlyReportScreenState extends State<YearlyReportScreen> {
                 const SizedBox(height: AppConstants.spacingXxxl),
 
                 // Chart
-                _YearlyTrendChart(data: analytics.monthlyData),
+                _YearlyTrendChart(
+                  data: analytics.monthlyData,
+                  symbol: settings.currencySymbol,
+                  useDecimals: settings.currencyUseDecimals,
+                ),
                 const SizedBox(height: AppConstants.spacingXxxl),
 
                 // Summary Stats
@@ -97,8 +101,10 @@ class _YearlyReportScreenState extends State<YearlyReportScreen> {
 
 class _YearlyTrendChart extends StatelessWidget {
   final List<MonthlyData> data;
+  final String symbol;
+  final bool useDecimals;
 
-  const _YearlyTrendChart({required this.data});
+  const _YearlyTrendChart({required this.data, required this.symbol, required this.useDecimals});
 
   @override
   Widget build(BuildContext context) {
@@ -183,6 +189,16 @@ class _YearlyTrendChart extends StatelessWidget {
             ),
           ),
           borderData: FlBorderData(show: false),
+          lineTouchData: LineTouchData(
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipItems: (touchedSpots) => touchedSpots
+                  .map((s) => LineTooltipItem(
+                        NumberUtils.formatCurrency(s.y, symbol: symbol, useDecimals: useDecimals),
+                        TextStyle(color: theme.colorScheme.onInverseSurface),
+                      ))
+                  .toList(),
+            ),
+          ),
         ),
       ),
     );

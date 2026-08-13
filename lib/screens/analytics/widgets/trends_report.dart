@@ -215,6 +215,14 @@ class _CashflowChart extends StatelessWidget {
                 ),
               ),
               borderData: FlBorderData(show: false),
+              barTouchData: BarTouchData(
+                touchTooltipData: BarTouchTooltipData(
+                  getTooltipItem: (group, groupIndex, rod, rodIndex) => BarTooltipItem(
+                    NumberUtils.formatCurrency(rod.toY, symbol: symbol, useDecimals: useDecimals),
+                    TextStyle(color: theme.colorScheme.onInverseSurface),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -322,6 +330,16 @@ class _CategoryTrendSection extends StatelessWidget {
                 ),
                 gridData: const FlGridData(show: false),
                 borderData: FlBorderData(show: false),
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipItems: (touchedSpots) => touchedSpots
+                        .map((s) => LineTooltipItem(
+                              NumberUtils.formatCurrency(s.y, symbol: symbol, useDecimals: useDecimals),
+                              TextStyle(color: theme.colorScheme.onInverseSurface),
+                            ))
+                        .toList(),
+                  ),
+                ),
               ),
             ),
           ),

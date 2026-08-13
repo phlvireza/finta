@@ -46,7 +46,7 @@ class BudgetStatus {
   double get remaining => (effectiveAmount - spent).clamp(0, double.infinity);
   bool get isWarning =>
       ratio >= AppConstants.budgetWarningThreshold && ratio < AppConstants.budgetExceededThreshold;
-  bool get isExceeded => ratio >= AppConstants.budgetExceededThreshold;
+  bool get isExceeded => ratio > AppConstants.budgetExceededThreshold;
   bool get isNormal => ratio < AppConstants.budgetWarningThreshold;
 }
 

@@ -110,6 +110,7 @@ Future<void> _purgeGoal(
 
   await provider.deleteGoal(goal.id, deleteContributions: true);
   await txProvider.loadTransactions(payday: settings.payday);
+  await txProvider.loadAllTransactions();
   await budgetProvider.loadBudgets(payday: settings.payday);
   await accountProvider.loadAccounts();
   await analytics.loadForCurrentPeriod(settings.payday);
