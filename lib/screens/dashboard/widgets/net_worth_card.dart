@@ -32,13 +32,20 @@ class NetWorthCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(loc.netWorth, style: theme.textTheme.labelMedium),
-            GestureDetector(
-              onTap: () => settings.setHideBalances(!settings.hideBalances),
-              child: Icon(
-                settings.hideBalances ? Icons.visibility_off : Icons.visibility,
-                size: 18,
-                color: theme.textTheme.bodySmall?.color,
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const _ThemeToggleButton(),
+                const SizedBox(width: AppConstants.spacingMd),
+                GestureDetector(
+                  onTap: () => settings.setHideBalances(!settings.hideBalances),
+                  child: Icon(
+                    settings.hideBalances ? Icons.visibility_off : Icons.visibility,
+                    size: 18,
+                    color: theme.textTheme.bodySmall?.color,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -120,6 +127,40 @@ class NetWorthCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// One-tap light/dark flip, sitting beside the hide-balances eye so the two
+/// quick toggles read as one group. Theme is something people change by
+/// reflex, so it shouldn't cost a trip into Settings — the full three-way
+/// choice (including *system*) still lives there.
+class _ThemeToggleButton extends StatelessWidget {
+  const _ThemeToggleButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    // Resolved brightness, not SettingsProvider.themeMode: the stored mode may
+    // be ThemeMode.system, which is neither light nor dark. Reading what is
+    // actually on screen keeps the icon honest and guarantees the first tap
+    // flips visibly instead of being a no-op.
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Semantics(
+      button: true,
+      label: AppLocalizations.of(context)!.switchTheme,
+      child: GestureDetector(
+        onTap: () => context
+            .read<SettingsProvider>()
+            .setThemeMode(isDark ? ThemeMode.light : ThemeMode.dark),
+        child: Icon(
+          // Shows the mode the tap leads to, not the one already applied.
+          isDark ? Icons.light_mode : Icons.dark_mode,
+          size: 18,
+          color: theme.textTheme.bodySmall?.color,
+        ),
+      ),
     );
   }
 }

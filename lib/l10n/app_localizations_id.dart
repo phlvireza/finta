@@ -81,6 +81,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get dark => 'Gelap';
 
   @override
+  String get switchTheme => 'Ganti tema';
+
+  @override
   String get totalBalance => 'Total Saldo';
 
   @override

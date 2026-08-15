@@ -29,6 +29,7 @@
   "system": "Sistem",
   "light": "Terang",
   "dark": "Gelap",
+  "switchTheme": "Ganti tema",
 
   "totalBalance": "Total Saldo",
   "netThisPeriod": "Bersih Periode Ini",

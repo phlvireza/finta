@@ -81,6 +81,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dark => 'Dark';
 
   @override
+  String get switchTheme => 'Switch theme';
+
+  @override
   String get totalBalance => 'Total Balance';
 
   @override

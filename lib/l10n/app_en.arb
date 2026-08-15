@@ -29,6 +29,7 @@
   "system": "System",
   "light": "Light",
   "dark": "Dark",
+  "switchTheme": "Switch theme",
 
   "totalBalance": "Total Balance",
   "netThisPeriod": "Net This Period",
