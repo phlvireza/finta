@@ -470,6 +470,114 @@ abstract class AppLocalizations {
   /// **'Reset to default color'**
   String get resetToDefaultColor;
 
+  /// No description provided for @seedCategoryFoodDrinks.
+  ///
+  /// In en, this message translates to:
+  /// **'Food & Drinks'**
+  String get seedCategoryFoodDrinks;
+
+  /// No description provided for @seedCategoryTransport.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport'**
+  String get seedCategoryTransport;
+
+  /// No description provided for @seedCategoryShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping'**
+  String get seedCategoryShopping;
+
+  /// No description provided for @seedCategoryBillsUtilities.
+  ///
+  /// In en, this message translates to:
+  /// **'Bills & Utilities'**
+  String get seedCategoryBillsUtilities;
+
+  /// No description provided for @seedCategoryEntertainment.
+  ///
+  /// In en, this message translates to:
+  /// **'Entertainment'**
+  String get seedCategoryEntertainment;
+
+  /// No description provided for @seedCategoryHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get seedCategoryHealth;
+
+  /// No description provided for @seedCategoryEducation.
+  ///
+  /// In en, this message translates to:
+  /// **'Education'**
+  String get seedCategoryEducation;
+
+  /// No description provided for @seedCategoryGroceries.
+  ///
+  /// In en, this message translates to:
+  /// **'Groceries'**
+  String get seedCategoryGroceries;
+
+  /// No description provided for @seedCategoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get seedCategoryOther;
+
+  /// No description provided for @seedCategorySalary.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary'**
+  String get seedCategorySalary;
+
+  /// No description provided for @seedCategoryFreelance.
+  ///
+  /// In en, this message translates to:
+  /// **'Freelance'**
+  String get seedCategoryFreelance;
+
+  /// No description provided for @seedCategoryGift.
+  ///
+  /// In en, this message translates to:
+  /// **'Gift'**
+  String get seedCategoryGift;
+
+  /// No description provided for @seedCategoryInvestment.
+  ///
+  /// In en, this message translates to:
+  /// **'Investment'**
+  String get seedCategoryInvestment;
+
+  /// No description provided for @seedCategoryTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer'**
+  String get seedCategoryTransfer;
+
+  /// No description provided for @seedCategorySavingsGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Savings & Goals'**
+  String get seedCategorySavingsGoals;
+
+  /// No description provided for @seedCategoryDebtPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Debt Payments'**
+  String get seedCategoryDebtPayments;
+
+  /// No description provided for @seedCategoryDebtRepayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Debt Repayments'**
+  String get seedCategoryDebtRepayments;
+
+  /// No description provided for @seedCategoryDonation.
+  ///
+  /// In en, this message translates to:
+  /// **'Donation'**
+  String get seedCategoryDonation;
+
   /// No description provided for @manageBudgets.
   ///
   /// In en, this message translates to:

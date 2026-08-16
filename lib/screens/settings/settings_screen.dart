@@ -328,6 +328,12 @@ class SettingsScreen extends StatelessWidget {
         // Resolve to the human-readable category name — archived
         // categories still resolve here since getCategoryById isn't
         // filtered, only the active-category pickers are.
+        //
+        // Deliberately the *stored* name, not the localized one, for the
+        // same reason the header row above stays English: this column is
+        // what CsvImportScreen matches a re-import on. Writing the display
+        // name would make a file exported in one language import as a pile
+        // of new categories in the other.
         final categoryName =
             categoryProvider.getCategoryById(tx.categoryId)?.name ?? loc.unknown;
         buffer.writeln([

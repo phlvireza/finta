@@ -11,6 +11,7 @@ import '../../../core/utils/category_color.dart';
 import '../../../core/utils/number_utils.dart';
 import '../../../core/utils/pie_label_layout.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/utils/category_display.dart';
 
 /// Radius of the donut ring itself.
 const double _ringRadius = 46;
@@ -179,7 +180,11 @@ class BreakdownChart extends StatelessWidget {
           spacing: AppConstants.spacingMd,
           runSpacing: AppConstants.spacingSm,
           children: List.generate(data.length, (i) {
-            final name = categories.getCategoryById(data[i].categoryId)?.name ?? loc.unknown;
+            final name = categoryDisplayNameOr(
+              categories.getCategoryById(data[i].categoryId),
+              loc,
+              fallback: loc.unknown,
+            );
             final percent = total > 0 ? data[i].total / total * 100 : 0.0;
             return _LegendEntry(
               color: sliceColors[i],

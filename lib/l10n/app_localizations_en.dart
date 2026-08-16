@@ -197,6 +197,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resetToDefaultColor => 'Reset to default color';
 
   @override
+  String get seedCategoryFoodDrinks => 'Food & Drinks';
+
+  @override
+  String get seedCategoryTransport => 'Transport';
+
+  @override
+  String get seedCategoryShopping => 'Shopping';
+
+  @override
+  String get seedCategoryBillsUtilities => 'Bills & Utilities';
+
+  @override
+  String get seedCategoryEntertainment => 'Entertainment';
+
+  @override
+  String get seedCategoryHealth => 'Health';
+
+  @override
+  String get seedCategoryEducation => 'Education';
+
+  @override
+  String get seedCategoryGroceries => 'Groceries';
+
+  @override
+  String get seedCategoryOther => 'Other';
+
+  @override
+  String get seedCategorySalary => 'Salary';
+
+  @override
+  String get seedCategoryFreelance => 'Freelance';
+
+  @override
+  String get seedCategoryGift => 'Gift';
+
+  @override
+  String get seedCategoryInvestment => 'Investment';
+
+  @override
+  String get seedCategoryTransfer => 'Transfer';
+
+  @override
+  String get seedCategorySavingsGoals => 'Savings & Goals';
+
+  @override
+  String get seedCategoryDebtPayments => 'Debt Payments';
+
+  @override
+  String get seedCategoryDebtRepayments => 'Debt Repayments';
+
+  @override
+  String get seedCategoryDonation => 'Donation';
+
+  @override
   String get manageBudgets => 'Manage Budgets';
 
   @override

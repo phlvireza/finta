@@ -197,6 +197,60 @@ class AppLocalizationsId extends AppLocalizations {
   String get resetToDefaultColor => 'Kembalikan ke warna bawaan';
 
   @override
+  String get seedCategoryFoodDrinks => 'Makanan & Minuman';
+
+  @override
+  String get seedCategoryTransport => 'Transportasi';
+
+  @override
+  String get seedCategoryShopping => 'Belanja';
+
+  @override
+  String get seedCategoryBillsUtilities => 'Tagihan & Utilitas';
+
+  @override
+  String get seedCategoryEntertainment => 'Hiburan';
+
+  @override
+  String get seedCategoryHealth => 'Kesehatan';
+
+  @override
+  String get seedCategoryEducation => 'Pendidikan';
+
+  @override
+  String get seedCategoryGroceries => 'Belanja Bulanan';
+
+  @override
+  String get seedCategoryOther => 'Lainnya';
+
+  @override
+  String get seedCategorySalary => 'Gaji';
+
+  @override
+  String get seedCategoryFreelance => 'Freelance';
+
+  @override
+  String get seedCategoryGift => 'Hadiah';
+
+  @override
+  String get seedCategoryInvestment => 'Investasi';
+
+  @override
+  String get seedCategoryTransfer => 'Transfer';
+
+  @override
+  String get seedCategorySavingsGoals => 'Tabungan & Tujuan';
+
+  @override
+  String get seedCategoryDebtPayments => 'Pembayaran Utang';
+
+  @override
+  String get seedCategoryDebtRepayments => 'Pengembalian Piutang';
+
+  @override
+  String get seedCategoryDonation => 'Donasi';
+
+  @override
   String get manageBudgets => 'Kelola Anggaran';
 
   @override

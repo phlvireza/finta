@@ -24,6 +24,7 @@ import 'widgets/type_toggle.dart';
 import 'widgets/anomaly_confirm.dart';
 import 'widgets/save_template_dialog.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/utils/category_display.dart';
 
 /// Full-screen form for adding or editing a transaction.
 class AddTransactionScreen extends StatefulWidget {
@@ -113,7 +114,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       final check = await context.read<InsightsProvider>().checkAnomaly(_categoryId!, amount);
       if (!mounted) return;
       if (check != null && check.isAnomaly) {
-        final categoryName = context.read<CategoryProvider>().getCategoryById(_categoryId!)?.name ?? loc.unknown;
+        final categoryName = categoryDisplayNameOr(
+          context.read<CategoryProvider>().getCategoryById(_categoryId!),
+          loc,
+          fallback: loc.unknown,
+        );
         final settings = context.read<SettingsProvider>();
         final proceed = await confirmUnusualAmount(
           context,

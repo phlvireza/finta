@@ -13,6 +13,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/utils/number_utils.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/utils/category_display.dart';
 
 /// A shareable "your pay cycle, summarised" card — captured from a live
 /// widget tree via [RepaintBoundary] rather than drawn with a separate
@@ -139,7 +140,11 @@ class _MonthlyRecapScreenState extends State<MonthlyRecapScreen> {
     final topCategories = [
       for (final item in expenseBreakdown.take(3))
         (
-          name: categories.getCategoryById(item.categoryId)?.name ?? loc.unknown,
+          name: categoryDisplayNameOr(
+            categories.getCategoryById(item.categoryId),
+            loc,
+            fallback: loc.unknown,
+          ),
           total: item.total,
         ),
     ];

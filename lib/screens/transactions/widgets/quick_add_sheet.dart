@@ -26,6 +26,7 @@ import 'date_picker_field.dart';
 import 'recurring_toggle.dart';
 import 'anomaly_confirm.dart';
 import 'save_template_dialog.dart';
+import '../../../core/utils/category_display.dart';
 
 enum _EntryType { expense, income, transfer }
 
@@ -179,7 +180,11 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
       final check = await context.read<InsightsProvider>().checkAnomaly(_categoryId!, amount);
       if (!mounted) return;
       if (check != null && check.isAnomaly) {
-        final categoryName = context.read<CategoryProvider>().getCategoryById(_categoryId!)?.name ?? loc.unknown;
+        final categoryName = categoryDisplayNameOr(
+          context.read<CategoryProvider>().getCategoryById(_categoryId!),
+          loc,
+          fallback: loc.unknown,
+        );
         final settings = context.read<SettingsProvider>();
         final proceed = await confirmUnusualAmount(
           context,

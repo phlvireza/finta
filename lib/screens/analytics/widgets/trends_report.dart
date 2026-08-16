@@ -14,6 +14,7 @@ import '../../../widgets/empty_state.dart';
 import '../../../widgets/section_card.dart';
 import '../../../widgets/status_pill.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/utils/category_display.dart';
 
 /// Full-screen trends report: rolling 12-month cashflow and a per-category
 /// spend trend with a vs-average callout — the long-range views the
@@ -239,7 +240,8 @@ class _CategoryTrendSection extends StatelessWidget {
           initialValue: selectedCategoryId,
           decoration: const InputDecoration(border: OutlineInputBorder()),
           items: [
-            for (final c in categories) DropdownMenuItem(value: c.id, child: Text(c.name)),
+            for (final c in categories)
+              DropdownMenuItem(value: c.id, child: Text(categoryDisplayName(c, loc))),
           ],
           onChanged: onChanged,
         ),

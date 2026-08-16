@@ -11,6 +11,7 @@ import '../../../providers/category_provider.dart';
 import '../../../widgets/color_swatch_picker.dart';
 import '../../../widgets/form_sheet.dart';
 import '../../../widgets/tinted_icon.dart';
+import '../../../core/utils/category_display.dart';
 
 /// Colour-only editor for a category the app seeded.
 ///
@@ -92,7 +93,7 @@ class _CategoryColorSheetState extends State<CategoryColorSheet> {
                 const SizedBox(width: AppConstants.spacingLg),
                 Expanded(
                   child: Text(
-                    widget.category.name,
+                    categoryDisplayName(widget.category, loc),
                     style: theme.textTheme.titleMedium,
                     overflow: TextOverflow.ellipsis,
                   ),

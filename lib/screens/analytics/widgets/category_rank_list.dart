@@ -8,6 +8,7 @@ import '../../../core/utils/category_color.dart';
 import '../../../core/utils/number_utils.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/utils/category_display.dart';
 
 /// Ranked list of categories with percentage bars in each category's own
 /// colour. Caps at 5 rows with a "Show all (N)" expander rather than
@@ -78,7 +79,7 @@ class _CategoryRankListState extends State<CategoryRankList> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(category.name, style: theme.textTheme.titleSmall),
+                        Text(categoryDisplayName(category, loc), style: theme.textTheme.titleSmall),
                         Text(
                           NumberUtils.formatCurrency(
                             item.total,

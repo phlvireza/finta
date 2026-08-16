@@ -7,6 +7,7 @@ import '../../categories/widgets/category_form.dart';
 import '../../../widgets/form_sheet.dart';
 import '../../../widgets/picker_sheet.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/utils/category_display.dart';
 
 /// Form field that opens a searchable bottom sheet for category selection.
 class CategoryPicker extends StatelessWidget {
@@ -94,7 +95,7 @@ class CategoryPicker extends StatelessWidget {
                             const SizedBox(width: AppConstants.spacingMd),
                             Expanded(
                               child: Text(
-                                selectedCategory.name,
+                                categoryDisplayName(selectedCategory, loc),
                                 style: theme.textTheme.bodyLarge,
                               ),
                             ),
@@ -193,12 +194,19 @@ class _CategorySearchSheetState extends State<_CategorySearchSheet> {
         ? categoriesProvider.incomeCategories
         : categoriesProvider.expenseCategories;
 
+    final loc = AppLocalizations.of(context)!;
+
     final query = _searchController.text.toLowerCase();
+    // Matched on both names: a seeded category is stored in English and
+    // shown translated, so searching one alone misses half the ways a user
+    // might reach for it.
     final filtered = query.isEmpty
         ? allCategories
-        : allCategories.where((c) => c.name.toLowerCase().contains(query)).toList();
-
-    final loc = AppLocalizations.of(context)!;
+        : allCategories
+            .where((c) =>
+                c.name.toLowerCase().contains(query) ||
+                categoryDisplayName(c, loc).toLowerCase().contains(query))
+            .toList();
 
     return PickerSheet(
       title: loc.selectACategory,
@@ -290,7 +298,7 @@ class _CategorySearchSheetState extends State<_CategorySearchSheet> {
       padding: EdgeInsets.only(left: indented ? AppConstants.spacingXxxl : 0),
       child: ListTile(
         leading: Icon(cat.iconData, color: cat.colorValue),
-        title: Text(cat.name),
+        title: Text(categoryDisplayName(cat, loc)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

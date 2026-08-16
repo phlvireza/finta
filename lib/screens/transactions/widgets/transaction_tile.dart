@@ -15,6 +15,7 @@ import '../../../core/utils/transaction_display.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/confirm_dialog.dart';
 import '../add_transaction_screen.dart';
+import '../../../core/utils/category_display.dart';
 
 /// Reusable tile for displaying a single transaction. Used on both the
 /// dashboard (dense: true) and the full history screen (dense: false) so
@@ -71,7 +72,7 @@ class TransactionTile extends StatelessWidget {
     // The note leads the title: it is the line that says what was actually
     // bought, and as the last part of the old subtitle it was the first
     // thing the single-line ellipsis cut off.
-    final categoryName = category?.name ?? loc.unknown;
+    final categoryName = categoryDisplayNameOr(category, loc, fallback: loc.unknown);
     final title = transactionTitle(
       note: transaction.note,
       merchant: transaction.merchant,

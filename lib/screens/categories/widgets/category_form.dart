@@ -5,6 +5,7 @@ import '../../../models/category_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/category_color.dart';
+import '../../../core/utils/category_display.dart';
 import '../../../widgets/color_swatch_picker.dart';
 import '../../../widgets/form_sheet.dart';
 import 'icon_picker.dart';
@@ -180,10 +181,19 @@ class _CategoryFormState extends State<CategoryForm> {
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) return loc.pleaseEnterName;
 
-                      // Input validation: Duplicate check
+                      // Input validation: Duplicate check.
+                      //
+                      // Compared against the displayed name as well as the
+                      // stored one: a seeded category is stored in English
+                      // but shown translated, so an Indonesian user typing
+                      // "Makanan & Minuman" would otherwise be allowed to
+                      // create a second category indistinguishable from the
+                      // default sitting right above it in every picker.
                       final provider = context.read<CategoryProvider>();
+                      final candidate = val.trim().toLowerCase();
                       final isDuplicate = provider.categories.any((c) =>
-                        c.name.toLowerCase() == val.trim().toLowerCase() &&
+                        (c.name.toLowerCase() == candidate ||
+                            categoryDisplayName(c, loc).toLowerCase() == candidate) &&
                         c.id != widget.categoryToEdit?.id &&
                         c.type == (widget.isIncome ? 'income' : 'expense')
                       );
@@ -242,7 +252,10 @@ class _CategoryFormState extends State<CategoryForm> {
                       ...parentOptions.map(
                         (c) => DropdownMenuItem<String?>(
                           value: c.id,
-                          child: Text(c.name, overflow: TextOverflow.ellipsis),
+                          child: Text(
+                            categoryDisplayName(c, loc),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                     ],

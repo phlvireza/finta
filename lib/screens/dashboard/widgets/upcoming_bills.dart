@@ -12,6 +12,7 @@ import '../../../core/utils/date_utils.dart';
 import '../../recurring/recurring_list_screen.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/section_card.dart';
+import '../../../core/utils/category_display.dart';
 
 /// Upcoming section — the next few due recurring transactions, so bills
 /// and salary aren't invisible until they're auto-generated. Uses data
@@ -120,7 +121,8 @@ class _UpcomingItem extends StatelessWidget {
                 // with the category made every row read as its category
                 // ("Bills — due in 3 days"), which names no actual charge.
                 Text(
-                  template.merchant ?? category?.name ?? loc.unknown,
+                  template.merchant ??
+                      categoryDisplayNameOr(category, loc, fallback: loc.unknown),
                   style: theme.textTheme.titleSmall,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

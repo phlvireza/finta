@@ -15,6 +15,7 @@ import '../../widgets/tinted_icon.dart';
 import '../transactions/add_transaction_screen.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/utils/category_display.dart';
 
 /// Screen to view and manage active recurring transactions.
 class RecurringListScreen extends StatelessWidget {
@@ -103,7 +104,7 @@ class RecurringListScreen extends StatelessWidget {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            category?.name ?? loc.unknown,
+                                            categoryDisplayNameOr(category, loc, fallback: loc.unknown),
                                             style: theme.textTheme.titleMedium,
                                           ),
                                           if (template.note != null && template.note!.isNotEmpty)

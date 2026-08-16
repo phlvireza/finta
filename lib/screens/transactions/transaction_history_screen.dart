@@ -11,6 +11,7 @@ import '../../models/category_model.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/utils/number_utils.dart';
+import '../../core/utils/category_display.dart';
 import 'widgets/transaction_tile.dart';
 import 'widgets/transaction_calendar.dart';
 import 'widgets/transaction_filter_sheet.dart';
@@ -67,6 +68,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     List<TransactionModel> all,
     CategoryProvider categories,
     AccountProvider accounts,
+    AppLocalizations loc,
   ) {
     var filtered = all;
 
@@ -104,7 +106,15 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       filtered = filtered.where((t) {
         final note = t.note?.toLowerCase() ?? '';
         final merchant = t.merchant?.toLowerCase() ?? '';
-        final categoryName = categories.getCategoryById(t.categoryId)?.name.toLowerCase() ?? '';
+        // Both the stored name and the localized one: a seeded category is
+        // stored in English but shown translated, so searching only the
+        // stored name would make "makanan" miss a row the user is looking
+        // straight at, and searching only the displayed name would break the
+        // English term they may also know it by.
+        final category = categories.getCategoryById(t.categoryId);
+        final categoryName = category?.name.toLowerCase() ?? '';
+        final categoryLabel =
+            categoryDisplayNameOr(category, loc, fallback: '').toLowerCase();
         final accountName = accounts.getAccountById(t.accountId)?.name.toLowerCase() ?? '';
         // Typing a bare number (e.g. "45000") should find that amount
         // whether or not the user included decimals.
@@ -112,6 +122,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         return note.contains(query) ||
             merchant.contains(query) ||
             categoryName.contains(query) ||
+            categoryLabel.contains(query) ||
             accountName.contains(query) ||
             amountString.contains(query);
       }).toList();
@@ -288,9 +299,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     final categories = context.watch<CategoryProvider>();
     final accounts = context.watch<AccountProvider>();
 
-    final filtered = _getFilteredTransactions(allTransactions, categories, accounts);
-    final grouped = txProvider.getGroupedTransactions(filtered);
     final loc = AppLocalizations.of(context)!;
+    final filtered = _getFilteredTransactions(allTransactions, categories, accounts, loc);
+    final grouped = txProvider.getGroupedTransactions(filtered);
 
     final isCalendarMode = _viewMode == _ViewMode.calendar;
 
@@ -553,7 +564,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       ));
     }
     for (final id in _filter.categoryIds) {
-      final name = categories.getCategoryById(id)?.name ?? loc.unknown;
+      final name = categoryDisplayNameOr(
+        categories.getCategoryById(id),
+        loc,
+        fallback: loc.unknown,
+      );
       chips.add(InputChip(
         label: Text(name),
         onDeleted: () => setState(() {
@@ -632,9 +647,15 @@ class _BulkRecategorizeSheetState extends State<_BulkRecategorizeSheet> {
         widget.isIncome ? categories.incomeCategories : categories.expenseCategories;
 
     final query = _searchController.text.toLowerCase();
+    // Matched against both names for the same reason the ledger search is:
+    // a seeded category is stored in English and shown translated.
     final filtered = query.isEmpty
         ? options
-        : options.where((c) => c.name.toLowerCase().contains(query)).toList();
+        : options
+            .where((c) =>
+                c.name.toLowerCase().contains(query) ||
+                categoryDisplayName(c, loc).toLowerCase().contains(query))
+            .toList();
 
     return PickerSheet(
       title: loc.recategorize,
@@ -658,7 +679,7 @@ class _BulkRecategorizeSheetState extends State<_BulkRecategorizeSheet> {
       children: filtered
           .map((cat) => ListTile(
                 leading: Icon(cat.iconData, color: cat.colorValue),
-                title: Text(cat.name),
+                title: Text(categoryDisplayName(cat, loc)),
                 onTap: () => Navigator.of(context).pop(cat.id),
               ))
           .toList(),

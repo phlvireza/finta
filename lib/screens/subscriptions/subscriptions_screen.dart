@@ -14,6 +14,7 @@ import '../../widgets/section_card.dart';
 import '../../widgets/status_pill.dart';
 import '../../widgets/tinted_icon.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/utils/category_display.dart';
 
 /// Lists tracked subscriptions with their combined monthly/annual cost and
 /// upcoming-charge badges, and surfaces auto-detected candidates — merchants
@@ -253,7 +254,8 @@ class _SubscriptionTile extends StatelessWidget {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
     final category = categoryProvider.getCategoryById(subscription.categoryId);
-    final name = subscription.merchant ?? category?.name ?? loc.unknown;
+    final name = subscription.merchant ??
+        categoryDisplayNameOr(category, loc, fallback: loc.unknown);
     final daysUntil = subscription.nextOccurrence
         .difference(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day))
         .inDays;

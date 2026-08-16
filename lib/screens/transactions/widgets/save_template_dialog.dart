@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../providers/category_provider.dart';
 import '../../../providers/template_provider.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/utils/category_display.dart';
 
 /// Saves the current form values as a one-tap quick-add template, after
 /// asking for a name (pre-filled with the merchant, or the category when
@@ -49,7 +50,11 @@ Future<String?> saveAsTemplate(
   final trimmedNote = note?.trim();
   final category = context.read<CategoryProvider>().getCategoryById(categoryId);
   final nameController = TextEditingController(
-    text: (trimmedMerchant?.isNotEmpty ?? false) ? trimmedMerchant! : (category?.name ?? ''),
+    // Seeds the field with what the user sees on screen, not the stored
+    // English name — this becomes an editable template name, not a lookup key.
+    text: (trimmedMerchant?.isNotEmpty ?? false)
+        ? trimmedMerchant!
+        : categoryDisplayNameOr(category, loc, fallback: ''),
   );
   final templates = context.read<TemplateProvider>();
 

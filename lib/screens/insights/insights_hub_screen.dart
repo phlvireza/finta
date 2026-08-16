@@ -15,6 +15,7 @@ import '../../widgets/empty_state.dart';
 import '../../widgets/section_card.dart';
 import '../transactions/widgets/transaction_tile.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/utils/category_display.dart';
 
 /// The intelligence layer's home: financial health score, rule-based
 /// spending insights, and unusual-activity flags — everything
@@ -241,7 +242,7 @@ class _InsightCard extends StatelessWidget {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
     final category = context.watch<CategoryProvider>().getCategoryById(data.categoryId);
-    final categoryName = category?.name ?? loc.unknown;
+    final categoryName = categoryDisplayNameOr(category, loc, fallback: loc.unknown);
     final percent = data.percent.toStringAsFixed(0);
 
     final String title;

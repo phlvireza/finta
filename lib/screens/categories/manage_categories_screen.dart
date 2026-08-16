@@ -13,6 +13,7 @@ import '../../widgets/form_sheet.dart';
 import '../../widgets/section_card.dart';
 import '../../widgets/tinted_icon.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/utils/category_display.dart';
 
 /// Screen to list, create, edit, and delete custom categories.
 class ManageCategoriesScreen extends StatelessWidget {
@@ -155,7 +156,7 @@ class _CategoryTile extends StatelessWidget {
       padding: EdgeInsets.only(left: indented ? AppConstants.spacingXxxl : 0),
       child: ListTile(
         leading: TintedIcon(icon: category.iconData, color: category.colorValue),
-        title: Text(category.name),
+        title: Text(categoryDisplayName(category, loc)),
         subtitle: category.isDefault
             ? Text(loc.defaultCategory, style: theme.textTheme.labelSmall)
             : null,
@@ -205,8 +206,8 @@ class _CategoryTile extends StatelessWidget {
       context,
       title: isArchiving ? loc.archiveCategory : loc.delete,
       message: isArchiving
-          ? loc.confirmArchiveCategory(category.name, usage)
-          : loc.confirmDeleteCategory(category.name),
+          ? loc.confirmArchiveCategory(categoryDisplayName(category, loc), usage)
+          : loc.confirmDeleteCategory(categoryDisplayName(category, loc)),
       confirmText: isArchiving ? loc.archive : loc.delete,
     );
 
