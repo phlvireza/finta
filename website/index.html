@@ -96,7 +96,11 @@
         the month.
       </p>
 
-      <form class="waitlist" id="waitlist" style="margin-top:var(--s-2xl)" novalidate>
+      <!-- onsubmit is a last-resort guard, not the real handler: if main.js
+           throws before it binds, this still stops the browser doing a native
+           GET that would put the address in the URL bar and the Referer. -->
+      <form class="waitlist" id="waitlist" style="margin-top:var(--s-2xl)" novalidate
+            onsubmit="return false">
         <label class="visually-hidden" for="email-hero">Email address</label>
         <div class="waitlist__row">
           <input class="field" type="email" id="email-hero" name="email"

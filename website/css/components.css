@@ -321,6 +321,15 @@ html:not(.no-js) .nav__panel.is-open { display: block; }
    -------------------------------------------------------------------------- */
 .waitlist { max-width: 460px; }
 
+/* There is no form endpoint -- the submit handler in main.js is the only thing
+   that does anything with the address. Without JS the browser would fall back
+   to a native GET, putting the email in the URL, in history, and in the Referer
+   header of the next request. On a page whose entire claim is that Finta
+   collects nothing, showing a form that can only fail that way is worse than
+   showing no form, so hide it. (main.js also carries an inline onsubmit guard
+   for the case where JS runs but this file's handler never binds.) */
+html.no-js .waitlist { display: none; }
+
 .waitlist__row {
   display: flex;
   flex-direction: column;

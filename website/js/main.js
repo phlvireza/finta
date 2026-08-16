@@ -62,9 +62,18 @@
 
     // Widening past the breakpoint hides the toggle; without this the menu
     // would stay "open" and reopen on the way back down.
-    window.matchMedia('(min-width: 860px)').addEventListener('change', function (e) {
-      if (e.matches) setMenu(false);
-    });
+    var wide = window.matchMedia('(min-width: 860px)');
+    var onWide = function (e) { if (e.matches) setMenu(false); };
+
+    // Safari and iOS Safari before 14 expose only the deprecated addListener
+    // on MediaQueryList. Calling addEventListener there throws, and because
+    // this is the last statement in the nav block, the throw would abort the
+    // rest of this file -- taking scroll-reveal and the waitlist submit
+    // handler with it. The head script has already removed .no-js by then, so
+    // the reveal elements would stay at opacity 0 with nothing left to show
+    // them.
+    if (wide.addEventListener) wide.addEventListener('change', onWide);
+    else if (wide.addListener) wide.addListener(onWide);
   }
 
   /* ------------------------------------------------------------------
