@@ -215,6 +215,8 @@
   "safeToSpendLabel": "Aman dibelanjakan per hari",
   "hideBalances": "Sembunyikan saldo",
   "showBalances": "Tampilkan saldo",
+  "switchToLightTheme": "Ganti ke terang",
+  "switchToDarkTheme": "Ganti ke gelap",
   "currentPayPeriod": "Periode gaji saat ini",
   "leftThisPeriod": "Sisa periode ini",
   "spentOfTotal": "{spent} dari {total} terpakai",

@@ -122,6 +122,11 @@
   flex: none;
 }
 
+/* Two actions in a row sit tight, the way adjacent IconButtons do in the real
+   app bar. The 8px .ph-appbar gap is sized for title-to-action, not
+   action-to-action, and reads as a stray gap between the theme and eye icons. */
+.ph-appbar__action + .ph-appbar__action { margin-left: -6px; }
+
 /* --------------------------------------------------------------------------
    Scrollable body. Content is clipped by the screen, mimicking a scroll
    position partway down a real list.

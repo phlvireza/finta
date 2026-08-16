@@ -222,6 +222,8 @@
   "safeToSpendLabel": "Safe to spend per day",
   "hideBalances": "Hide balances",
   "showBalances": "Show balances",
+  "switchToLightTheme": "Switch to light",
+  "switchToDarkTheme": "Switch to dark",
   "currentPayPeriod": "Current pay period",
   "leftThisPeriod": "Left this period",
   "spentOfTotal": "{spent} of {total} spent",

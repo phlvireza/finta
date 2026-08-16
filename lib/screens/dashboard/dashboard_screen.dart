@@ -28,7 +28,7 @@ class DashboardScreen extends StatelessWidget {
         // the user step back to a previous one (see PeriodSelector).
         title: const PeriodSelector(),
         centerTitle: false,
-        actions: const [_HideBalancesButton()],
+        actions: const [_ThemeToggleButton(), _HideBalancesButton()],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -121,6 +121,40 @@ class _HideBalancesButton extends StatelessWidget {
       ),
       tooltip: settings.hideBalances ? loc.showBalances : loc.hideBalances,
       onPressed: () => settings.setHideBalances(!settings.hideBalances),
+    );
+  }
+}
+
+/// One-tap light/dark flip, sitting beside the hide-balances eye because both
+/// are instant appearance switches with no data consequences.
+///
+/// This deliberately only writes `light` or `dark`, never `system` — a
+/// two-state button can't express three states without becoming a guessing
+/// game. `system` stays reachable from Settings → Theme, which remains the
+/// canonical control.
+class _ThemeToggleButton extends StatelessWidget {
+  const _ThemeToggleButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    // Read the *resolved* brightness rather than SettingsProvider.themeMode:
+    // under ThemeMode.system the stored mode has no light/dark answer, so
+    // flipping it would need to guess. MaterialApp has already resolved the
+    // platform brightness by the time this builds, so this always matches
+    // what the user is actually looking at — the first tap off `system`
+    // therefore visibly changes something.
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return IconButton(
+      // Icon shows the current state and the tooltip names the action, which
+      // is the same split the eye button next to it uses.
+      icon: Icon(isDark ? Icons.dark_mode : Icons.light_mode, size: 20),
+      tooltip: isDark ? loc.switchToLightTheme : loc.switchToDarkTheme,
+      onPressed: () => context
+          .read<SettingsProvider>()
+          .setThemeMode(isDark ? ThemeMode.light : ThemeMode.dark),
     );
   }
 }

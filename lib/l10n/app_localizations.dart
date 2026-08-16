@@ -1058,6 +1058,18 @@ abstract class AppLocalizations {
   /// **'Show balances'**
   String get showBalances;
 
+  /// No description provided for @switchToLightTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to light'**
+  String get switchToLightTheme;
+
+  /// No description provided for @switchToDarkTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to dark'**
+  String get switchToDarkTheme;
+
   /// No description provided for @currentPayPeriod.
   ///
   /// In en, this message translates to:

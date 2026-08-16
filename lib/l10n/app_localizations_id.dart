@@ -512,6 +512,12 @@ class AppLocalizationsId extends AppLocalizations {
   String get showBalances => 'Tampilkan saldo';
 
   @override
+  String get switchToLightTheme => 'Ganti ke terang';
+
+  @override
+  String get switchToDarkTheme => 'Ganti ke gelap';
+
+  @override
   String get currentPayPeriod => 'Periode gaji saat ini';
 
   @override

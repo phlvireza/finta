@@ -157,14 +157,16 @@ html:not(.no-js) .nav__panel.is-open { display: block; }
 }
 .icon-btn:hover { background: var(--surface-2); color: var(--text); }
 
-/* The moon hides in light mode and the sun in dark, so the button always
-   shows the theme you would switch TO. */
-.icon-btn .theme-icon--dark { display: none; }
-:root[data-theme="dark"] .icon-btn .theme-icon--light { display: none; }
-:root[data-theme="dark"] .icon-btn .theme-icon--dark { display: block; }
+/* The moon hides in light mode and the sun in dark, so the icon always shows
+   the theme currently in effect while the label names the action.
+   Deliberately not scoped to .icon-btn -- the phone mockup's app bar reuses
+   the same pair to mirror the in-app toggle. */
+.theme-icon--dark { display: none; }
+:root[data-theme="dark"] .theme-icon--light { display: none; }
+:root[data-theme="dark"] .theme-icon--dark { display: block; }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .icon-btn .theme-icon--light { display: none; }
-  :root:not([data-theme="light"]) .icon-btn .theme-icon--dark { display: block; }
+  :root:not([data-theme="light"]) .theme-icon--light { display: none; }
+  :root:not([data-theme="light"]) .theme-icon--dark { display: block; }
 }
 
 /* --------------------------------------------------------------------------

@@ -511,6 +511,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showBalances => 'Show balances';
 
   @override
+  String get switchToLightTheme => 'Switch to light';
+
+  @override
+  String get switchToDarkTheme => 'Switch to dark';
+
+  @override
   String get currentPayPeriod => 'Current pay period';
 
   @override
