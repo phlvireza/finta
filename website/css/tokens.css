@@ -1,0 +1,138 @@
+/* ==========================================================================
+   Finta design tokens
+   Mirrored verbatim from the app so the site and the product cannot drift:
+     lib/core/constants/app_colors.dart
+     lib/core/constants/app_typography.dart
+     lib/core/constants/app_constants.dart
+   Palette intent, quoting the app source: "warm & earthy tones".
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Light is the base definition. Every color token gets its value here, so a
+   viewer with no theme preference and no JS still gets a complete palette.
+   The dark blocks below only *redefine*; they never introduce a new token.
+   -------------------------------------------------------------------------- */
+:root {
+  /* Surfaces */
+  --bg: #FAF7F2;
+  --surface: #FFFFFF;
+  --surface-2: #F0EBE3;
+
+  /* Brand */
+  --primary: #C87941;
+  --on-primary: #FFFFFF;
+
+  /* Text */
+  --text: #2C2520;
+  --text-2: #8A7E74;
+  /* The app's textSecondary lands at ~3.4:1 on the light background. That is
+     fine for the >=18px uses it has in-app, but fails for small web body copy,
+     so small text uses this darkened partner instead. Same hue family. */
+  --text-2-strong: #6F655C;
+
+  /* Semantic money colors. Expense is a dusty rose, never a fire-alarm red --
+     the PRD is explicit that "financial apps shouldn't make you feel guilty". */
+  --income: #5B8C5A;
+  --expense: #C2665A;
+  --warning: #D4A05A;
+  --warning-surface: #F5E6CC;
+
+  --border: #E5DED5;
+
+  /* Categorical chart ramp. Hue ORDER is load-bearing: the app validated this
+     sequence for lightness spacing and CVD separation, so series N must keep
+     using ramp slot N. */
+  --c1: #3F8B4C;
+  --c2: #7B5B9E;
+  --c3: #C13F55;
+  --c4: #12928C;
+  --c5: #A0522D;
+  --c6: #2E5FA8;
+  --c7: #C1661E;
+
+  /* Recap-card gradient -- the only gradient that exists in the entire app. */
+  --recap-gradient: linear-gradient(135deg, #FFFFFF, #F0EBE3);
+
+  /* Radius scale: 8 / 12 / 16 / 20 / pill */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-full: 999px;
+
+  /* Spacing scale: 4 / 8 / 12 / 16 / 20 / 24 / 32 */
+  --s-xs: 4px;
+  --s-sm: 8px;
+  --s-md: 12px;
+  --s-lg: 16px;
+  --s-xl: 20px;
+  --s-2xl: 24px;
+  --s-3xl: 32px;
+
+  /* Motion */
+  --t-fast: 150ms;
+  --t-normal: 250ms;
+  --t-slow: 350ms;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Web-only layout tokens (no app equivalent) */
+  --page-max: 1120px;
+  --gutter: var(--s-2xl);
+
+  color-scheme: light;
+}
+
+/* System preference, but only when the viewer has not explicitly chosen light.
+   Without the :not() guard, an explicit light choice would lose to the OS. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1A1816;
+    --surface: #242120;
+    --surface-2: #2E2A27;
+    --primary: #D4956A;
+    --on-primary: #1A1816;
+    --text: #EDE8E2;
+    --text-2: #9C8E82;
+    --text-2-strong: #9C8E82;
+    --income: #7DB87C;
+    --expense: #D4887E;
+    --warning: #D4A05A;
+    --warning-surface: #3D3225;
+    --border: #3A3533;
+    --c1: #4F9E4F;
+    --c2: #7C63B8;
+    --c3: #C24F62;
+    --c4: #14A69D;
+    --c5: #B36A3E;
+    --c6: #4779C4;
+    --c7: #C96B2E;
+    --recap-gradient: linear-gradient(135deg, #242120, #2E2A27);
+    color-scheme: dark;
+  }
+}
+
+/* Explicit dark choice wins in both directions, including when the OS is light. */
+:root[data-theme="dark"] {
+  --bg: #1A1816;
+  --surface: #242120;
+  --surface-2: #2E2A27;
+  --primary: #D4956A;
+  --on-primary: #1A1816;
+  --text: #EDE8E2;
+  --text-2: #9C8E82;
+  --text-2-strong: #9C8E82;
+  --income: #7DB87C;
+  --expense: #D4887E;
+  --warning: #D4A05A;
+  --warning-surface: #3D3225;
+  --border: #3A3533;
+  --c1: #4F9E4F;
+  --c2: #7C63B8;
+  --c3: #C24F62;
+  --c4: #14A69D;
+  --c5: #B36A3E;
+  --c6: #4779C4;
+  --c7: #C96B2E;
+  --recap-gradient: linear-gradient(135deg, #242120, #2E2A27);
+  color-scheme: dark;
+}

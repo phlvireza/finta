@@ -1,0 +1,388 @@
+/* ==========================================================================
+   Site components
+   Rule inherited from the app: there are ZERO box-shadows in lib/. Separation
+   is carried by 1px hairline borders and surface-tone steps. Nothing here
+   introduces a shadow, so the site reads as the same material as the product.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Nav
+   -------------------------------------------------------------------------- */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--s-lg);
+  min-height: 64px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  color: var(--text);
+  margin-right: auto;
+}
+.brand:hover { opacity: 1; }
+
+.brand__mark {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+}
+
+/* The in-app wordmark is 'Finta' at weight 700 with letter-spacing 1.2. */
+.brand__name {
+  font-weight: 700;
+  font-size: 1.0625rem;
+  letter-spacing: 0.075em;
+}
+
+.nav__links {
+  display: none;
+  align-items: center;
+  gap: var(--s-2xl);
+}
+@media (min-width: 860px) { .nav__links { display: flex; } }
+
+.nav__link {
+  color: var(--text-2-strong);
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+.nav__link:hover { color: var(--text); opacity: 1; }
+
+/* --------------------------------------------------------------------------
+   Mobile menu
+   Below 860px the inline links are hidden, so without this panel those four
+   anchors would be unreachable on a phone.
+   -------------------------------------------------------------------------- */
+/* Doubled-up selector on purpose: the .icon-btn rules are defined further
+   down this file, so a bare .nav__toggle would lose the display battle on
+   source order alone. */
+.nav__toggle.icon-btn { display: inline-flex; }
+
+@media (min-width: 860px) {
+  .nav__toggle.icon-btn { display: none; }
+}
+
+/* Only one of the two glyphs shows at a time. */
+.nav__icon--close { display: none; }
+.nav__toggle[aria-expanded="true"] .nav__icon--open { display: none; }
+.nav__toggle[aria-expanded="true"] .nav__icon--close { display: block; }
+
+.nav__panel {
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  padding-block: var(--s-sm) var(--s-lg);
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+}
+.nav__panel .wrap { display: flex; flex-direction: column; }
+
+/* Hidden by default once JS is confirmed present. With JS disabled the
+   .no-js class survives and the panel stays in flow, links reachable. */
+html:not(.no-js) .nav__panel { display: none; }
+html:not(.no-js) .nav__panel.is-open { display: block; }
+
+@media (min-width: 860px) {
+  .nav__panel { display: none !important; }
+}
+
+.nav__panel-link {
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 500;
+  padding-block: var(--s-md);
+  border-bottom: 1px solid var(--border);
+}
+.nav__panel-link:hover { opacity: 1; color: var(--primary); }
+
+/* --------------------------------------------------------------------------
+   Buttons. Mirrors the app: elevation 0, radius 12, padding 24x12, label 600.
+   -------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-sm);
+  padding: var(--s-md) var(--s-2xl);
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t-fast) var(--ease),
+              border-color var(--t-fast) var(--ease),
+              opacity var(--t-fast) var(--ease);
+}
+
+.btn--primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.btn--primary:hover { opacity: 0.88; }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+.btn--ghost:hover { background: var(--surface-2); opacity: 1; }
+
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-sm);
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-2-strong);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.icon-btn:hover { background: var(--surface-2); color: var(--text); }
+
+/* The moon hides in light mode and the sun in dark, so the button always
+   shows the theme you would switch TO. */
+.icon-btn .theme-icon--dark { display: none; }
+:root[data-theme="dark"] .icon-btn .theme-icon--light { display: none; }
+:root[data-theme="dark"] .icon-btn .theme-icon--dark { display: block; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .icon-btn .theme-icon--light { display: none; }
+  :root:not([data-theme="light"]) .icon-btn .theme-icon--dark { display: block; }
+}
+
+/* --------------------------------------------------------------------------
+   Card: surface fill, 1px border, radius 12, no shadow. Straight from
+   app_theme.dart's CardTheme ("subtle border, no heavy shadow").
+   -------------------------------------------------------------------------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--s-2xl);
+}
+.section--alt .card { background: var(--bg); }
+
+/* The app's two universal alpha conventions, ported to CSS:
+   12% tint for an identity chip, 10-15% for a status pill, with the source
+   color reused at full strength for the icon or label on top. */
+.chip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--chip, var(--primary)) 12%, transparent);
+  color: var(--chip, var(--primary));
+  flex: none;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px var(--s-md);
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--pill, var(--primary)) 12%, transparent);
+  color: var(--pill, var(--primary));
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* --------------------------------------------------------------------------
+   Trust strip
+   -------------------------------------------------------------------------- */
+.trust {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+@media (min-width: 760px) { .trust { grid-template-columns: repeat(4, 1fr); } }
+
+.trust__item {
+  background: var(--bg);
+  padding: var(--s-xl) var(--s-lg);
+  text-align: center;
+}
+.section--alt .trust__item { background: var(--surface); }
+
+.trust__title {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  margin-top: var(--s-sm);
+}
+.trust__note {
+  font-size: 0.8125rem;
+  color: var(--text-2-strong);
+  margin-top: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Feature grid
+   -------------------------------------------------------------------------- */
+.grid {
+  display: grid;
+  gap: var(--s-lg);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 980px) { .grid--3 { grid-template-columns: repeat(3, 1fr); } }
+
+.feature-card__title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  margin-top: var(--s-lg);
+}
+.feature-card__body {
+  font-size: 0.9375rem;
+  color: var(--text-2-strong);
+  margin-top: var(--s-sm);
+}
+
+/* Numbered list used in the copy columns of the split sections. */
+.points { margin-top: var(--s-xl); }
+.points li {
+  display: flex;
+  gap: var(--s-md);
+  padding-block: var(--s-md);
+  border-top: 1px solid var(--border);
+  font-size: 0.9375rem;
+}
+.points li:last-child { border-bottom: 1px solid var(--border); }
+.points strong { font-weight: 600; }
+.points span { color: var(--text-2-strong); }
+
+/* --------------------------------------------------------------------------
+   FAQ
+   -------------------------------------------------------------------------- */
+.faq { border-top: 1px solid var(--border); }
+
+.faq__item { border-bottom: 1px solid var(--border); }
+
+.faq__item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-lg);
+  padding-block: var(--s-xl);
+  font-weight: 600;
+  font-size: 1.0625rem;
+  cursor: pointer;
+  list-style: none;
+}
+.faq__item summary::-webkit-details-marker { display: none; }
+
+.faq__item summary::after {
+  content: "";
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid var(--text-2-strong);
+  border-bottom: 2px solid var(--text-2-strong);
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform var(--t-normal) var(--ease);
+}
+.faq__item[open] summary::after { transform: rotate(-135deg) translate(-2px, -2px); }
+
+.faq__answer {
+  padding-bottom: var(--s-xl);
+  color: var(--text-2-strong);
+  max-width: 68ch;
+}
+
+/* --------------------------------------------------------------------------
+   Waitlist form
+   Field styling mirrors the app's InputDecorationTheme: filled with the
+   surface-variant tone, radius 12, 1px border, focus goes to 1.5px primary.
+   -------------------------------------------------------------------------- */
+.waitlist { max-width: 460px; }
+
+.waitlist__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-sm);
+}
+@media (min-width: 520px) {
+  .waitlist__row { flex-direction: row; }
+  .waitlist__row .btn { flex: none; }
+}
+
+.field {
+  flex: 1;
+  min-width: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--s-md) var(--s-lg);
+  color: var(--text);
+  transition: border-color var(--t-fast) var(--ease);
+}
+.field::placeholder { color: var(--text-2-strong); }
+.field:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 0.5px var(--primary);
+}
+.field:focus-visible { outline: none; }
+
+.waitlist__note {
+  margin-top: var(--s-md);
+  font-size: 0.8125rem;
+  color: var(--text-2-strong);
+}
+
+.form-status {
+  margin-top: var(--s-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  min-height: 1.4em;
+}
+.form-status[data-state="error"] { color: var(--expense); }
+.form-status[data-state="success"] { color: var(--income); }
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+.footer {
+  border-top: 1px solid var(--border);
+  padding-block: var(--s-3xl);
+  font-size: 0.875rem;
+  color: var(--text-2-strong);
+}
+
+.footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-lg);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-lg);
+}
+
