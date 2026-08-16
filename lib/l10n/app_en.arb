@@ -246,6 +246,8 @@
   "showBalances": "Show balances",
   "switchToLightTheme": "Switch to light",
   "switchToDarkTheme": "Switch to dark",
+  "switchToEnglish": "Switch to English",
+  "switchToIndonesian": "Switch to Indonesian",
   "currentPayPeriod": "Current pay period",
   "leftThisPeriod": "Left this period",
   "spentOfTotal": "{spent} of {total} spent",

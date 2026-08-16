@@ -239,6 +239,8 @@
   "showBalances": "Tampilkan saldo",
   "switchToLightTheme": "Ganti ke terang",
   "switchToDarkTheme": "Ganti ke gelap",
+  "switchToEnglish": "Ganti ke bahasa Inggris",
+  "switchToIndonesian": "Ganti ke bahasa Indonesia",
   "currentPayPeriod": "Periode gaji saat ini",
   "leftThisPeriod": "Sisa periode ini",
   "spentOfTotal": "{spent} dari {total} terpakai",
