@@ -7,6 +7,7 @@ import '../../../providers/settings_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
+import '../../../core/utils/category_color.dart';
 import '../../../core/utils/number_utils.dart';
 import '../../../core/utils/pie_label_layout.dart';
 import '../../../l10n/app_localizations.dart';
@@ -44,6 +45,19 @@ const double _labelHeight = 22;
 /// below instead, keyed by the same color used on the ring — a color a
 /// reader only has to resolve once, in one place, rather than repeat it as
 /// text next to every callout.
+///
+/// Slice colors are the categories' own, not by-rank slots off
+/// [AppColors.chartColorsLight]. The ramp guaranteed adjacent slices were
+/// separable, which the categories can't: two categories the user gave the
+/// same color produce two identical neighbouring slices. That is the
+/// deliberate trade for letting a recolor actually show up here — a chart
+/// that ignores the color the user picked reads as broken. What holds the
+/// chart together instead is the legend, which names every slice rather
+/// than relying on hue alone, plus `sectionsSpace: 2` keeping same-colored
+/// neighbours from merging into one arc. [resolveCategoryColor] handles the
+/// other thing the ramp used to do for free: categories store light-mode
+/// hexes, so a stored ramp hue is swapped for its dark-mode counterpart
+/// rather than painted as-is on a dark surface.
 class BreakdownChart extends StatelessWidget {
   final List<CategoryAnalytics> data;
   final double total;
@@ -62,6 +76,18 @@ class BreakdownChart extends StatelessWidget {
     final categories = context.watch<CategoryProvider>();
     final loc = AppLocalizations.of(context)!;
     final palette = isDark ? AppColors.chartColorsDark : AppColors.chartColorsLight;
+
+    // Resolved once and shared by the ring, the leader arrows and the
+    // legend, so the three can never disagree about what colour a slice is.
+    // A slice whose category no longer resolves (deleted out from under a
+    // cached analytics row) falls back to its old by-rank ramp slot.
+    final sliceColors = <Color>[];
+    for (var i = 0; i < data.length; i++) {
+      final category = categories.getCategoryById(data[i].categoryId);
+      sliceColors.add(category == null
+          ? palette[i % palette.length]
+          : resolveCategoryColor(category.color, isDark: isDark));
+    }
 
     return Column(
       children: [
@@ -93,7 +119,7 @@ class BreakdownChart extends StatelessWidget {
                       startDegreeOffset: -90,
                       sections: List.generate(data.length, (i) {
                         return PieChartSectionData(
-                          color: palette[i % palette.length],
+                          color: sliceColors[i],
                           value: data[i].total,
                           // Drawn by the overlay instead, so the two can
                           // never disagree about placement.
@@ -110,7 +136,7 @@ class BreakdownChart extends StatelessWidget {
                       child: CustomPaint(
                         painter: _ArrowLabelPainter(
                           slots: slots,
-                          palette: palette,
+                          sliceColors: sliceColors,
                           textColor: theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface,
                           textDirection: Directionality.of(context),
                         ),
@@ -156,7 +182,7 @@ class BreakdownChart extends StatelessWidget {
             final name = categories.getCategoryById(data[i].categoryId)?.name ?? loc.unknown;
             final percent = total > 0 ? data[i].total / total * 100 : 0.0;
             return _LegendEntry(
-              color: palette[i % palette.length],
+              color: sliceColors[i],
               name: name,
               percent: percent,
             );
@@ -203,13 +229,17 @@ class _LegendEntry extends StatelessWidget {
 /// the canvas edge.
 class _ArrowLabelPainter extends CustomPainter {
   final List<PieLabelSlot> slots;
-  final List<Color> palette;
+
+  /// One colour per slice, parallel to the chart's data — indexed by
+  /// [PieLabelSlot.index], which is the slice a slot points at.
+  final List<Color> sliceColors;
+
   final Color textColor;
   final TextDirection textDirection;
 
   _ArrowLabelPainter({
     required this.slots,
-    required this.palette,
+    required this.sliceColors,
     required this.textColor,
     required this.textDirection,
   });
@@ -221,7 +251,7 @@ class _ArrowLabelPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     for (final slot in slots) {
-      final color = palette[slot.index % palette.length];
+      final color = sliceColors[slot.index % sliceColors.length];
       linePaint.color = color.withValues(alpha: 0.75);
 
       final label = _buildLabel(slot);
@@ -276,6 +306,12 @@ class _ArrowLabelPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_ArrowLabelPainter oldDelegate) {
-    return oldDelegate.slots != slots || oldDelegate.textColor != textColor;
+    // sliceColors has to be compared now that it comes from the categories
+    // rather than a fixed ramp: recolouring a category leaves the slot
+    // geometry byte-identical, so without this the arrows and leader lines
+    // would keep painting the old hue until something else forced a repaint.
+    return oldDelegate.slots != slots ||
+        oldDelegate.textColor != textColor ||
+        !listEquals(oldDelegate.sliceColors, sliceColors);
   }
 }

@@ -4,13 +4,13 @@ import '../../../providers/analytics_provider.dart';
 import '../../../providers/category_provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../core/constants/app_constants.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/category_color.dart';
 import '../../../core/utils/number_utils.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../l10n/app_localizations.dart';
 
-/// Ranked list of categories with percentage bars matching the chart
-/// colors. Caps at 5 rows with a "Show all (N)" expander rather than
+/// Ranked list of categories with percentage bars in each category's own
+/// colour. Caps at 5 rows with a "Show all (N)" expander rather than
 /// silently truncating — a user with 12 categories could otherwise never
 /// see the last 7 with no indication they exist.
 class CategoryRankList extends StatefulWidget {
@@ -33,7 +33,6 @@ class _CategoryRankListState extends State<CategoryRankList> {
     final settings = context.watch<SettingsProvider>();
     final loc = AppLocalizations.of(context)!;
     final isDark = theme.brightness == Brightness.dark;
-    final palette = isDark ? AppColors.chartColorsDark : AppColors.chartColorsLight;
     final data = widget.data;
     final displayData = _expanded ? data : data.take(_collapsedCount).toList();
 
@@ -42,9 +41,14 @@ class _CategoryRankListState extends State<CategoryRankList> {
       ...List.generate(displayData.length, (i) {
         final item = displayData[i];
         final category = categories.getCategoryById(item.categoryId);
-        final color = palette[i % palette.length];
 
         if (category == null) return const SizedBox.shrink();
+
+        // The category's own colour, not a by-rank slot off the chart ramp:
+        // a user who recolours a category expects to find it wearing that
+        // colour here, and this row already shows the category's icon and
+        // name, so it was the one place the two openly disagreed.
+        final color = resolveCategoryColor(category.color, isDark: isDark);
 
         return Padding(
           padding: const EdgeInsets.fromLTRB(
