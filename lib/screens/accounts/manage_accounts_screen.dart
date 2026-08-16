@@ -7,6 +7,9 @@ import '../../core/constants/app_constants.dart';
 import '../../core/utils/number_utils.dart';
 import '../../widgets/confirm_dialog.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/section_card.dart';
+import '../../widgets/tinted_icon.dart';
+import '../../widgets/form_sheet.dart';
 import '../../l10n/app_localizations.dart';
 import 'widgets/account_form.dart';
 
@@ -15,9 +18,8 @@ class ManageAccountsScreen extends StatelessWidget {
   const ManageAccountsScreen({super.key});
 
   static void showAccountForm(BuildContext context, {AccountModel? account}) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
+    FormSheet.show(
+      context,
       builder: (_) => AccountForm(accountToEdit: account),
     );
   }
@@ -67,70 +69,62 @@ class ManageAccountsScreen extends StatelessWidget {
               ),
             )
           : ListView(
-              padding: const EdgeInsets.only(
-                top: AppConstants.spacingMd,
-                bottom: AppConstants.fabClearance,
+              padding: const EdgeInsets.fromLTRB(
+                AppConstants.spacingLg,
+                AppConstants.spacingMd,
+                AppConstants.spacingLg,
+                AppConstants.fabClearance,
               ),
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppConstants.spacingLg,
-                    vertical: AppConstants.spacingSm,
+                SectionCard(
+                  title: loc.netWorth,
+                  trailing: Text(
+                    NumberUtils.formatCurrency(
+                      provider.netWorth,
+                      symbol: settings.currencySymbol,
+                      useDecimals: settings.currencyUseDecimals,
+                    ),
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  padding: EdgeInsets.zero,
+                  child: Column(
                     children: [
-                      Text(loc.netWorth, style: Theme.of(context).textTheme.labelMedium),
-                      Text(
-                        NumberUtils.formatCurrency(
-                          provider.netWorth,
-                          symbol: settings.currencySymbol,
-                          useDecimals: settings.currencyUseDecimals,
+                      for (final account in accounts) ...[
+                        if (account != accounts.first) const Divider(),
+                        ListTile(
+                          leading: TintedIcon(icon: account.iconData, color: account.colorValue),
+                          title: Text(account.name),
+                          subtitle: Text(
+                            account.isCreditCard && provider.balanceOf(account.id) < 0
+                                ? loc.amountOwed(NumberUtils.formatCurrency(
+                                    -provider.balanceOf(account.id),
+                                    symbol: settings.currencySymbol,
+                                    useDecimals: settings.currencyUseDecimals,
+                                  ))
+                                : NumberUtils.formatCurrency(
+                                    provider.balanceOf(account.id),
+                                    symbol: settings.currencySymbol,
+                                    useDecimals: settings.currencyUseDecimals,
+                                  ),
+                          ),
+                          trailing: PopupMenuButton<String>(
+                            onSelected: (value) {
+                              if (value == 'edit') {
+                                showAccountForm(context, account: account);
+                              } else if (value == 'archive') {
+                                _archiveAccount(context, account);
+                              }
+                            },
+                            itemBuilder: (_) => [
+                              PopupMenuItem(value: 'edit', child: Text(loc.edit)),
+                              PopupMenuItem(value: 'archive', child: Text(loc.archive)),
+                            ],
+                          ),
                         ),
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
+                      ],
                     ],
                   ),
                 ),
-                for (final account in accounts)
-                  ListTile(
-                    leading: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: account.colorValue.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(AppConstants.radiusSm),
-                      ),
-                      child: Icon(account.iconData, color: account.colorValue),
-                    ),
-                    title: Text(account.name),
-                    subtitle: Text(
-                      account.isCreditCard && provider.balanceOf(account.id) < 0
-                          ? loc.amountOwed(NumberUtils.formatCurrency(
-                              -provider.balanceOf(account.id),
-                              symbol: settings.currencySymbol,
-                              useDecimals: settings.currencyUseDecimals,
-                            ))
-                          : NumberUtils.formatCurrency(
-                              provider.balanceOf(account.id),
-                              symbol: settings.currencySymbol,
-                              useDecimals: settings.currencyUseDecimals,
-                            ),
-                    ),
-                    trailing: PopupMenuButton<String>(
-                      onSelected: (value) {
-                        if (value == 'edit') {
-                          showAccountForm(context, account: account);
-                        } else if (value == 'archive') {
-                          _archiveAccount(context, account);
-                        }
-                      },
-                      itemBuilder: (_) => [
-                        PopupMenuItem(value: 'edit', child: Text(loc.edit)),
-                        PopupMenuItem(value: 'archive', child: Text(loc.archive)),
-                      ],
-                    ),
-                  ),
               ],
             ),
       floatingActionButton: FloatingActionButton(

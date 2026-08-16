@@ -4,9 +4,11 @@ import '../../../providers/account_provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../models/account_model.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/constants/app_colors.dart';
 import '../../../core/formatters/currency_formatter.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/keypad_amount_field.dart';
+import '../../../widgets/form_sheet.dart';
 
 /// Form for creating or editing an account.
 class AccountForm extends StatefulWidget {
@@ -29,10 +31,7 @@ class _AccountFormState extends State<AccountForm> {
   bool _autoValidate = false;
   bool _isSaving = false;
 
-  final List<String> _colorOptions = const [
-    '#C87941', '#5B8C5A', '#C2665A', '#D4A05A', '#7A8B6F',
-    '#B07A5B', '#8B6F7A', '#6F8B8A', '#CBA882', '#8A6E5E',
-  ];
+  final List<String> _colorOptions = AppColors.swatchOptions;
 
   @override
   void initState() {
@@ -139,27 +138,24 @@ class _AccountFormState extends State<AccountForm> {
     final hexColor = _selectedColor.replaceAll('#', '');
     final colorValue = Color(int.parse('FF$hexColor', radix: 16));
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: AppConstants.spacingLg,
-        right: AppConstants.spacingLg,
-        top: AppConstants.spacingLg,
-        bottom: MediaQuery.of(context).viewInsets.bottom + AppConstants.spacingLg,
-      ),
-      child: Form(
-        key: _formKey,
-        autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
-        child: SingleChildScrollView(
+    // Was a single SingleChildScrollView with Save as its last child, so on
+    // a phone with the keyboard up Save sat below the fold — the exact
+    // problem FormSheet exists to prevent (header + pinned action, only the
+    // body between them scrolls).
+    return Form(
+      key: _formKey,
+      autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+      child: FormSheet(
+        title: widget.accountToEdit != null ? loc.editAccount : loc.addAccount,
+        action: _isSaving
+            ? const Center(child: CircularProgressIndicator())
+            : ElevatedButton(onPressed: _save, child: Text(loc.save)),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                widget.accountToEdit != null ? loc.editAccount : loc.addAccount,
-                style: theme.textTheme.titleLarge,
-              ),
-              const SizedBox(height: AppConstants.spacingXxl),
-
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -266,15 +262,6 @@ class _AccountFormState extends State<AccountForm> {
                 subtitle: Text(loc.includeInTotalDescription),
                 value: _includeInTotal,
                 onChanged: (val) => setState(() => _includeInTotal = val),
-              ),
-              const SizedBox(height: AppConstants.spacingLg),
-
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: _isSaving
-                    ? const Center(child: CircularProgressIndicator())
-                    : ElevatedButton(onPressed: _save, child: Text(loc.save)),
               ),
             ],
           ),

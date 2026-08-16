@@ -9,6 +9,7 @@ import '../../widgets/date_group_header.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/error_state.dart';
 import '../../widgets/skeleton_box.dart';
+import '../../widgets/section_card.dart';
 import '../transactions/add_transaction_screen.dart';
 import '../transactions/widgets/transaction_tile.dart';
 import 'debt_actions.dart';
@@ -153,60 +154,49 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.only(bottom: AppConstants.fabClearance),
+        padding: const EdgeInsets.fromLTRB(
+          AppConstants.spacingLg,
+          AppConstants.spacingMd,
+          AppConstants.spacingLg,
+          AppConstants.fabClearance,
+        ),
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppConstants.spacingLg,
-              AppConstants.spacingLg,
-              AppConstants.spacingLg,
-              0,
-            ),
-            child: Row(
+          SectionCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  debt.isLent ? Icons.call_made : Icons.call_received,
-                  size: 18,
-                  color: DebtProgressSummary.colorFor(debt),
+                Row(
+                  children: [
+                    Icon(
+                      debt.isLent ? Icons.call_made : Icons.call_received,
+                      size: 18,
+                      color: DebtProgressSummary.colorFor(debt, theme.brightness == Brightness.dark),
+                    ),
+                    const SizedBox(width: AppConstants.spacingSm),
+                    Text(
+                      debt.isLent ? loc.debtTypeLent : loc.debtTypeBorrowed,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: AppConstants.spacingSm),
-                Text(
-                  debt.isLent ? loc.debtTypeLent : loc.debtTypeBorrowed,
-                  style: theme.textTheme.bodySmall,
-                ),
+                const SizedBox(height: AppConstants.spacingMd),
+                DebtProgressSummary(debt: debt),
+                if (!settled) ...[
+                  const SizedBox(height: AppConstants.spacingMd),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () => RepaymentSheet.show(context, debt),
+                      child: Text(loc.logRepaymentAction),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppConstants.spacingLg,
-              AppConstants.spacingMd,
-              AppConstants.spacingLg,
-              0,
-            ),
-            child: DebtProgressSummary(debt: debt),
-          ),
-          if (!settled)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppConstants.spacingLg,
-                AppConstants.spacingMd,
-                AppConstants.spacingLg,
-                0,
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => RepaymentSheet.show(context, debt),
-                  child: Text(loc.logRepaymentAction),
-                ),
-              ),
-            ),
-          const SizedBox(height: AppConstants.spacingXl),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
-            child: Text(loc.repayments, style: theme.textTheme.titleMedium),
-          ),
+          const SizedBox(height: AppConstants.spacingLg),
+          Text(loc.repayments, style: theme.textTheme.titleMedium),
+          const SizedBox(height: AppConstants.spacingMd),
           ..._buildRepaymentSection(context, loc),
         ],
       ),
@@ -241,7 +231,7 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
     if (transactions.isEmpty) {
       return [
         Padding(
-          padding: const EdgeInsets.only(top: AppConstants.spacingXxl),
+          padding: const EdgeInsets.only(top: AppConstants.spacingXl),
           child: EmptyState(
             icon: Icons.handshake_outlined,
             title: loc.noRepaymentsYet,
@@ -256,15 +246,7 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
         .map((entry) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppConstants.spacingLg,
-                    AppConstants.spacingMd,
-                    AppConstants.spacingLg,
-                    0,
-                  ),
-                  child: DateGroupHeader(label: entry.key, transactions: entry.value),
-                ),
+                DateGroupHeader(label: entry.key, transactions: entry.value),
                 ...entry.value.map(
                   (tx) => TransactionTile(
                     transaction: tx,

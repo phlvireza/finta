@@ -5,6 +5,8 @@ import '../../providers/category_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/category_rollup.dart';
+import '../../widgets/section_card.dart';
+import '../../widgets/status_pill.dart';
 import 'widgets/breakdown_chart.dart';
 import 'widgets/category_rank_list.dart';
 import 'widgets/top_merchants_list.dart';
@@ -129,31 +131,36 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                           onRetry: _loadData,
                         )
                       : ListView(
-                          padding: const EdgeInsets.only(bottom: AppConstants.fabClearance),
+                          padding: const EdgeInsets.fromLTRB(
+                            AppConstants.spacingLg,
+                            0,
+                            AppConstants.spacingLg,
+                            AppConstants.fabClearance,
+                          ),
                           children: [
-                            _SectionTitle(loc.whereItWent),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
-                              child: TypeToggle(
-                                isIncome: _isIncome,
-                                onChanged: _onTypeChanged,
-                                expenseLabel: loc.expense,
-                                incomeLabel: loc.income,
+                            SectionCard(
+                              title: loc.whereItWent,
+                              child: Column(
+                                children: [
+                                  TypeToggle(
+                                    isIncome: _isIncome,
+                                    onChanged: _onTypeChanged,
+                                    expenseLabel: loc.expense,
+                                    incomeLabel: loc.income,
+                                  ),
+                                  _BreakdownSection(
+                                    isIncome: _isIncome,
+                                    expandSubcategories: _expandSubcategories,
+                                    onToggleExpand: () => setState(
+                                      () => _expandSubcategories = !_expandSubcategories,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            _BreakdownSection(
-                              isIncome: _isIncome,
-                              expandSubcategories: _expandSubcategories,
-                              onToggleExpand: () => setState(
-                                () => _expandSubcategories = !_expandSubcategories,
-                              ),
-                            ),
-                            const SizedBox(height: AppConstants.spacingXxxl),
-                            _SectionTitle(loc.topMerchants),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppConstants.spacingLg,
-                              ),
+                            const SizedBox(height: AppConstants.spacingLg),
+                            SectionCard(
+                              title: loc.topMerchants,
                               child: TopMerchantsList(
                                 data: analytics.topMerchants,
                                 symbol: settings.currencySymbol,
@@ -163,50 +170,46 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                 isIncome: _isIncome,
                               ),
                             ),
-                            const SizedBox(height: AppConstants.spacingXxxl),
-                            _SectionTitle(loc.reports),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
-                              child: Card(
-                                margin: EdgeInsets.zero,
-                                clipBehavior: Clip.antiAlias,
-                                child: Column(
-                                  children: [
-                                    ListTile(
-                                      leading: const Icon(Icons.bar_chart),
-                                      title: Text(loc.yearlyReport),
-                                      trailing: const Icon(Icons.chevron_right),
-                                      onTap: _openYearlyReport,
+                            const SizedBox(height: AppConstants.spacingLg),
+                            SectionCard(
+                              title: loc.reports,
+                              padding: EdgeInsets.zero,
+                              child: Column(
+                                children: [
+                                  ListTile(
+                                    leading: const Icon(Icons.bar_chart),
+                                    title: Text(loc.yearlyReport),
+                                    trailing: const Icon(Icons.chevron_right),
+                                    onTap: _openYearlyReport,
+                                  ),
+                                  const Divider(height: 1),
+                                  ListTile(
+                                    leading: const Icon(Icons.trending_up),
+                                    title: Text(loc.trends),
+                                    trailing: const Icon(Icons.chevron_right),
+                                    onTap: () => Navigator.of(context).push(
+                                      MaterialPageRoute(builder: (_) => const TrendsReportScreen()),
                                     ),
-                                    const Divider(height: 1),
-                                    ListTile(
-                                      leading: const Icon(Icons.trending_up),
-                                      title: Text(loc.trends),
-                                      trailing: const Icon(Icons.chevron_right),
-                                      onTap: () => Navigator.of(context).push(
-                                        MaterialPageRoute(builder: (_) => const TrendsReportScreen()),
-                                      ),
+                                  ),
+                                  const Divider(height: 1),
+                                  ListTile(
+                                    leading: const Icon(Icons.auto_awesome_outlined),
+                                    title: Text(loc.smartInsights),
+                                    trailing: const Icon(Icons.chevron_right),
+                                    onTap: () => Navigator.of(context).push(
+                                      MaterialPageRoute(builder: (_) => const InsightsHubScreen()),
                                     ),
-                                    const Divider(height: 1),
-                                    ListTile(
-                                      leading: const Icon(Icons.auto_awesome_outlined),
-                                      title: Text(loc.smartInsights),
-                                      trailing: const Icon(Icons.chevron_right),
-                                      onTap: () => Navigator.of(context).push(
-                                        MaterialPageRoute(builder: (_) => const InsightsHubScreen()),
-                                      ),
+                                  ),
+                                  const Divider(height: 1),
+                                  ListTile(
+                                    leading: const Icon(Icons.card_giftcard_outlined),
+                                    title: Text(loc.periodRecap),
+                                    trailing: const Icon(Icons.chevron_right),
+                                    onTap: () => Navigator.of(context).push(
+                                      MaterialPageRoute(builder: (_) => const MonthlyRecapScreen()),
                                     ),
-                                    const Divider(height: 1),
-                                    ListTile(
-                                      leading: const Icon(Icons.card_giftcard_outlined),
-                                      title: Text(loc.periodRecap),
-                                      trailing: const Icon(Icons.chevron_right),
-                                      onTap: () => Navigator.of(context).push(
-                                        MaterialPageRoute(builder: (_) => const MonthlyRecapScreen()),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -215,26 +218,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  final String title;
-
-  const _SectionTitle(this.title);
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppConstants.spacingLg,
-        AppConstants.spacingMd,
-        AppConstants.spacingLg,
-        AppConstants.spacingMd,
-      ),
-      child: Text(title, style: theme.textTheme.titleLarge),
     );
   }
 }
@@ -294,20 +277,17 @@ class _BreakdownSection extends StatelessWidget {
           ),
         ),
         if (hasSubcategories)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: onToggleExpand,
-                icon: Icon(expandSubcategories ? Icons.unfold_less : Icons.unfold_more, size: 18),
-                label: Text(
-                  expandSubcategories ? loc.groupSubcategories : loc.showSubcategories,
-                ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: onToggleExpand,
+              icon: Icon(expandSubcategories ? Icons.unfold_less : Icons.unfold_more, size: 18),
+              label: Text(
+                expandSubcategories ? loc.groupSubcategories : loc.showSubcategories,
               ),
             ),
           ),
-        const SizedBox(height: AppConstants.spacingXxxl),
+        const SizedBox(height: AppConstants.spacingXl),
         CategoryRankList(data: data),
       ],
     );
@@ -315,6 +295,7 @@ class _BreakdownSection extends StatelessWidget {
 
   Widget _buildComparison(BuildContext context, double current, double previous) {
     if (previous == 0) return const SizedBox.shrink();
+    final loc = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final diff = current - previous;
     final percent = (diff.abs() / previous) * 100;
@@ -322,38 +303,21 @@ class _BreakdownSection extends StatelessWidget {
     final isMore = diff > 0;
     final isDark = theme.brightness == Brightness.dark;
 
-    Color color;
-    IconData icon;
+    final Color color;
     if (isIncome) {
       color = isMore
           ? (isDark ? AppColors.darkIncome : AppColors.lightIncome)
           : (isDark ? AppColors.darkExpense : AppColors.lightExpense);
-      icon = isMore ? Icons.arrow_upward : Icons.arrow_downward;
     } else {
       color = isMore
           ? (isDark ? AppColors.darkExpense : AppColors.lightExpense)
           : (isDark ? AppColors.darkIncome : AppColors.lightIncome);
-      icon = isMore ? Icons.arrow_upward : Icons.arrow_downward;
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 4),
-          Text(
-            '${percent.toStringAsFixed(1)}% ${isMore ? 'more' : 'less'} than last period',
-            style: theme.textTheme.labelMedium?.copyWith(color: color, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    );
+    final label = isMore
+        ? loc.percentMoreThanLastPeriod(percent.toStringAsFixed(1))
+        : loc.percentLessThanLastPeriod(percent.toStringAsFixed(1));
+
+    return StatusPill(label: label, color: color);
   }
 }
-

@@ -11,7 +11,17 @@
   "theme": "Theme",
   "language": "Language",
   "payday": "Payday (Cycle Reset)",
-  
+  "languageNameEnglish": "English",
+  "languageNameIndonesian": "Bahasa Indonesia",
+  "appVersionLabel": "Version {version}",
+  "@appVersionLabel": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "appTagline": "Built for you",
+  "csvExportShareSubject": "Finta export",
+
   "manage": "Manage",
   "categories": "Categories",
   "budgets": "Budgets",
@@ -128,6 +138,7 @@
   "incomeAmount": "Income Amount",
   "expenseAmount": "Expense Amount",
   "category": "Category",
+  "defaultCategory": "Default",
   "selectACategory": "Select a category...",
   "searchCategories": "Search categories...",
   "createNewCategory": "Create New Category",
@@ -208,23 +219,22 @@
   "paceAhead": "Ahead of pace",
   "paceOnTrack": "On track",
   "paceUnder": "Under pace",
-  "safeToSpendPerDay": "Safe to spend: {amount}/day for {days} more days",
-  "@safeToSpendPerDay": {
+  "safeToSpendLabel": "Safe to spend per day",
+  "hideBalances": "Hide balances",
+  "showBalances": "Show balances",
+  "currentPayPeriod": "Current pay period",
+  "leftThisPeriod": "Left this period",
+  "spentOfTotal": "{spent} of {total} spent",
+  "@spentOfTotal": {
     "placeholders": {
-      "amount": {
-        "type": "String"
-      },
-      "days": {
-        "type": "int"
-      }
+      "spent": { "type": "String" },
+      "total": { "type": "String" }
     }
   },
-  "percentOfIncomeSpent": "{percent} of income spent",
-  "@percentOfIncomeSpent": {
+  "percentVsLast": "{percent}% vs last",
+  "@percentVsLast": {
     "placeholders": {
-      "percent": {
-        "type": "String"
-      }
+      "percent": { "type": "String" }
     }
   },
   "filters": "Filters",
@@ -324,6 +334,18 @@
   "noneTopLevel": "None — top-level category",
   "groupSubcategories": "Group sub-categories",
   "showSubcategories": "Show sub-categories",
+  "percentMoreThanLastPeriod": "{percent}% more than last period",
+  "@percentMoreThanLastPeriod": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "percentLessThanLastPeriod": "{percent}% less than last period",
+  "@percentLessThanLastPeriod": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
 
   "overallBudget": "Overall Budget",
   "groupBudget": "Group Budget",
@@ -656,7 +678,7 @@
   },
   "spendingHeatmap": "Spending heatmap",
   "topMerchants": "Top merchants",
-  "noMerchantsForThisPeriod": "No merchants recorded in this period",
+  "noMerchantsForThisPeriod": "No merchants recorded in this period. Fill in the Merchant field on an entry and it will show up here.",
   "timesCount": "{count, plural, =1{1 time} other{{count} times}}",
   "@timesCount": {
     "placeholders": {
@@ -715,32 +737,47 @@
 
   "smartInsights": "Smart Insights",
   "financialHealthScore": "Financial health score",
-  "healthScoreOutOf100": "Out of 100, based on your savings rate, budget adherence, and income stability",
-  "healthScoreSavings": "Savings",
-  "healthScoreBudget": "Budget",
-  "healthScoreStability": "Stability",
+  "outOfHundred": "out of 100",
+  "healthScoreSavings": "Savings rate",
+  "healthScoreBudget": "Budget adherence",
+  "healthScoreStability": "Income stability",
   "spendingInsightsTitle": "Insights",
   "noInsightsYet": "No notable changes from last period yet",
   "unusualActivity": "Unusual activity",
   "noUnusualActivity": "Nothing unusual in the last 30 days",
-  "insightFastestGrowing": "{category} is your fastest-growing category, up {percent}%",
-  "@insightFastestGrowing": {
+  "insightFastestGrowingTitle": "Fastest growing: {category}",
+  "@insightFastestGrowingTitle": {
     "placeholders": {
-      "category": { "type": "String" },
+      "category": { "type": "String" }
+    }
+  },
+  "insightFastestGrowingBody": "Up {percent}% on last pay period",
+  "@insightFastestGrowingBody": {
+    "placeholders": {
       "percent": { "type": "String" }
     }
   },
-  "insightSpendingIncreased": "You spent {percent}% more on {category} than last period",
-  "@insightSpendingIncreased": {
+  "insightSpendingIncreasedTitle": "{category} is up",
+  "@insightSpendingIncreasedTitle": {
     "placeholders": {
-      "category": { "type": "String" },
+      "category": { "type": "String" }
+    }
+  },
+  "insightSpendingIncreasedBody": "{percent}% more than last period",
+  "@insightSpendingIncreasedBody": {
+    "placeholders": {
       "percent": { "type": "String" }
     }
   },
-  "insightSpendingDecreased": "You spent {percent}% less on {category} than last period",
-  "@insightSpendingDecreased": {
+  "insightSpendingDecreasedTitle": "{category} is down",
+  "@insightSpendingDecreasedTitle": {
     "placeholders": {
-      "category": { "type": "String" },
+      "category": { "type": "String" }
+    }
+  },
+  "insightSpendingDecreasedBody": "{percent}% less than last period",
+  "@insightSpendingDecreasedBody": {
+    "placeholders": {
       "percent": { "type": "String" }
     }
   },

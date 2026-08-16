@@ -21,6 +21,7 @@ import '../../widgets/skeleton_box.dart';
 import '../../widgets/confirm_dialog.dart';
 import '../../widgets/error_state.dart';
 import '../../widgets/picker_sheet.dart';
+import '../../widgets/section_card.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -391,40 +392,43 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 )
               : Column(
                   children: [
-                    if (_filter.isActive)
+                    if (_filter.isActive || filtered.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.fromLTRB(
                           AppConstants.spacingLg,
-                          0,
+                          AppConstants.spacingSm,
                           AppConstants.spacingLg,
                           AppConstants.spacingSm,
                         ),
-                        child: Wrap(
-                          spacing: AppConstants.spacingSm,
-                          runSpacing: AppConstants.spacingSm,
-                          children: _activeFilterChips(categories, accounts),
-                        ),
-                      ),
-                    if (filtered.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          AppConstants.spacingLg,
-                          0,
-                          AppConstants.spacingLg,
-                          AppConstants.spacingSm,
-                        ),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            loc.transactionsSummary(
-                              filtered.length,
-                              '${netTotal >= 0 ? '+' : '-'} ${NumberUtils.formatCurrency(
-                                netTotal.abs(),
-                                symbol: settings.currencySymbol,
-                                useDecimals: settings.currencyUseDecimals,
-                              )}',
-                            ),
-                            style: theme.textTheme.labelMedium,
+                        child: SectionCard(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppConstants.spacingLg,
+                            vertical: AppConstants.spacingMd,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (filtered.isNotEmpty)
+                                Text(
+                                  loc.transactionsSummary(
+                                    filtered.length,
+                                    '${netTotal >= 0 ? '+' : '-'} ${NumberUtils.formatCurrency(
+                                      netTotal.abs(),
+                                      symbol: settings.currencySymbol,
+                                      useDecimals: settings.currencyUseDecimals,
+                                    )}',
+                                  ),
+                                  style: theme.textTheme.labelMedium,
+                                ),
+                              if (_filter.isActive) ...[
+                                if (filtered.isNotEmpty) const SizedBox(height: AppConstants.spacingSm),
+                                Wrap(
+                                  spacing: AppConstants.spacingSm,
+                                  runSpacing: AppConstants.spacingSm,
+                                  children: _activeFilterChips(categories, accounts),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
                       ),

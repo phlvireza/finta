@@ -4,6 +4,7 @@ import '../../providers/settings_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../core/constants/app_constants.dart';
+import '../../widgets/section_card.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
@@ -28,115 +29,118 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
           AppConstants.spacingLg,
-          AppConstants.spacingLg,
+          AppConstants.spacingMd,
           AppConstants.spacingLg,
           AppConstants.fabClearance,
         ),
         children: [
-          // ── Preferences ──────────────────────────────────────────
-          Text(loc.preferences, style: theme.textTheme.titleLarge),
-          const SizedBox(height: AppConstants.spacingMd),
-          _SettingsCard(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.currency_exchange),
-                title: Text(loc.currency),
-                trailing: Text(
-                  settings.currencyCode,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-                onTap: () => _showCurrencyPicker(context, settings),
-              ),
-              const Divider(),
-              ListTile(
-                leading: const Icon(Icons.palette_outlined),
-                title: Text(loc.theme),
-                trailing: Text(
-                  _themeModeName(loc, settings.themeMode),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-                onTap: () => _showThemePicker(context, settings),
-              ),
-              const Divider(),
-              ListTile(
-                leading: const Icon(Icons.language),
-                title: Text(loc.language),
-                trailing: Text(
-                  settings.languageCode == 'en' ? 'English' : 'Bahasa Indonesia',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-                onTap: () => _showLanguagePicker(context, settings),
-              ),
-              const Divider(),
-              ListTile(
-                leading: const Icon(Icons.calendar_today),
-                title: Text(loc.payday),
-                trailing: Text(
-                  loc.paydayDayLabel(settings.payday),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-                onTap: () => _showPaydayPicker(context, settings),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppConstants.spacingXxxl),
-
-          // ── Data ─────────────────────────────────────────────────
-          Text(loc.data, style: theme.textTheme.titleLarge),
-          const SizedBox(height: AppConstants.spacingMd),
-          _SettingsCard(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.download),
-                title: Text(loc.exportCsv),
-                subtitle: Text(loc.backupYourData),
-                onTap: () => _exportCsv(context),
-              ),
-              const Divider(),
-              ListTile(
-                leading: const Icon(Icons.settings_backup_restore),
-                title: Text(loc.backupAndRestore),
-                subtitle: Text(loc.backupAndRestoreSubtitle),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const BackupRestoreScreen()),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppConstants.spacingXxxl),
-
-          // ── About ────────────────────────────────────────────────
-          Center(
+          SectionCard(
+            title: loc.preferences,
+            padding: EdgeInsets.zero,
             child: Column(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(AppConstants.radiusLg),
-                  child: Image.asset(
-                    'assets/images/app_icon.png',
-                    width: 64,
-                    height: 64,
+                ListTile(
+                  leading: const Icon(Icons.currency_exchange),
+                  title: Text(loc.currency),
+                  trailing: Text(
+                    settings.currencyCode,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                    ),
                   ),
+                  onTap: () => _showCurrencyPicker(context, settings),
                 ),
-                const SizedBox(height: AppConstants.spacingMd),
-                Text(
-                  'Finta',
-                  style: theme.textTheme.headlineSmall,
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.palette_outlined),
+                  title: Text(loc.theme),
+                  trailing: Text(
+                    _themeModeName(loc, settings.themeMode),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  onTap: () => _showThemePicker(context, settings),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Version 1.0.0\nBuilt for you',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodySmall,
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.language),
+                  title: Text(loc.language),
+                  trailing: Text(
+                    settings.languageCode == 'en' ? loc.languageNameEnglish : loc.languageNameIndonesian,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  onTap: () => _showLanguagePicker(context, settings),
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.calendar_today),
+                  title: Text(loc.payday),
+                  trailing: Text(
+                    loc.paydayDayLabel(settings.payday),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  onTap: () => _showPaydayPicker(context, settings),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: AppConstants.spacingLg),
+
+          SectionCard(
+            title: loc.data,
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.download),
+                  title: Text(loc.exportCsv),
+                  subtitle: Text(loc.backupYourData),
+                  onTap: () => _exportCsv(context),
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.settings_backup_restore),
+                  title: Text(loc.backupAndRestore),
+                  subtitle: Text(loc.backupAndRestoreSubtitle),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const BackupRestoreScreen()),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppConstants.spacingLg),
+
+          SectionCard(
+            child: Center(
+              child: Column(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+                    child: Image.asset(
+                      'assets/images/app_icon.png',
+                      width: 64,
+                      height: 64,
+                    ),
+                  ),
+                  const SizedBox(height: AppConstants.spacingMd),
+                  Text(
+                    'Finta',
+                    style: theme.textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${loc.appVersionLabel('1.0.0')}\n${loc.appTagline}',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -169,6 +173,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showLanguagePicker(BuildContext context, SettingsProvider settings) {
+    final loc = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (_) => SafeArea(
@@ -177,7 +182,10 @@ class SettingsScreen extends StatelessWidget {
           children: [
             ListTile(
               leading: const Text('🇺🇸', style: TextStyle(fontSize: 24)),
-              title: const Text('English'),
+              // Language names are shown in their own language, not
+              // translated — a language picker only works if a user who
+              // can't read the current locale can still spot their own.
+              title: Text(loc.languageNameEnglish),
               trailing: settings.languageCode == 'en'
                   ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
                   : null,
@@ -188,7 +196,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Text('🇮🇩', style: TextStyle(fontSize: 24)),
-              title: const Text('Bahasa Indonesia'),
+              title: Text(loc.languageNameIndonesian),
               trailing: settings.languageCode == 'id'
                   ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
                   : null,
@@ -272,7 +280,7 @@ class SettingsScreen extends StatelessWidget {
               final day = index + 1;
               final isSelected = settings.payday == day;
               final theme = Theme.of(context);
-              
+
               return InkWell(
                 onTap: () {
                   settings.setPayday(day);
@@ -281,7 +289,7 @@ class SettingsScreen extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     color: isSelected ? theme.colorScheme.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(AppConstants.radiusSm),
                   ),
                   child: Center(
                     child: Text(
@@ -309,6 +317,10 @@ class SettingsScreen extends StatelessWidget {
       final categoryProvider = context.read<CategoryProvider>();
       final transactions = await txProvider.getAllTransactions();
 
+      // Header row is a data-interchange contract, not UI copy: it must
+      // stay exactly "Date,Type,Amount,Category,Note" in every locale so
+      // CsvImportService's header auto-detection (and re-importing a file
+      // this screen exported) keeps working.
       final buffer = StringBuffer();
       buffer.writeln('Date,Type,Amount,Category,Note');
 
@@ -331,7 +343,7 @@ class SettingsScreen extends StatelessWidget {
       final file = File('${directory.path}/finta_export_${DateTime.now().millisecondsSinceEpoch}.csv');
       await file.writeAsString(buffer.toString());
 
-      await Share.shareXFiles([XFile(file.path)], subject: 'Finta export');
+      await Share.shareXFiles([XFile(file.path)], subject: loc.csvExportShareSubject);
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -361,29 +373,5 @@ class SettingsScreen extends StatelessWidget {
       return '"${s.replaceAll('"', '""')}"';
     }
     return s;
-  }
-}
-
-class _SettingsCard extends StatelessWidget {
-  final List<Widget> children;
-
-  const _SettingsCard({required this.children});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      color: theme.colorScheme.surface,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-        side: BorderSide(color: theme.colorScheme.outline),
-      ),
-      child: Column(
-        children: children,
-      ),
-    );
   }
 }

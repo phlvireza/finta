@@ -7,6 +7,8 @@ import '../../core/constants/app_constants.dart';
 import '../../core/utils/number_utils.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/masked_amount.dart';
+import '../../widgets/section_card.dart';
+import '../../widgets/tinted_icon.dart';
 import '../../l10n/app_localizations.dart';
 import 'debt_actions.dart';
 import 'debt_detail_screen.dart';
@@ -36,6 +38,7 @@ class DebtsListScreen extends StatelessWidget {
     final provider = context.watch<DebtProvider>();
     final debts = provider.activeDebts;
     final archived = provider.archivedDebts;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(title: Text(loc.debts)),
@@ -66,7 +69,7 @@ class DebtsListScreen extends StatelessWidget {
                       child: _SummaryTile(
                         label: loc.owedToYou,
                         amount: provider.totalOwedToMe,
-                        color: Colors.green,
+                        color: DebtProgressSummary.colorForLent(isDark),
                         symbol: settings.currencySymbol,
                         useDecimals: settings.currencyUseDecimals,
                       ),
@@ -76,22 +79,30 @@ class DebtsListScreen extends StatelessWidget {
                       child: _SummaryTile(
                         label: loc.youOwe,
                         amount: provider.totalIOwe,
-                        color: Colors.redAccent,
+                        color: DebtProgressSummary.colorForBorrowed(isDark),
                         symbol: settings.currencySymbol,
                         useDecimals: settings.currencyUseDecimals,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: AppConstants.spacingXl),
-                for (final debt in debts) ...[
-                  _DebtCard(
-                    debt: debt,
-                    onEdit: () => showDebtForm(context, debt: debt),
-                    onDelete: () => confirmDeleteDebt(context, debt),
+                const SizedBox(height: AppConstants.spacingLg),
+                if (debts.isNotEmpty)
+                  SectionCard(
+                    padding: EdgeInsets.zero,
+                    child: Column(
+                      children: [
+                        for (final debt in debts) ...[
+                          if (debt != debts.first) const Divider(height: 1),
+                          _DebtRow(
+                            debt: debt,
+                            onEdit: () => showDebtForm(context, debt: debt),
+                            onDelete: () => confirmDeleteDebt(context, debt),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: AppConstants.spacingMd),
-                ],
                 if (archived.isNotEmpty) _ArchivedDebts(debts: archived),
               ],
             ),
@@ -121,15 +132,8 @@ class _ArchivedDebts extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(top: AppConstants.spacingLg),
-      child: Card(
-        elevation: 0,
-        margin: EdgeInsets.zero,
-        color: theme.colorScheme.surface,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-          side: BorderSide(color: theme.colorScheme.outline),
-        ),
+      child: SectionCard(
+        padding: EdgeInsets.zero,
         child: ExpansionTile(
           shape: const Border(),
           collapsedShape: const Border(),
@@ -189,8 +193,9 @@ class _SummaryTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppConstants.spacingLg),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withValues(alpha: AppConstants.tintAlpha),
         borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,12 +212,12 @@ class _SummaryTile extends StatelessWidget {
   }
 }
 
-class _DebtCard extends StatelessWidget {
+class _DebtRow extends StatelessWidget {
   final DebtModel debt;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  const _DebtCard({required this.debt, required this.onEdit, required this.onDelete});
+  const _DebtRow({required this.debt, required this.onEdit, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -221,86 +226,69 @@ class _DebtCard extends StatelessWidget {
     final provider = context.watch<DebtProvider>();
     final outstanding = provider.outstandingOf(debt);
     final settled = provider.isSettled(debt);
-    final color = DebtProgressSummary.colorFor(debt);
+    final isDark = theme.brightness == Brightness.dark;
+    final color = DebtProgressSummary.colorFor(debt, isDark);
 
-    return Card(
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      color: theme.colorScheme.surface,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-        side: BorderSide(color: theme.colorScheme.outline),
+    // Tapping the row means "look inside" — the repayments behind the bar —
+    // with edit one tap further in, the same gesture the budget list uses.
+    // The menu button and the Log repayment button both absorb their own
+    // taps, so neither falls through to here.
+    return InkWell(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => DebtDetailScreen(debtId: debt.id)),
       ),
-      // Tapping the card means "look inside" — the repayments behind the bar
-      // — with edit one tap further in, the same gesture the budget list
-      // uses. The menu button and the Log repayment button both absorb their
-      // own taps, so neither falls through to here.
-      child: InkWell(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => DebtDetailScreen(debtId: debt.id)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(AppConstants.spacingLg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(AppConstants.radiusSm),
-                    ),
-                    child: Icon(
-                      debt.isLent ? Icons.call_made : Icons.call_received,
-                      color: color,
-                    ),
-                  ),
-                  const SizedBox(width: AppConstants.spacingMd),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(debt.name, style: theme.textTheme.titleMedium),
-                        Text(
-                          debt.isLent ? loc.debtTypeLent : loc.debtTypeBorrowed,
-                          style: theme.textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuButton<String>(
-                    onSelected: (value) {
-                      if (value == 'edit') onEdit();
-                      if (value == 'delete') onDelete();
-                      if (value == 'payoff') PayoffCalculatorDialog.show(context, debt, outstanding);
-                    },
-                    itemBuilder: (_) => [
-                      PopupMenuItem(value: 'edit', child: Text(loc.edit)),
-                      if (debt.isBorrowed && !settled)
-                        PopupMenuItem(value: 'payoff', child: Text(loc.payoffCalculator)),
-                      PopupMenuItem(value: 'delete', child: Text(loc.delete)),
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.spacingMd),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                TintedIcon(
+                  icon: debt.isLent ? Icons.call_made : Icons.call_received,
+                  color: color,
+                ),
+                const SizedBox(width: AppConstants.spacingMd),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(debt.name, style: theme.textTheme.titleMedium),
+                      Text(
+                        debt.isLent ? loc.debtTypeLent : loc.debtTypeBorrowed,
+                        style: theme.textTheme.bodySmall,
+                      ),
                     ],
                   ),
-                ],
-              ),
-              const SizedBox(height: AppConstants.spacingMd),
-              DebtProgressSummary(debt: debt),
-              if (!settled) ...[
-                const SizedBox(height: AppConstants.spacingMd),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () => RepaymentSheet.show(context, debt),
-                    child: Text(loc.logRepaymentAction),
-                  ),
+                ),
+                PopupMenuButton<String>(
+                  onSelected: (value) {
+                    if (value == 'edit') onEdit();
+                    if (value == 'delete') onDelete();
+                    if (value == 'payoff') PayoffCalculatorDialog.show(context, debt, outstanding);
+                  },
+                  itemBuilder: (_) => [
+                    PopupMenuItem(value: 'edit', child: Text(loc.edit)),
+                    if (debt.isBorrowed && !settled)
+                      PopupMenuItem(value: 'payoff', child: Text(loc.payoffCalculator)),
+                    PopupMenuItem(value: 'delete', child: Text(loc.delete)),
+                  ],
                 ),
               ],
+            ),
+            const SizedBox(height: AppConstants.spacingMd),
+            DebtProgressSummary(debt: debt),
+            if (!settled) ...[
+              const SizedBox(height: AppConstants.spacingMd),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => RepaymentSheet.show(context, debt),
+                  child: Text(loc.logRepaymentAction),
+                ),
+              ),
             ],
-          ),
+          ],
         ),
       ),
     );

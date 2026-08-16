@@ -48,7 +48,10 @@ class PaydayPage extends StatelessWidget {
                   padding: const EdgeInsets.all(AppConstants.spacingLg),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+                    // radiusMd, matching the canonical card recipe used
+                    // everywhere else — this was the one bordered card in
+                    // the app still on radiusLg.
+                    borderRadius: BorderRadius.circular(AppConstants.radiusMd),
                     border: Border.all(color: theme.colorScheme.outline),
                   ),
                   child: GridView.builder(

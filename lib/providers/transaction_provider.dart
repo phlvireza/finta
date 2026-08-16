@@ -15,7 +15,6 @@ class TransactionProvider extends ChangeNotifier {
       : _repository = repository ?? TransactionRepository();
 
   List<TransactionModel> _transactions = [];
-  List<TransactionModel> _recentTransactions = [];
   List<TransactionModel> _allTransactions = [];
   bool _isLoading = false;
   String? _error; // Store latest error message
@@ -45,7 +44,18 @@ class TransactionProvider extends ChangeNotifier {
   }
 
   List<TransactionModel> get transactions => _transactions;
-  List<TransactionModel> get recentTransactions => _recentTransactions;
+
+  /// The newest few transactions **in the loaded period**.
+  ///
+  /// This used to be its own query — `getRecent(limit)`, which had no WHERE
+  /// clause at all, so it returned the newest rows in the database and the
+  /// dashboard kept showing today's entries after the user stepped back to
+  /// a past period. `_transactions` is already period-scoped and already
+  /// ordered by [_byDateDesc], so deriving from it fixes the leak and drops
+  /// five redundant round-trips.
+  List<TransactionModel> get recentTransactions =>
+      _transactions.take(AppConstants.recentTransactionCount).toList();
+
   List<TransactionModel> get allTransactions => _allTransactions;
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -84,7 +94,6 @@ class TransactionProvider extends ChangeNotifier {
       }
       _period = period;
       _transactions = await _repository.getByDateRange(period.start, period.end);
-      _recentTransactions = await _repository.getRecent(AppConstants.recentTransactionCount);
 
       _totalIncome = await _repository.getSumByTypeAndDateRange(
         'income',
@@ -195,7 +204,6 @@ class TransactionProvider extends ChangeNotifier {
 
       await _repository.insert(transaction);
       _applyInsert(transaction);
-      _recentTransactions = await _repository.getRecent(AppConstants.recentTransactionCount);
 
       notifyListeners();
       return transaction;
@@ -255,7 +263,6 @@ class TransactionProvider extends ChangeNotifier {
       for (final leg in legs) {
         _applyInsert(leg);
       }
-      _recentTransactions = await _repository.getRecent(AppConstants.recentTransactionCount);
 
       notifyListeners();
     } catch (e) {
@@ -328,7 +335,6 @@ class TransactionProvider extends ChangeNotifier {
         _allTransactions.sort(_byDateDesc);
       }
 
-      _recentTransactions = await _repository.getRecent(AppConstants.recentTransactionCount);
       notifyListeners();
     } catch (e) {
       rethrow;
@@ -362,7 +368,6 @@ class TransactionProvider extends ChangeNotifier {
         _removeFromMemory(target);
       }
 
-      _recentTransactions = await _repository.getRecent(AppConstants.recentTransactionCount);
       notifyListeners();
     } catch (e) {
       rethrow;

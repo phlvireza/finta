@@ -14,6 +14,7 @@ import '../../models/budget_model.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/form_sheet.dart';
 import '../../widgets/masked_amount.dart';
+import '../../widgets/section_card.dart';
 import 'budget_actions.dart';
 import 'budget_detail_screen.dart';
 import 'widgets/budget_form.dart';
@@ -33,7 +34,6 @@ class ManageBudgetsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final budgetProvider = context.watch<BudgetProvider>();
     final categories = context.watch<CategoryProvider>();
     final settings = context.watch<SettingsProvider>();
@@ -67,113 +67,69 @@ class ManageBudgetsScreen extends StatelessWidget {
                 label: Text(loc.createFirstBudget),
               ),
             )
-          // A single scrolling list with the chart as its first item — on
-          // a small screen the chart scrolls away with the rest of the
-          // content instead of permanently squeezing the budget list into
-          // whatever space is left under a pinned chart.
-          : ListView.builder(
-              padding: const EdgeInsets.only(bottom: AppConstants.fabClearance),
-              // [chart] + active budgets + optional ["Ended" header] + ended
-              // budgets.
-              itemCount: budgets.length + 1 + (ended.isEmpty ? 0 : ended.length + 1),
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  // Nothing active to chart — the donut would render as an
-                  // empty ring over "0 of 0" above a list of ended budgets.
-                  return budgets.isEmpty
-                      ? const SizedBox.shrink()
-                      : _BudgetChart(budgetProvider: budgetProvider, settings: settings);
-                }
-
-                final endedSectionStart = budgets.length + 1;
-                if (index == endedSectionStart && ended.isNotEmpty) {
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppConstants.spacingLg,
-                      AppConstants.spacingXl,
-                      AppConstants.spacingLg,
-                      AppConstants.spacingSm,
-                    ),
-                    child: Text(
-                      loc.endedBudgets,
-                      style: theme.textTheme.labelMedium,
-                    ),
-                  );
-                }
-                if (index > endedSectionStart) {
-                  final endedBudget = ended[index - endedSectionStart - 1];
-                  return _EndedBudgetRow(
-                    budget: endedBudget,
-                    display: resolveBudgetDisplay(
-                      budget: endedBudget,
-                      categories: categories,
-                      loc: loc,
-                      fallbackColor: theme.colorScheme.primary,
-                    ),
-                    settings: settings,
-                    onDelete: (title) => confirmDeleteBudget(
-                      context,
-                      budgetId: endedBudget.id,
-                      title: title,
-                    ),
-                  );
-                }
-
-                final budget = budgets[index - 1];
-                final status = budgetProvider.budgetStatuses[budget.id];
-                final display = resolveBudgetDisplay(
-                  budget: budget,
-                  categories: categories,
-                  loc: loc,
-                  fallbackColor: theme.colorScheme.primary,
-                );
-
-                if (status == null) {
-                  return const SizedBox.shrink();
-                }
-
-                return Slidable(
-                  key: ValueKey(budget.id),
-                  endActionPane: ActionPane(
-                    motion: const ScrollMotion(),
-                    extentRatio: 0.25,
-                    children: [
-                      SlidableAction(
-                        onPressed: (_) => confirmDeleteBudget(
-                          context,
-                          budgetId: budget.id,
-                          title: display.title,
-                        ),
-                        backgroundColor: theme.colorScheme.error,
-                        foregroundColor: theme.colorScheme.onError,
-                        icon: Icons.delete,
-                        label: loc.delete,
-                      ),
-                    ],
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(
+                AppConstants.spacingLg,
+                AppConstants.spacingMd,
+                AppConstants.spacingLg,
+                AppConstants.fabClearance,
+              ),
+              children: [
+                if (budgets.isNotEmpty) ...[
+                  SectionCard(
+                    child: _BudgetChart(budgetProvider: budgetProvider, settings: settings),
                   ),
-                  child: InkWell(
-                    // Tap opens the detail rather than the edit form: the
-                    // question a budget row prompts is "what did I spend it
-                    // on", and edit is one tap further in from there.
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => BudgetDetailScreen(budgetId: budget.id),
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppConstants.spacingLg,
-                        vertical: AppConstants.spacingMd,
-                      ),
-                      child: BudgetProgressBar(
-                        status: status,
-                        symbol: settings.currencySymbol,
-                        useDecimals: settings.currencyUseDecimals,
-                      ),
+                  const SizedBox(height: AppConstants.spacingLg),
+                  SectionCard(
+                    child: Column(
+                      children: [
+                        for (var i = 0; i < budgets.length; i++) ...[
+                          if (i > 0) const Divider(height: AppConstants.spacingXl),
+                          _ActiveBudgetRow(
+                            budget: budgets[i],
+                            status: budgetProvider.budgetStatuses[budgets[i].id],
+                            display: resolveBudgetDisplay(
+                              budget: budgets[i],
+                              categories: categories,
+                              loc: loc,
+                              fallbackColor: Theme.of(context).colorScheme.primary,
+                            ),
+                            settings: settings,
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                );
-              },
+                ],
+                if (ended.isNotEmpty) ...[
+                  const SizedBox(height: AppConstants.spacingLg),
+                  SectionCard(
+                    title: loc.endedBudgets,
+                    child: Column(
+                      children: [
+                        for (var i = 0; i < ended.length; i++) ...[
+                          if (i > 0) const Divider(height: AppConstants.spacingXl),
+                          _EndedBudgetRow(
+                            budget: ended[i],
+                            display: resolveBudgetDisplay(
+                              budget: ended[i],
+                              categories: categories,
+                              loc: loc,
+                              fallbackColor: Theme.of(context).colorScheme.primary,
+                            ),
+                            settings: settings,
+                            onDelete: (title) => confirmDeleteBudget(
+                              context,
+                              budgetId: ended[i].id,
+                              title: title,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ],
             ),
       // Embedded, the shell's docked FAB owns this corner — the add action
       // lives in the app bar instead.
@@ -197,7 +153,64 @@ class ManageBudgetsScreen extends StatelessWidget {
       builder: (_) => BudgetForm(budgetIdToEdit: budgetId),
     );
   }
+}
 
+class _ActiveBudgetRow extends StatelessWidget {
+  final BudgetModel budget;
+  final BudgetStatus? status;
+  final ({String title, IconData icon, Color color}) display;
+  final SettingsProvider settings;
+
+  const _ActiveBudgetRow({
+    required this.budget,
+    required this.status,
+    required this.display,
+    required this.settings,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
+    if (status == null) return const SizedBox.shrink();
+
+    return Slidable(
+      key: ValueKey(budget.id),
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        extentRatio: 0.25,
+        children: [
+          SlidableAction(
+            onPressed: (_) => confirmDeleteBudget(
+              context,
+              budgetId: budget.id,
+              title: display.title,
+            ),
+            backgroundColor: theme.colorScheme.error,
+            foregroundColor: theme.colorScheme.onError,
+            icon: Icons.delete,
+            label: loc.delete,
+          ),
+        ],
+      ),
+      child: InkWell(
+        // Tap opens the detail rather than the edit form: the question a
+        // budget row prompts is "what did I spend it on", and edit is one
+        // tap further in from there.
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => BudgetDetailScreen(budgetId: budget.id),
+          ),
+        ),
+        child: BudgetProgressBar(
+          status: status!,
+          symbol: settings.currencySymbol,
+          useDecimals: settings.currencyUseDecimals,
+          compact: true,
+        ),
+      ),
+    );
+  }
 }
 
 /// A one-off budget that has run its course. Rendered dimmed rather than
@@ -205,6 +218,12 @@ class ManageBudgetsScreen extends StatelessWidget {
 /// the period boundary reads as data loss, even though it is exactly what
 /// "repeat off" was asked to do. Still swipe-to-delete, so the list can be
 /// cleared deliberately.
+///
+/// No progress bar — an ended budget's status is never computed (only
+/// active budgets are, since a stray status for an inactive budget would
+/// wrongly make `getStatusForCategory` treat that category as already
+/// covered), so there is no spend figure to draw a bar from without
+/// fabricating one.
 class _EndedBudgetRow extends StatelessWidget {
   final BudgetModel budget;
   final ({String title, IconData icon, Color color}) display;
@@ -242,6 +261,7 @@ class _EndedBudgetRow extends StatelessWidget {
       child: Opacity(
         opacity: 0.6,
         child: ListTile(
+          contentPadding: EdgeInsets.zero,
           leading: Icon(display.icon, color: mutedColor),
           title: Text(display.title),
           subtitle: Text(
@@ -307,90 +327,80 @@ class _BudgetChart extends StatelessWidget {
     final netRemaining = totalBudget - totalSpent;
     final remaining = netRemaining < 0 ? 0.0 : netRemaining;
 
-    return Container(
-      padding: const EdgeInsets.all(AppConstants.spacingXl),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          SizedBox(
-            height: 180,
-            child: PieChart(
-              PieChartData(
-                sectionsSpace: 2,
-                centerSpaceRadius: 70,
-                startDegreeOffset: -90,
-                sections: [
-                  PieChartSectionData(
-                    color: spentColor,
-                    value: totalSpent,
-                    title: '',
-                    radius: 12,
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox(
+              height: 180,
+              child: PieChart(
+                PieChartData(
+                  sectionsSpace: 2,
+                  centerSpaceRadius: 70,
+                  startDegreeOffset: -90,
+                  sections: [
+                    PieChartSectionData(
+                      color: spentColor,
+                      value: totalSpent,
+                      title: '',
+                      radius: 12,
+                    ),
+                    PieChartSectionData(
+                      color: remainingColor,
+                      value: remaining,
+                      title: '',
+                      radius: 12,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 124,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // The centre reads "how much can I still spend" first —
+                  // "Left this period" plus the remaining amount — rather
+                  // than leading with the spent total, which is repeated
+                  // (alongside the budgeted total) in the caption below.
+                  Text(
+                    netRemaining < 0 ? loc.overBudget : loc.leftThisPeriod,
+                    style: theme.textTheme.labelMedium,
+                    textAlign: TextAlign.center,
                   ),
-                  PieChartSectionData(
-                    color: remainingColor,
-                    value: remaining,
-                    title: '',
-                    radius: 12,
+                  const SizedBox(height: 4),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      NumberUtils.formatCurrency(
+                        netRemaining < 0 ? -netRemaining : netRemaining,
+                        symbol: settings.currencySymbol,
+                        useDecimals: settings.currencyUseDecimals,
+                      ),
+                      style: AppTypography.amountStyle(
+                        color: netRemaining < 0 ? spentColor : theme.textTheme.bodyLarge!.color!,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
+          ],
+        ),
+        const SizedBox(height: AppConstants.spacingMd),
+        Text(
+          loc.spentOfTotal(
+            NumberUtils.formatCurrency(totalSpent, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals),
+            NumberUtils.formatCurrency(totalBudget, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals),
           ),
-          SizedBox(
-            width: 124,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  loc.totalSpent,
-                  style: theme.textTheme.labelMedium,
-                ),
-                const SizedBox(height: 4),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    NumberUtils.formatCurrency(
-                      totalSpent,
-                      symbol: settings.currencySymbol,
-                      useDecimals: settings.currencyUseDecimals,
-                    ),
-                    style: AppTypography.amountStyle(
-                      color: theme.textTheme.bodyLarge!.color!,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    '${loc.ofString} ${NumberUtils.formatCurrency(totalBudget, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals)}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                // Spent answers "where did it go"; remaining answers "what
-                // can I still spend". Both belong here — the second is the
-                // one that actually drives a decision.
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    netRemaining < 0
-                        ? '${NumberUtils.formatCurrency(-netRemaining, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals)} ${loc.overString}'
-                        : '${NumberUtils.formatCurrency(netRemaining, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals)} ${loc.left}',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: netRemaining < 0 ? spentColor : theme.textTheme.bodySmall?.color,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+          style: theme.textTheme.bodySmall,
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 }

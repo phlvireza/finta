@@ -4,6 +4,7 @@ import '../../../providers/debt_provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../models/debt_model.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/number_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../l10n/app_localizations.dart';
@@ -17,9 +18,16 @@ import '../../../l10n/app_localizations.dart';
 class DebtProgressSummary extends StatelessWidget {
   final DebtModel debt;
 
-  /// Money you lent out reads green (it's coming back), money you borrowed
-  /// reads red. Exposed so the detail screen can tint other chrome to match.
-  static Color colorFor(DebtModel debt) => debt.isLent ? Colors.green : Colors.redAccent;
+  /// Money you lent out reads as the app's income green (it's coming back),
+  /// money you borrowed reads as its expense rose — the same semantic pair
+  /// used everywhere else, rather than Material's generic green/red.
+  /// Exposed so the debt list and the detail screen can tint other chrome
+  /// to match.
+  static Color colorFor(DebtModel debt, bool isDark) =>
+      debt.isLent ? colorForLent(isDark) : colorForBorrowed(isDark);
+
+  static Color colorForLent(bool isDark) => isDark ? AppColors.darkIncome : AppColors.lightIncome;
+  static Color colorForBorrowed(bool isDark) => isDark ? AppColors.darkExpense : AppColors.lightExpense;
 
   const DebtProgressSummary({super.key, required this.debt});
 
@@ -32,7 +40,8 @@ class DebtProgressSummary extends StatelessWidget {
     final outstanding = provider.outstandingOf(debt);
     final settled = provider.isSettled(debt);
     final ratio = debt.principal <= 0 ? 1.0 : (1 - outstanding / debt.principal).clamp(0.0, 1.0);
-    final color = colorFor(debt);
+    final isDark = theme.brightness == Brightness.dark;
+    final color = colorFor(debt, isDark);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

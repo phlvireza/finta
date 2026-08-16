@@ -11,6 +11,7 @@ import '../../../core/utils/number_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../recurring/recurring_list_screen.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/section_card.dart';
 
 /// Upcoming section — the next few due recurring transactions, so bills
 /// and salary aren't invisible until they're auto-generated. Uses data
@@ -21,7 +22,6 @@ class UpcomingBills extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final recurringProvider = context.watch<RecurringProvider>();
     final loc = AppLocalizations.of(context)!;
 
@@ -31,25 +31,24 @@ class UpcomingBills extends StatelessWidget {
 
     if (topUpcoming.isEmpty) return const SizedBox.shrink();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(loc.upcoming, style: theme.textTheme.titleLarge),
-            if (upcoming.length > topUpcoming.length)
-              TextButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const RecurringListScreen()),
-                ),
-                child: Text(loc.seeAll),
+    return SectionCard(
+      title: loc.upcoming,
+      trailing: upcoming.length > topUpcoming.length
+          ? TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const RecurringListScreen()),
               ),
+              child: Text(loc.seeAll),
+            )
+          : null,
+      child: Column(
+        children: [
+          for (var i = 0; i < topUpcoming.length; i++) ...[
+            if (i > 0) const Divider(height: AppConstants.spacingXl),
+            _UpcomingItem(template: topUpcoming[i]),
           ],
-        ),
-        const SizedBox(height: AppConstants.spacingSm),
-        ...topUpcoming.map((template) => _UpcomingItem(template: template)),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -96,9 +95,7 @@ class _UpcomingItem extends StatelessWidget {
     final isOverdue = days < 0;
     final dueColor = isOverdue ? AppColors.warning : theme.textTheme.bodySmall?.color;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppConstants.spacingMd),
-      child: Row(
+    return Row(
         children: [
           Container(
             width: 40,
@@ -160,7 +157,6 @@ class _UpcomingItem extends StatelessWidget {
             style: AppTypography.amountStyle(color: amountColor, fontSize: 14),
           ),
         ],
-      ),
-    );
+      );
   }
 }

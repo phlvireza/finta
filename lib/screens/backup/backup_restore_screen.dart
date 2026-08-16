@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/exceptions/app_exceptions.dart';
 import '../../core/services/backup_service.dart';
+import '../../widgets/section_card.dart';
+import '../../widgets/tinted_icon.dart';
 import '../../l10n/app_localizations.dart';
 import 'csv_import_screen.dart';
 import 'restart_required_screen.dart';
@@ -126,7 +128,6 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -136,31 +137,44 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
         child: Opacity(
           opacity: _busy ? 0.6 : 1,
           child: ListView(
-            padding: const EdgeInsets.all(AppConstants.spacingLg),
+            padding: const EdgeInsets.fromLTRB(
+              AppConstants.spacingLg,
+              AppConstants.spacingMd,
+              AppConstants.spacingLg,
+              AppConstants.fabClearance,
+            ),
             children: [
-              Text(loc.backupSectionTitle, style: theme.textTheme.titleLarge),
-              const SizedBox(height: AppConstants.spacingMd),
-              _ActionCard(
-                icon: Icons.backup_outlined,
-                title: loc.createBackup,
-                subtitle: loc.createBackupSubtitle,
-                onTap: _createBackup,
+              SectionCard(
+                title: loc.backupSectionTitle,
+                padding: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    _ActionRow(
+                      icon: Icons.backup_outlined,
+                      title: loc.createBackup,
+                      subtitle: loc.createBackupSubtitle,
+                      onTap: _createBackup,
+                    ),
+                    const Divider(height: 1),
+                    _ActionRow(
+                      icon: Icons.restore_outlined,
+                      title: loc.restoreFromBackup,
+                      subtitle: loc.restoreFromBackupSubtitle,
+                      onTap: _restoreBackup,
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: AppConstants.spacingSm),
-              _ActionCard(
-                icon: Icons.restore_outlined,
-                title: loc.restoreFromBackup,
-                subtitle: loc.restoreFromBackupSubtitle,
-                onTap: _restoreBackup,
-              ),
-              const SizedBox(height: AppConstants.spacingXxxl),
-              Text(loc.csvImportSectionTitle, style: theme.textTheme.titleLarge),
-              const SizedBox(height: AppConstants.spacingMd),
-              _ActionCard(
-                icon: Icons.upload_file_outlined,
-                title: loc.importCsv,
-                subtitle: loc.importCsvSubtitle,
-                onTap: _importCsv,
+              const SizedBox(height: AppConstants.spacingLg),
+              SectionCard(
+                title: loc.csvImportSectionTitle,
+                padding: EdgeInsets.zero,
+                child: _ActionRow(
+                  icon: Icons.upload_file_outlined,
+                  title: loc.importCsv,
+                  subtitle: loc.importCsvSubtitle,
+                  onTap: _importCsv,
+                ),
               ),
             ],
           ),
@@ -170,13 +184,13 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
   }
 }
 
-class _ActionCard extends StatelessWidget {
+class _ActionRow extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
 
-  const _ActionCard({
+  const _ActionRow({
     required this.icon,
     required this.title,
     required this.subtitle,
@@ -186,22 +200,12 @@ class _ActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      color: theme.colorScheme.surface,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-        side: BorderSide(color: theme.colorScheme.outline),
-      ),
-      child: ListTile(
-        leading: Icon(icon),
-        title: Text(title),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
-      ),
+    return ListTile(
+      leading: TintedIcon(icon: icon, color: theme.colorScheme.primary),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
     );
   }
 }

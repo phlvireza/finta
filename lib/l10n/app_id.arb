@@ -11,7 +11,17 @@
   "theme": "Tema",
   "language": "Bahasa",
   "payday": "Hari Gajian",
-  
+  "languageNameEnglish": "English",
+  "languageNameIndonesian": "Bahasa Indonesia",
+  "appVersionLabel": "Versi {version}",
+  "@appVersionLabel": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "appTagline": "Dibuat untuk Anda",
+  "csvExportShareSubject": "Ekspor Finta",
+
   "manage": "Kelola",
   "categories": "Kategori",
   "budgets": "Anggaran",
@@ -128,6 +138,7 @@
   "incomeAmount": "Jumlah Pemasukan",
   "expenseAmount": "Jumlah Pengeluaran",
   "category": "Kategori",
+  "defaultCategory": "Bawaan",
   "selectACategory": "Pilih kategori...",
   "searchCategories": "Cari kategori...",
   "createNewCategory": "Buat Kategori Baru",
@@ -201,23 +212,22 @@
   "paceAhead": "Lebih cepat dari perkiraan",
   "paceOnTrack": "Sesuai jalur",
   "paceUnder": "Lebih lambat dari perkiraan",
-  "safeToSpendPerDay": "Aman dibelanjakan: {amount}/hari selama {days} hari lagi",
-  "@safeToSpendPerDay": {
+  "safeToSpendLabel": "Aman dibelanjakan per hari",
+  "hideBalances": "Sembunyikan saldo",
+  "showBalances": "Tampilkan saldo",
+  "currentPayPeriod": "Periode gaji saat ini",
+  "leftThisPeriod": "Sisa periode ini",
+  "spentOfTotal": "{spent} dari {total} terpakai",
+  "@spentOfTotal": {
     "placeholders": {
-      "amount": {
-        "type": "String"
-      },
-      "days": {
-        "type": "int"
-      }
+      "spent": { "type": "String" },
+      "total": { "type": "String" }
     }
   },
-  "percentOfIncomeSpent": "{percent} dari pemasukan terpakai",
-  "@percentOfIncomeSpent": {
+  "percentVsLast": "{percent}% vs sebelumnya",
+  "@percentVsLast": {
     "placeholders": {
-      "percent": {
-        "type": "String"
-      }
+      "percent": { "type": "String" }
     }
   },
   "filters": "Filter",
@@ -317,6 +327,18 @@
   "noneTopLevel": "Tidak ada — kategori tingkat atas",
   "groupSubcategories": "Gabungkan sub-kategori",
   "showSubcategories": "Tampilkan sub-kategori",
+  "percentMoreThanLastPeriod": "{percent}% lebih tinggi dari periode lalu",
+  "@percentMoreThanLastPeriod": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "percentLessThanLastPeriod": "{percent}% lebih rendah dari periode lalu",
+  "@percentLessThanLastPeriod": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
 
   "overallBudget": "Anggaran Keseluruhan",
   "groupBudget": "Anggaran Grup",
@@ -649,7 +671,7 @@
   },
   "spendingHeatmap": "Peta panas pengeluaran",
   "topMerchants": "Pedagang teratas",
-  "noMerchantsForThisPeriod": "Belum ada pedagang tercatat pada periode ini",
+  "noMerchantsForThisPeriod": "Belum ada pedagang tercatat pada periode ini. Isi kolom Pedagang pada transaksi agar muncul di sini.",
   "timesCount": "{count, plural, =1{1 kali} other{{count} kali}}",
   "@timesCount": {
     "placeholders": {
@@ -708,32 +730,47 @@
 
   "smartInsights": "Wawasan Cerdas",
   "financialHealthScore": "Skor kesehatan finansial",
-  "healthScoreOutOf100": "Dari 100, berdasarkan tingkat tabungan, kepatuhan anggaran, dan stabilitas pendapatan Anda",
-  "healthScoreSavings": "Tabungan",
-  "healthScoreBudget": "Anggaran",
-  "healthScoreStability": "Stabilitas",
+  "outOfHundred": "dari 100",
+  "healthScoreSavings": "Tingkat tabungan",
+  "healthScoreBudget": "Kepatuhan anggaran",
+  "healthScoreStability": "Stabilitas pemasukan",
   "spendingInsightsTitle": "Wawasan",
   "noInsightsYet": "Belum ada perubahan berarti dari periode lalu",
   "unusualActivity": "Aktivitas tidak biasa",
   "noUnusualActivity": "Tidak ada yang tidak biasa dalam 30 hari terakhir",
-  "insightFastestGrowing": "{category} adalah kategori yang tumbuh paling cepat, naik {percent}%",
-  "@insightFastestGrowing": {
+  "insightFastestGrowingTitle": "Paling cepat naik: {category}",
+  "@insightFastestGrowingTitle": {
     "placeholders": {
-      "category": { "type": "String" },
+      "category": { "type": "String" }
+    }
+  },
+  "insightFastestGrowingBody": "Naik {percent}% dari periode gaji lalu",
+  "@insightFastestGrowingBody": {
+    "placeholders": {
       "percent": { "type": "String" }
     }
   },
-  "insightSpendingIncreased": "Pengeluaran Anda untuk {category} naik {percent}% dari periode lalu",
-  "@insightSpendingIncreased": {
+  "insightSpendingIncreasedTitle": "{category} naik",
+  "@insightSpendingIncreasedTitle": {
     "placeholders": {
-      "category": { "type": "String" },
+      "category": { "type": "String" }
+    }
+  },
+  "insightSpendingIncreasedBody": "{percent}% lebih tinggi dari periode lalu",
+  "@insightSpendingIncreasedBody": {
+    "placeholders": {
       "percent": { "type": "String" }
     }
   },
-  "insightSpendingDecreased": "Pengeluaran Anda untuk {category} turun {percent}% dari periode lalu",
-  "@insightSpendingDecreased": {
+  "insightSpendingDecreasedTitle": "{category} turun",
+  "@insightSpendingDecreasedTitle": {
     "placeholders": {
-      "category": { "type": "String" },
+      "category": { "type": "String" }
+    }
+  },
+  "insightSpendingDecreasedBody": "{percent}% lebih rendah dari periode lalu",
+  "@insightSpendingDecreasedBody": {
+    "placeholders": {
       "percent": { "type": "String" }
     }
   },

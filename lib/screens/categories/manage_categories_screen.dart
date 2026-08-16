@@ -9,6 +9,8 @@ import '../../core/constants/app_constants.dart';
 import 'widgets/category_form.dart';
 import '../../widgets/confirm_dialog.dart';
 import '../../widgets/form_sheet.dart';
+import '../../widgets/section_card.dart';
+import '../../widgets/tinted_icon.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Screen to list, create, edit, and delete custom categories.
@@ -85,7 +87,12 @@ class _CategoryList extends StatelessWidget {
     final orphanParentIds = categories.map((c) => c.id).toSet();
 
     return ListView.builder(
-      padding: const EdgeInsets.only(bottom: AppConstants.fabClearance),
+      padding: const EdgeInsets.fromLTRB(
+        AppConstants.spacingLg,
+        AppConstants.spacingMd,
+        AppConstants.spacingLg,
+        AppConstants.fabClearance,
+      ),
       itemCount: topLevel.length,
       itemBuilder: (context, index) {
         final parent = topLevel[index];
@@ -93,24 +100,38 @@ class _CategoryList extends StatelessWidget {
         // Guard against a child whose parent got archived/removed out from
         // under it — still show it, just without indentation, instead of
         // silently dropping it from the list.
-        final orphanChildren = categories
-            .where((c) => c.parentId != null && !orphanParentIds.contains(c.parentId))
-            .toList();
+        final orphanChildren = index == topLevel.length - 1
+            ? categories
+                .where((c) => c.parentId != null && !orphanParentIds.contains(c.parentId))
+                .toList()
+            : const <CategoryModel>[];
 
-        return Column(
-          children: [
-            _CategoryTile(category: parent, isIncome: isIncome),
-            for (final child in children)
-              _CategoryTile(category: child, isIncome: isIncome, indented: true),
-            if (index == topLevel.length - 1)
-              for (final orphan in orphanChildren)
-                _CategoryTile(category: orphan, isIncome: isIncome),
-          ],
+        // One card per parent + its own children — this is what actually
+        // delimits the hierarchy; a flat list of same-styled ListTiles left
+        // a sub-category's indentation as the only clue it belonged to
+        // anything.
+        return Padding(
+          padding: const EdgeInsets.only(bottom: AppConstants.spacingLg),
+          child: SectionCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                _CategoryTile(category: parent, isIncome: isIncome),
+                for (final child in children) ...[
+                  const Divider(height: 1, indent: AppConstants.spacingXxxl),
+                  _CategoryTile(category: child, isIncome: isIncome, indented: true),
+                ],
+                for (final orphan in orphanChildren) ...[
+                  const Divider(height: 1),
+                  _CategoryTile(category: orphan, isIncome: isIncome),
+                ],
+              ],
+            ),
+          ),
         );
       },
     );
   }
-
 }
 
 class _CategoryTile extends StatelessWidget {
@@ -127,22 +148,15 @@ class _CategoryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Padding(
       padding: EdgeInsets.only(left: indented ? AppConstants.spacingXxxl : 0),
       child: ListTile(
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: category.colorValue.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(AppConstants.radiusSm),
-          ),
-          child: Icon(category.iconData, color: category.colorValue),
-        ),
+        leading: TintedIcon(icon: category.iconData, color: category.colorValue),
         title: Text(category.name),
         subtitle: category.isDefault
-            ? Text('Default', style: theme.textTheme.labelSmall)
+            ? Text(loc.defaultCategory, style: theme.textTheme.labelSmall)
             : null,
         trailing: category.isDefault
             ? null

@@ -55,6 +55,10 @@ class AppTheme {
       onError: Colors.white,
       surface: surface,
       onSurface: textPrimary,
+      // Left unset, this silently falls back to onSurface (full text-primary
+      // contrast) rather than a muted tone — the bug behind unselected
+      // bottom-nav tabs rendering as dark as the selected one.
+      onSurfaceVariant: textSecondary,
       surfaceContainerHighest: surfaceVariant,
       outline: border,
     );
@@ -87,19 +91,9 @@ class AppTheme {
         margin: EdgeInsets.zero,
       ),
 
-      // Bottom Navigation
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: surface,
-        selectedItemColor: primary,
-        unselectedItemColor: textSecondary,
-        type: BottomNavigationBarType.fixed,
-        elevation: 0,
-        selectedLabelStyle: textTheme.labelSmall?.copyWith(
-          fontWeight: FontWeight.w600,
-          color: primary,
-        ),
-        unselectedLabelStyle: textTheme.labelSmall,
-      ),
+      // Note: no bottomNavigationBarTheme — the shell uses a notched
+      // BottomAppBar (see lib/app/app.dart), never the BottomNavigationBar
+      // widget, so that theme slot would be dead configuration.
 
       // FAB
       floatingActionButtonTheme: FloatingActionButtonThemeData(

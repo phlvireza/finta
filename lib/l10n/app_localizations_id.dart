@@ -39,6 +39,23 @@ class AppLocalizationsId extends AppLocalizations {
   String get payday => 'Hari Gajian';
 
   @override
+  String get languageNameEnglish => 'English';
+
+  @override
+  String get languageNameIndonesian => 'Bahasa Indonesia';
+
+  @override
+  String appVersionLabel(String version) {
+    return 'Versi $version';
+  }
+
+  @override
+  String get appTagline => 'Dibuat untuk Anda';
+
+  @override
+  String get csvExportShareSubject => 'Ekspor Finta';
+
+  @override
   String get manage => 'Kelola';
 
   @override
@@ -297,6 +314,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get category => 'Kategori';
 
   @override
+  String get defaultCategory => 'Bawaan';
+
+  @override
   String get selectACategory => 'Pilih kategori...';
 
   @override
@@ -483,13 +503,28 @@ class AppLocalizationsId extends AppLocalizations {
   String get paceUnder => 'Lebih lambat dari perkiraan';
 
   @override
-  String safeToSpendPerDay(String amount, int days) {
-    return 'Aman dibelanjakan: $amount/hari selama $days hari lagi';
+  String get safeToSpendLabel => 'Aman dibelanjakan per hari';
+
+  @override
+  String get hideBalances => 'Sembunyikan saldo';
+
+  @override
+  String get showBalances => 'Tampilkan saldo';
+
+  @override
+  String get currentPayPeriod => 'Periode gaji saat ini';
+
+  @override
+  String get leftThisPeriod => 'Sisa periode ini';
+
+  @override
+  String spentOfTotal(String spent, String total) {
+    return '$spent dari $total terpakai';
   }
 
   @override
-  String percentOfIncomeSpent(String percent) {
-    return '$percent dari pemasukan terpakai';
+  String percentVsLast(String percent) {
+    return '$percent% vs sebelumnya';
   }
 
   @override
@@ -681,6 +716,16 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get showSubcategories => 'Tampilkan sub-kategori';
+
+  @override
+  String percentMoreThanLastPeriod(String percent) {
+    return '$percent% lebih tinggi dari periode lalu';
+  }
+
+  @override
+  String percentLessThanLastPeriod(String percent) {
+    return '$percent% lebih rendah dari periode lalu';
+  }
 
   @override
   String get overallBudget => 'Anggaran Keseluruhan';
@@ -1203,7 +1248,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get noMerchantsForThisPeriod =>
-      'Belum ada pedagang tercatat pada periode ini';
+      'Belum ada pedagang tercatat pada periode ini. Isi kolom Pedagang pada transaksi agar muncul di sini.';
 
   @override
   String timesCount(int count) {
@@ -1307,17 +1352,16 @@ class AppLocalizationsId extends AppLocalizations {
   String get financialHealthScore => 'Skor kesehatan finansial';
 
   @override
-  String get healthScoreOutOf100 =>
-      'Dari 100, berdasarkan tingkat tabungan, kepatuhan anggaran, dan stabilitas pendapatan Anda';
+  String get outOfHundred => 'dari 100';
 
   @override
-  String get healthScoreSavings => 'Tabungan';
+  String get healthScoreSavings => 'Tingkat tabungan';
 
   @override
-  String get healthScoreBudget => 'Anggaran';
+  String get healthScoreBudget => 'Kepatuhan anggaran';
 
   @override
-  String get healthScoreStability => 'Stabilitas';
+  String get healthScoreStability => 'Stabilitas pemasukan';
 
   @override
   String get spendingInsightsTitle => 'Wawasan';
@@ -1333,18 +1377,33 @@ class AppLocalizationsId extends AppLocalizations {
       'Tidak ada yang tidak biasa dalam 30 hari terakhir';
 
   @override
-  String insightFastestGrowing(String category, String percent) {
-    return '$category adalah kategori yang tumbuh paling cepat, naik $percent%';
+  String insightFastestGrowingTitle(String category) {
+    return 'Paling cepat naik: $category';
   }
 
   @override
-  String insightSpendingIncreased(String category, String percent) {
-    return 'Pengeluaran Anda untuk $category naik $percent% dari periode lalu';
+  String insightFastestGrowingBody(String percent) {
+    return 'Naik $percent% dari periode gaji lalu';
   }
 
   @override
-  String insightSpendingDecreased(String category, String percent) {
-    return 'Pengeluaran Anda untuk $category turun $percent% dari periode lalu';
+  String insightSpendingIncreasedTitle(String category) {
+    return '$category naik';
+  }
+
+  @override
+  String insightSpendingIncreasedBody(String percent) {
+    return '$percent% lebih tinggi dari periode lalu';
+  }
+
+  @override
+  String insightSpendingDecreasedTitle(String category) {
+    return '$category turun';
+  }
+
+  @override
+  String insightSpendingDecreasedBody(String percent) {
+    return '$percent% lebih rendah dari periode lalu';
   }
 
   @override

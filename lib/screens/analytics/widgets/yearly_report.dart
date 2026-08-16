@@ -8,6 +8,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/utils/number_utils.dart';
 import '../../../core/utils/date_utils.dart';
+import '../../../widgets/section_card.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Full-screen yearly summary report with a line chart and high-level stats.
@@ -52,7 +53,12 @@ class _YearlyReportScreenState extends State<YearlyReportScreen> {
       body: analytics.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.all(AppConstants.spacingLg),
+              padding: const EdgeInsets.fromLTRB(
+                AppConstants.spacingLg,
+                AppConstants.spacingMd,
+                AppConstants.spacingLg,
+                AppConstants.fabClearance,
+              ),
               children: [
                 // Year selector
                 if (analytics.availableYears.length > 1)
@@ -77,17 +83,17 @@ class _YearlyReportScreenState extends State<YearlyReportScreen> {
                       style: theme.textTheme.headlineMedium,
                     ),
                   ),
-                const SizedBox(height: AppConstants.spacingXxxl),
+                const SizedBox(height: AppConstants.spacingLg),
 
-                // Chart
-                _YearlyTrendChart(
-                  data: analytics.monthlyData,
-                  symbol: settings.currencySymbol,
-                  useDecimals: settings.currencyUseDecimals,
+                SectionCard(
+                  child: _YearlyTrendChart(
+                    data: analytics.monthlyData,
+                    symbol: settings.currencySymbol,
+                    useDecimals: settings.currencyUseDecimals,
+                  ),
                 ),
-                const SizedBox(height: AppConstants.spacingXxxl),
+                const SizedBox(height: AppConstants.spacingLg),
 
-                // Summary Stats
                 _YearlySummaryStats(
                   data: analytics.monthlyData,
                   symbol: settings.currencySymbol,
@@ -231,47 +237,35 @@ class _YearlySummaryStats extends StatelessWidget {
 
     final loc = AppLocalizations.of(context)!;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(loc.summary, style: theme.textTheme.titleLarge),
-        const SizedBox(height: AppConstants.spacingMd),
-        Container(
-          padding: const EdgeInsets.all(AppConstants.spacingLg),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-            border: Border.all(color: theme.colorScheme.outline),
+    return SectionCard(
+      title: loc.summary,
+      child: Column(
+        children: [
+          _StatRow(
+            label: loc.totalIncome,
+            amount: totalIncome,
+            color: isDark ? AppColors.darkIncome : AppColors.lightIncome,
+            symbol: symbol,
+            useDecimals: useDecimals,
           ),
-          child: Column(
-            children: [
-              _StatRow(
-                label: loc.totalIncome,
-                amount: totalIncome,
-                color: isDark ? AppColors.darkIncome : AppColors.lightIncome,
-                symbol: symbol,
-                useDecimals: useDecimals,
-              ),
-              const Divider(height: AppConstants.spacingXxl),
-              _StatRow(
-                label: loc.totalExpense,
-                amount: totalExpense,
-                color: isDark ? AppColors.darkExpense : AppColors.lightExpense,
-                symbol: symbol,
-                useDecimals: useDecimals,
-              ),
-              const Divider(height: AppConstants.spacingXxl),
-              _StatRow(
-                label: loc.netSavings,
-                amount: net,
-                color: theme.textTheme.bodyLarge!.color!,
-                symbol: symbol,
-                useDecimals: useDecimals,
-              ),
-            ],
+          const Divider(height: AppConstants.spacingXxl),
+          _StatRow(
+            label: loc.totalExpense,
+            amount: totalExpense,
+            color: isDark ? AppColors.darkExpense : AppColors.lightExpense,
+            symbol: symbol,
+            useDecimals: useDecimals,
           ),
-        ),
-      ],
+          const Divider(height: AppConstants.spacingXxl),
+          _StatRow(
+            label: loc.netSavings,
+            amount: net,
+            color: theme.textTheme.bodyLarge!.color!,
+            symbol: symbol,
+            useDecimals: useDecimals,
+          ),
+        ],
+      ),
     );
   }
 }

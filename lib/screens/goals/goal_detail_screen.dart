@@ -9,6 +9,7 @@ import '../../widgets/date_group_header.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/error_state.dart';
 import '../../widgets/skeleton_box.dart';
+import '../../widgets/section_card.dart';
 import '../transactions/add_transaction_screen.dart';
 import '../transactions/widgets/transaction_tile.dart';
 import 'goal_actions.dart';
@@ -145,38 +146,34 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.only(bottom: AppConstants.fabClearance),
+        padding: const EdgeInsets.fromLTRB(
+          AppConstants.spacingLg,
+          AppConstants.spacingMd,
+          AppConstants.spacingLg,
+          AppConstants.fabClearance,
+        ),
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppConstants.spacingLg,
-              AppConstants.spacingLg,
-              AppConstants.spacingLg,
-              0,
+          SectionCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GoalProgressSummary(goal: goal),
+                if (!isComplete) ...[
+                  const SizedBox(height: AppConstants.spacingMd),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () => ContributeToGoalSheet.show(context, goal),
+                      child: Text(loc.contribute),
+                    ),
+                  ),
+                ],
+              ],
             ),
-            child: GoalProgressSummary(goal: goal),
           ),
-          if (!isComplete)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppConstants.spacingLg,
-                AppConstants.spacingMd,
-                AppConstants.spacingLg,
-                0,
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => ContributeToGoalSheet.show(context, goal),
-                  child: Text(loc.contribute),
-                ),
-              ),
-            ),
-          const SizedBox(height: AppConstants.spacingXl),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
-            child: Text(loc.contributions, style: theme.textTheme.titleMedium),
-          ),
+          const SizedBox(height: AppConstants.spacingLg),
+          Text(loc.contributions, style: theme.textTheme.titleMedium),
+          const SizedBox(height: AppConstants.spacingMd),
           ..._buildContributionSection(context, loc),
         ],
       ),
@@ -211,7 +208,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
     if (transactions.isEmpty) {
       return [
         Padding(
-          padding: const EdgeInsets.only(top: AppConstants.spacingXxl),
+          padding: const EdgeInsets.only(top: AppConstants.spacingXl),
           child: EmptyState(
             icon: Icons.savings_outlined,
             title: loc.noContributionsYet,
@@ -226,15 +223,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
         .map((entry) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppConstants.spacingLg,
-                    AppConstants.spacingMd,
-                    AppConstants.spacingLg,
-                    0,
-                  ),
-                  child: DateGroupHeader(label: entry.key, transactions: entry.value),
-                ),
+                DateGroupHeader(label: entry.key, transactions: entry.value),
                 ...entry.value.map(
                   (tx) => TransactionTile(
                     transaction: tx,

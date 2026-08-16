@@ -36,7 +36,6 @@ class AppConstants {
 
   // ── Dashboard ─────────────────────────────────────────────
   static const int recentTransactionCount = 10;
-  static const int budgetOverviewCount = 5;
   static const int upcomingBillsCount = 3;
 
   // ── Layout ────────────────────────────────────────────────
@@ -46,6 +45,12 @@ class AppConstants {
   // ── Budget Thresholds ─────────────────────────────────────
   static const double budgetWarningThreshold = 0.75;
   static const double budgetExceededThreshold = 1.0;
+
+  // ── Tinted surfaces ────────────────────────────────────────
+  /// Alpha for an identity chip (category/account icon on its own color) and
+  /// a status pill (badge text on its own color). One value, used everywhere
+  /// a source color needs a background instead of five different ones.
+  static const double tintAlpha = 0.12;
 
   // ── Currencies ────────────────────────────────────────────
   static const List<CurrencyOption> currencies = [

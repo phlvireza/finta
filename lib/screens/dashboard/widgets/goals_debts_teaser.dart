@@ -8,6 +8,7 @@ import '../../../core/utils/number_utils.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../goals/goals_list_screen.dart';
 import '../../debts/debts_list_screen.dart';
+import '../../../widgets/section_card.dart';
 
 /// Compact dashboard teaser for goals and debts — shows the single
 /// nearest-to-complete active goal and the net debt summary, so both
@@ -38,19 +39,16 @@ class GoalsDebtsTeaser extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
     final settings = context.watch<SettingsProvider>();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(loc.goalsAndDebts, style: theme.textTheme.titleLarge),
-        const SizedBox(height: AppConstants.spacingSm),
-        if (topGoal != null)
-          InkWell(
-            borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const GoalsListScreen()),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppConstants.spacingSm),
+    return SectionCard(
+      title: loc.goalsAndDebts,
+      child: Column(
+        children: [
+          if (topGoal != null)
+            InkWell(
+              borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const GoalsListScreen()),
+              ),
               child: Row(
                 children: [
                   Icon(Icons.savings_outlined, color: topGoal.colorValue, size: 20),
@@ -67,15 +65,13 @@ class GoalsDebtsTeaser extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-        if (hasDebts)
-          InkWell(
-            borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const DebtsListScreen()),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppConstants.spacingSm),
+          if (topGoal != null && hasDebts) const Divider(height: AppConstants.spacingXl),
+          if (hasDebts)
+            InkWell(
+              borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const DebtsListScreen()),
+              ),
               child: Row(
                 children: [
                   const Icon(Icons.handshake_outlined, size: 20),
@@ -92,8 +88,8 @@ class GoalsDebtsTeaser extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

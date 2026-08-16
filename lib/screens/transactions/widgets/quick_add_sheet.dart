@@ -550,7 +550,7 @@ class _TemplateChipsRow extends StatelessWidget {
     if (templates.isEmpty) return const SizedBox.shrink();
 
     return SizedBox(
-      height: 44,
+      height: 36,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
@@ -567,13 +567,19 @@ class _TemplateChipsRow extends StatelessWidget {
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(AppConstants.radiusFull),
-                border: Border.all(color: theme.colorScheme.outline),
               ),
               alignment: Alignment.center,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(category?.iconData ?? Icons.category, size: 16, color: category?.colorValue),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: category?.colorValue ?? theme.colorScheme.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
                   const SizedBox(width: 6),
                   Text(template.name, style: theme.textTheme.labelMedium),
                   const SizedBox(width: 6),
@@ -613,10 +619,14 @@ class _EntryTypeSegments extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    // A 3px inset between the track and the selected pill — without it the
+    // track's own fill is entirely hidden behind the selected segment, so
+    // the control doesn't read as "three options in a group" at rest.
     return Container(
+      padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppConstants.radiusFull),
+        borderRadius: BorderRadius.circular(AppConstants.radiusMd),
       ),
       child: Row(
         children: [
@@ -636,10 +646,10 @@ class _EntryTypeSegments extends StatelessWidget {
         onTap: () => onChanged(type),
         child: AnimatedContainer(
           duration: AppConstants.animFast,
-          padding: const EdgeInsets.symmetric(vertical: AppConstants.spacingMd),
+          padding: const EdgeInsets.symmetric(vertical: AppConstants.spacingSm),
           decoration: BoxDecoration(
             color: isSelected ? theme.colorScheme.primary : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppConstants.radiusFull),
+            borderRadius: BorderRadius.circular(AppConstants.radiusSm),
           ),
           child: Center(
             child: Text(

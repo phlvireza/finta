@@ -158,6 +158,36 @@ abstract class AppLocalizations {
   /// **'Payday (Cycle Reset)'**
   String get payday;
 
+  /// No description provided for @languageNameEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageNameEnglish;
+
+  /// No description provided for @languageNameIndonesian.
+  ///
+  /// In en, this message translates to:
+  /// **'Bahasa Indonesia'**
+  String get languageNameIndonesian;
+
+  /// No description provided for @appVersionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String appVersionLabel(String version);
+
+  /// No description provided for @appTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Built for you'**
+  String get appTagline;
+
+  /// No description provided for @csvExportShareSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Finta export'**
+  String get csvExportShareSubject;
+
   /// No description provided for @manage.
   ///
   /// In en, this message translates to:
@@ -662,6 +692,12 @@ abstract class AppLocalizations {
   /// **'Category'**
   String get category;
 
+  /// No description provided for @defaultCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get defaultCategory;
+
   /// No description provided for @selectACategory.
   ///
   /// In en, this message translates to:
@@ -1004,17 +1040,47 @@ abstract class AppLocalizations {
   /// **'Under pace'**
   String get paceUnder;
 
-  /// No description provided for @safeToSpendPerDay.
+  /// No description provided for @safeToSpendLabel.
   ///
   /// In en, this message translates to:
-  /// **'Safe to spend: {amount}/day for {days} more days'**
-  String safeToSpendPerDay(String amount, int days);
+  /// **'Safe to spend per day'**
+  String get safeToSpendLabel;
 
-  /// No description provided for @percentOfIncomeSpent.
+  /// No description provided for @hideBalances.
   ///
   /// In en, this message translates to:
-  /// **'{percent} of income spent'**
-  String percentOfIncomeSpent(String percent);
+  /// **'Hide balances'**
+  String get hideBalances;
+
+  /// No description provided for @showBalances.
+  ///
+  /// In en, this message translates to:
+  /// **'Show balances'**
+  String get showBalances;
+
+  /// No description provided for @currentPayPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Current pay period'**
+  String get currentPayPeriod;
+
+  /// No description provided for @leftThisPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Left this period'**
+  String get leftThisPeriod;
+
+  /// No description provided for @spentOfTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'{spent} of {total} spent'**
+  String spentOfTotal(String spent, String total);
+
+  /// No description provided for @percentVsLast.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% vs last'**
+  String percentVsLast(String percent);
 
   /// No description provided for @filters.
   ///
@@ -1363,6 +1429,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show sub-categories'**
   String get showSubcategories;
+
+  /// No description provided for @percentMoreThanLastPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% more than last period'**
+  String percentMoreThanLastPeriod(String percent);
+
+  /// No description provided for @percentLessThanLastPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% less than last period'**
+  String percentLessThanLastPeriod(String percent);
 
   /// No description provided for @overallBudget.
   ///
@@ -2237,7 +2315,7 @@ abstract class AppLocalizations {
   /// No description provided for @noMerchantsForThisPeriod.
   ///
   /// In en, this message translates to:
-  /// **'No merchants recorded in this period'**
+  /// **'No merchants recorded in this period. Fill in the Merchant field on an entry and it will show up here.'**
   String get noMerchantsForThisPeriod;
 
   /// No description provided for @timesCount.
@@ -2372,28 +2450,28 @@ abstract class AppLocalizations {
   /// **'Financial health score'**
   String get financialHealthScore;
 
-  /// No description provided for @healthScoreOutOf100.
+  /// No description provided for @outOfHundred.
   ///
   /// In en, this message translates to:
-  /// **'Out of 100, based on your savings rate, budget adherence, and income stability'**
-  String get healthScoreOutOf100;
+  /// **'out of 100'**
+  String get outOfHundred;
 
   /// No description provided for @healthScoreSavings.
   ///
   /// In en, this message translates to:
-  /// **'Savings'**
+  /// **'Savings rate'**
   String get healthScoreSavings;
 
   /// No description provided for @healthScoreBudget.
   ///
   /// In en, this message translates to:
-  /// **'Budget'**
+  /// **'Budget adherence'**
   String get healthScoreBudget;
 
   /// No description provided for @healthScoreStability.
   ///
   /// In en, this message translates to:
-  /// **'Stability'**
+  /// **'Income stability'**
   String get healthScoreStability;
 
   /// No description provided for @spendingInsightsTitle.
@@ -2420,23 +2498,41 @@ abstract class AppLocalizations {
   /// **'Nothing unusual in the last 30 days'**
   String get noUnusualActivity;
 
-  /// No description provided for @insightFastestGrowing.
+  /// No description provided for @insightFastestGrowingTitle.
   ///
   /// In en, this message translates to:
-  /// **'{category} is your fastest-growing category, up {percent}%'**
-  String insightFastestGrowing(String category, String percent);
+  /// **'Fastest growing: {category}'**
+  String insightFastestGrowingTitle(String category);
 
-  /// No description provided for @insightSpendingIncreased.
+  /// No description provided for @insightFastestGrowingBody.
   ///
   /// In en, this message translates to:
-  /// **'You spent {percent}% more on {category} than last period'**
-  String insightSpendingIncreased(String category, String percent);
+  /// **'Up {percent}% on last pay period'**
+  String insightFastestGrowingBody(String percent);
 
-  /// No description provided for @insightSpendingDecreased.
+  /// No description provided for @insightSpendingIncreasedTitle.
   ///
   /// In en, this message translates to:
-  /// **'You spent {percent}% less on {category} than last period'**
-  String insightSpendingDecreased(String category, String percent);
+  /// **'{category} is up'**
+  String insightSpendingIncreasedTitle(String category);
+
+  /// No description provided for @insightSpendingIncreasedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% more than last period'**
+  String insightSpendingIncreasedBody(String percent);
+
+  /// No description provided for @insightSpendingDecreasedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{category} is down'**
+  String insightSpendingDecreasedTitle(String category);
+
+  /// No description provided for @insightSpendingDecreasedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% less than last period'**
+  String insightSpendingDecreasedBody(String percent);
 
   /// No description provided for @periodRecap.
   ///

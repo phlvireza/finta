@@ -6,6 +6,7 @@ import '../../../models/account_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/number_utils.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/form_sheet.dart';
 import '../../accounts/widgets/account_form.dart';
 
 /// Form field that opens a bottom sheet for account selection — same shape
@@ -178,11 +179,7 @@ class _AccountSheet extends StatelessWidget {
               ),
               onTap: () {
                 Navigator.of(context).pop();
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (_) => const AccountForm(),
-                );
+                FormSheet.show(context, builder: (_) => const AccountForm());
               },
             ),
             const Divider(),

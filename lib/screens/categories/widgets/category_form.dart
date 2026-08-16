@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../providers/category_provider.dart';
 import '../../../models/category_model.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/constants/app_colors.dart';
 import '../../../widgets/form_sheet.dart';
 import 'icon_picker.dart';
 import '../../../l10n/app_localizations.dart';
@@ -38,10 +39,7 @@ class _CategoryFormState extends State<CategoryForm> {
   String? _parentId;
   bool _autoValidate = false;
 
-  final List<String> _colorOptions = const [
-    '#C87941', '#5B8C5A', '#C2665A', '#D4A05A', '#7A8B6F',
-    '#B07A5B', '#8B6F7A', '#6F8B8A', '#CBA882', '#8A6E5E',
-  ];
+  final List<String> _colorOptions = AppColors.swatchOptions;
 
   @override
   void initState() {

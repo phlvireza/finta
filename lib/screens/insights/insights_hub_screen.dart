@@ -7,10 +7,12 @@ import '../../providers/settings_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_typography.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/utils/health_score.dart';
 import '../../core/utils/insight_rules.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/section_card.dart';
 import '../transactions/widgets/transaction_tile.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -69,27 +71,44 @@ class _InsightsHubScreenState extends State<InsightsHubScreen> {
         child: insights.isLoading && insights.healthScore == null
             ? const Center(child: CircularProgressIndicator())
             : ListView(
-                padding: const EdgeInsets.all(AppConstants.spacingLg),
+                padding: const EdgeInsets.fromLTRB(
+                  AppConstants.spacingLg,
+                  AppConstants.spacingMd,
+                  AppConstants.spacingLg,
+                  AppConstants.spacingLg,
+                ),
                 children: [
                   if (insights.healthScore != null) ...[
-                    Text(loc.financialHealthScore, style: Theme.of(context).textTheme.titleLarge),
-                    const SizedBox(height: AppConstants.spacingMd),
                     _HealthScoreCard(breakdown: insights.healthScore!),
-                    const SizedBox(height: AppConstants.spacingXxxl),
+                    const SizedBox(height: AppConstants.spacingLg),
                   ],
-                  Text(loc.spendingInsightsTitle, style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: AppConstants.spacingMd),
-                  if (insights.spendingInsights.isEmpty)
-                    EmptyState(icon: Icons.insights_outlined, title: loc.noInsightsYet, subtitle: '')
-                  else
-                    ...insights.spendingInsights.map((i) => _InsightCard(data: i)),
-                  const SizedBox(height: AppConstants.spacingXxxl),
-                  Text(loc.unusualActivity, style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: AppConstants.spacingMd),
-                  if (insights.unusualTransactions.isEmpty)
-                    EmptyState(icon: Icons.check_circle_outline, title: loc.noUnusualActivity, subtitle: '')
-                  else
-                    ...insights.unusualTransactions.map((t) => TransactionTile(transaction: t)),
+                  SectionCard(
+                    title: loc.spendingInsightsTitle,
+                    child: insights.spendingInsights.isEmpty
+                        ? EmptyState(icon: Icons.insights_outlined, title: loc.noInsightsYet, subtitle: '')
+                        : Column(
+                            children: [
+                              for (var i = 0; i < insights.spendingInsights.length; i++) ...[
+                                if (i > 0) const Divider(height: AppConstants.spacingXl),
+                                _InsightCard(data: insights.spendingInsights[i]),
+                              ],
+                            ],
+                          ),
+                  ),
+                  const SizedBox(height: AppConstants.spacingLg),
+                  SectionCard(
+                    title: loc.unusualActivity,
+                    child: insights.unusualTransactions.isEmpty
+                        ? EmptyState(icon: Icons.check_circle_outline, title: loc.noUnusualActivity, subtitle: '')
+                        : Column(
+                            children: [
+                              for (var i = 0; i < insights.unusualTransactions.length; i++) ...[
+                                if (i > 0) const Divider(height: 1),
+                                TransactionTile(transaction: insights.unusualTransactions[i], dense: true),
+                              ],
+                            ],
+                          ),
+                  ),
                 ],
               ),
       ),
@@ -114,71 +133,99 @@ class _HealthScoreCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
+    final isDark = theme.brightness == Brightness.dark;
     final color = _scoreColor(context, breakdown.overall);
 
-    return Container(
-      padding: const EdgeInsets.all(AppConstants.spacingLg),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppConstants.radiusLg),
-        border: Border.all(color: theme.colorScheme.outline),
-      ),
-      child: Column(
+    return SectionCard(
+      title: loc.financialHealthScore,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
+          Column(
             children: [
-              Container(
-                width: 64,
-                height: 64,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  '${breakdown.overall}',
-                  style: theme.textTheme.headlineSmall?.copyWith(color: color, fontWeight: FontWeight.bold),
-                ),
+              Text(
+                '${breakdown.overall}',
+                style: AppTypography.amountStyle(color: color, fontSize: 40, fontWeight: FontWeight.w700),
               ),
-              const SizedBox(width: AppConstants.spacingLg),
-              Expanded(
-                child: Text(
-                  loc.healthScoreOutOf100,
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ),
+              Text(loc.outOfHundred, style: theme.textTheme.labelMedium),
             ],
           ),
-          const SizedBox(height: AppConstants.spacingLg),
-          _breakdownRow(context, loc.healthScoreSavings, breakdown.savingsScore),
-          const SizedBox(height: AppConstants.spacingSm),
-          _breakdownRow(context, loc.healthScoreBudget, breakdown.budgetScore),
-          const SizedBox(height: AppConstants.spacingSm),
-          _breakdownRow(context, loc.healthScoreStability, breakdown.stabilityScore),
+          const SizedBox(width: AppConstants.spacingXl),
+          Expanded(
+            child: Column(
+              children: [
+                // Each bar keeps one fixed hue — it identifies *which*
+                // metric it is, not how good it is. Colouring the bars by
+                // score instead made the card three identical green bars
+                // for anyone doing broadly fine, which said nothing. The
+                // number beside each label still carries the verdict.
+                _breakdownRow(
+                  context,
+                  loc.healthScoreSavings,
+                  breakdown.savingsScore,
+                  isDark ? AppColors.darkIncome : AppColors.lightIncome,
+                ),
+                const SizedBox(height: AppConstants.spacingSm),
+                _breakdownRow(
+                  context,
+                  loc.healthScoreBudget,
+                  breakdown.budgetScore,
+                  AppColors.warning,
+                ),
+                const SizedBox(height: AppConstants.spacingSm),
+                _breakdownRow(
+                  context,
+                  loc.healthScoreStability,
+                  breakdown.stabilityScore,
+                  // The blue from the chart ramp — the one hue in the
+                  // palette that carries no good/bad connotation.
+                  (isDark ? AppColors.chartColorsDark : AppColors.chartColorsLight)[5],
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _breakdownRow(BuildContext context, String label, int score) {
+  /// [barColor] identifies the metric; the score's own [_scoreColor] still
+  /// tints the number, so a bad sub-score stays obvious at a glance.
+  Widget _breakdownRow(
+    BuildContext context,
+    String label,
+    int score,
+    Color barColor,
+  ) {
     final theme = Theme.of(context);
-    final color = _scoreColor(context, score);
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(width: 100, child: Text(label, style: theme.textTheme.labelMedium)),
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppConstants.radiusFull),
-            child: LinearProgressIndicator(
-              value: score / 100,
-              minHeight: 6,
-              backgroundColor: theme.colorScheme.surfaceContainerHighest,
-              valueColor: AlwaysStoppedAnimation(color),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: theme.textTheme.labelSmall),
+            Text(
+              '$score',
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: _scoreColor(context, score),
+                fontWeight: FontWeight.w600,
+              ),
             ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppConstants.radiusFull),
+          child: LinearProgressIndicator(
+            value: score / 100,
+            minHeight: 4,
+            // Tinted with the bar's own hue rather than the neutral surface,
+            // matching the budget bars.
+            backgroundColor: barColor.withValues(alpha: 0.15),
+            valueColor: AlwaysStoppedAnimation(barColor),
           ),
         ),
-        const SizedBox(width: AppConstants.spacingSm),
-        SizedBox(width: 32, child: Text('$score', style: theme.textTheme.labelSmall, textAlign: TextAlign.right)),
       ],
     );
   }
@@ -197,42 +244,59 @@ class _InsightCard extends StatelessWidget {
     final categoryName = category?.name ?? loc.unknown;
     final percent = data.percent.toStringAsFixed(0);
 
-    final String message;
+    final String title;
+    final String body;
     final IconData icon;
     final Color color;
     final isDark = theme.brightness == Brightness.dark;
     switch (data.kind) {
       case InsightKind.fastestGrowing:
-        message = loc.insightFastestGrowing(categoryName, percent);
+        title = loc.insightFastestGrowingTitle(categoryName);
+        body = loc.insightFastestGrowingBody(percent);
         icon = Icons.local_fire_department_outlined;
         color = AppColors.warning;
         break;
       case InsightKind.increase:
-        message = loc.insightSpendingIncreased(categoryName, percent);
+        title = loc.insightSpendingIncreasedTitle(categoryName);
+        body = loc.insightSpendingIncreasedBody(percent);
         icon = Icons.trending_up;
         color = isDark ? AppColors.darkExpense : AppColors.lightExpense;
         break;
       case InsightKind.decrease:
-        message = loc.insightSpendingDecreased(categoryName, percent);
+        title = loc.insightSpendingDecreasedTitle(categoryName);
+        body = loc.insightSpendingDecreasedBody(percent);
         icon = Icons.trending_down;
         color = isDark ? AppColors.darkIncome : AppColors.lightIncome;
         break;
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppConstants.spacingSm),
-      padding: const EdgeInsets.all(AppConstants.spacingMd),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: AppConstants.spacingMd),
-          Expanded(child: Text(message, style: theme.textTheme.bodyMedium)),
-        ],
-      ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: AppConstants.tintAlpha),
+            borderRadius: BorderRadius.circular(AppConstants.radiusSm),
+          ),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        const SizedBox(width: AppConstants.spacingMd),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: theme.textTheme.titleSmall,
+              ),
+              Text(body, style: theme.textTheme.bodySmall),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

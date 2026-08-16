@@ -10,6 +10,9 @@ import '../../providers/recurring_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/section_card.dart';
+import '../../widgets/status_pill.dart';
+import '../../widgets/tinted_icon.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Lists tracked subscriptions with their combined monthly/annual cost and
@@ -28,7 +31,6 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
     final recurringProvider = context.watch<RecurringProvider>();
     final categoryProvider = context.watch<CategoryProvider>();
@@ -56,7 +58,12 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
               subtitle: loc.noSubscriptionsSubtitle,
             )
           : ListView(
-              padding: const EdgeInsets.all(AppConstants.spacingLg),
+              padding: const EdgeInsets.fromLTRB(
+                AppConstants.spacingLg,
+                AppConstants.spacingMd,
+                AppConstants.spacingLg,
+                AppConstants.fabClearance,
+              ),
               children: [
                 if (subscriptions.isNotEmpty) ...[
                   _CostSummaryCard(
@@ -64,29 +71,49 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                     symbol: settings.currencySymbol,
                     useDecimals: settings.currencyUseDecimals,
                   ),
-                  const SizedBox(height: AppConstants.spacingXxl),
+                  const SizedBox(height: AppConstants.spacingLg),
                 ],
                 if (candidates.isNotEmpty) ...[
-                  Text(loc.subscriptionSuggestions, style: theme.textTheme.titleLarge),
-                  const SizedBox(height: AppConstants.spacingMd),
-                  ...candidates.map((c) => _SuggestionTile(
-                        candidate: c,
-                        symbol: settings.currencySymbol,
-                        useDecimals: settings.currencyUseDecimals,
-                        onAdd: () => _addSuggestion(context, c),
-                        onDismiss: () => setState(() => _dismissedSuggestions.add(c.merchant)),
-                      )),
-                  const SizedBox(height: AppConstants.spacingXxl),
+                  SectionCard(
+                    title: loc.subscriptionSuggestions,
+                    padding: EdgeInsets.zero,
+                    child: Column(
+                      children: [
+                        for (final c in candidates) ...[
+                          if (c != candidates.first) const Divider(height: 1),
+                          Padding(
+                            padding: const EdgeInsets.all(AppConstants.spacingMd),
+                            child: _SuggestionTile(
+                              candidate: c,
+                              symbol: settings.currencySymbol,
+                              useDecimals: settings.currencyUseDecimals,
+                              onAdd: () => _addSuggestion(context, c),
+                              onDismiss: () => setState(() => _dismissedSuggestions.add(c.merchant)),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppConstants.spacingLg),
                 ],
-                if (subscriptions.isNotEmpty) ...[
-                  Text(loc.yourSubscriptions, style: theme.textTheme.titleLarge),
-                  const SizedBox(height: AppConstants.spacingMd),
-                  ...subscriptions.map((s) => _SubscriptionTile(
-                        subscription: s,
-                        categoryProvider: categoryProvider,
-                        settings: settings,
-                      )),
-                ],
+                if (subscriptions.isNotEmpty)
+                  SectionCard(
+                    title: loc.yourSubscriptions,
+                    padding: EdgeInsets.zero,
+                    child: Column(
+                      children: [
+                        for (final s in subscriptions) ...[
+                          if (s != subscriptions.first) const Divider(height: 1),
+                          _SubscriptionTile(
+                            subscription: s,
+                            categoryProvider: categoryProvider,
+                            settings: settings,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
               ],
             ),
     );
@@ -125,12 +152,7 @@ class _CostSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
-    return Container(
-      padding: const EdgeInsets.all(AppConstants.spacingLg),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppConstants.radiusLg),
-      ),
+    return SectionCard(
       child: Row(
         children: [
           Expanded(
@@ -186,43 +208,31 @@ class _SuggestionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: AppConstants.spacingSm),
-      color: theme.colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-        side: BorderSide(color: theme.colorScheme.outline),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppConstants.spacingMd),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(candidate.merchant, style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 2),
-                  Text(
-                    loc.subscriptionSuggestionSubtitle(
-                      NumberUtils.formatCurrency(candidate.amount, symbol: symbol, useDecimals: useDecimals),
-                      candidate.occurrenceCount,
-                    ),
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(candidate.merchant, style: theme.textTheme.titleMedium),
+              const SizedBox(height: 2),
+              Text(
+                loc.subscriptionSuggestionSubtitle(
+                  NumberUtils.formatCurrency(candidate.amount, symbol: symbol, useDecimals: useDecimals),
+                  candidate.occurrenceCount,
+                ),
+                style: theme.textTheme.bodySmall,
               ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close),
-              tooltip: loc.dismiss,
-              onPressed: onDismiss,
-            ),
-            FilledButton(onPressed: onAdd, child: Text(loc.add)),
-          ],
+            ],
+          ),
         ),
-      ),
+        IconButton(
+          icon: const Icon(Icons.close),
+          tooltip: loc.dismiss,
+          onPressed: onDismiss,
+        ),
+        FilledButton(onPressed: onAdd, child: Text(loc.add)),
+      ],
     );
   }
 }
@@ -248,76 +258,62 @@ class _SubscriptionTile extends StatelessWidget {
         .difference(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day))
         .inDays;
 
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: AppConstants.spacingSm),
-      color: theme.colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-        side: BorderSide(color: theme.colorScheme.outline),
+    // Deliberately not a ListTile. ListTile hands `trailing` whatever width
+    // it asks for and squeezes the title column with the remainder, so an
+    // amount plus a 48px overflow menu left the subtitle no room and the
+    // "Overdue" badge ran straight into the amount. Laying the row out
+    // directly keeps the gap under our control, and the Wrap lets the badge
+    // drop to its own line rather than collide on narrow screens.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppConstants.spacingMd,
+        AppConstants.spacingMd,
+        AppConstants.spacingSm,
+        AppConstants.spacingMd,
       ),
-      // Deliberately not a ListTile. ListTile hands `trailing` whatever
-      // width it asks for and squeezes the title column with the remainder,
-      // so an amount plus a 48px overflow menu left the subtitle no room and
-      // the "Overdue" badge ran straight into the amount. Laying the row out
-      // directly keeps the gap under our control, and the Wrap lets the
-      // badge drop to its own line rather than collide on narrow screens.
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppConstants.spacingMd,
-          AppConstants.spacingMd,
-          AppConstants.spacingSm,
-          AppConstants.spacingMd,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: (category?.colorValue ?? theme.colorScheme.primary).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-              ),
-              child: Icon(category?.iconData ?? Icons.subscriptions, color: category?.colorValue ?? theme.colorScheme.primary),
+      child: Row(
+        children: [
+          TintedIcon(
+            icon: category?.iconData ?? Icons.subscriptions,
+            color: category?.colorValue ?? theme.colorScheme.primary,
+          ),
+          const SizedBox(width: AppConstants.spacingMd),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  name,
+                  style: theme.textTheme.titleMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Wrap(
+                  spacing: AppConstants.spacingSm,
+                  runSpacing: AppConstants.spacingXs,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(subscription.frequencyLabel, style: theme.textTheme.bodySmall),
+                    _StatusBadge(subscription: subscription, daysUntil: daysUntil),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(width: AppConstants.spacingMd),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    name,
-                    style: theme.textTheme.titleMedium,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Wrap(
-                    spacing: AppConstants.spacingSm,
-                    runSpacing: AppConstants.spacingXs,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text(subscription.frequencyLabel, style: theme.textTheme.bodySmall),
-                      _StatusBadge(subscription: subscription, daysUntil: daysUntil),
-                    ],
-                  ),
-                ],
-              ),
+          ),
+          const SizedBox(width: AppConstants.spacingMd),
+          Text(
+            NumberUtils.formatCurrency(
+              subscription.amount,
+              symbol: settings.currencySymbol,
+              useDecimals: settings.currencyUseDecimals,
             ),
-            const SizedBox(width: AppConstants.spacingMd),
-            Text(
-              NumberUtils.formatCurrency(
-                subscription.amount,
-                symbol: settings.currencySymbol,
-                useDecimals: settings.currencyUseDecimals,
-              ),
-              style: theme.textTheme.titleMedium,
-            ),
-            const SizedBox(width: AppConstants.spacingXs),
-            _SubscriptionMenu(subscription: subscription),
-          ],
-        ),
+            style: theme.textTheme.titleMedium,
+          ),
+          const SizedBox(width: AppConstants.spacingXs),
+          _SubscriptionMenu(subscription: subscription),
+        ],
       ),
     );
   }
@@ -335,7 +331,7 @@ class _StatusBadge extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
 
     if (subscription.isPaused) {
-      return _badge(theme, loc.paused, theme.colorScheme.outline);
+      return StatusPill(label: loc.paused, color: theme.colorScheme.outline);
     }
 
     final soon = daysUntil <= (subscription.reminderDaysBefore ?? 3);
@@ -345,21 +341,7 @@ class _StatusBadge extends StatelessWidget {
         : daysUntil == 0
             ? loc.dueToday
             : loc.dueInDays(daysUntil);
-    return _badge(theme, label, color);
-  }
-
-  Widget _badge(ThemeData theme, String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(AppConstants.radiusFull),
-      ),
-      child: Text(
-        label,
-        style: theme.textTheme.labelSmall?.copyWith(color: color, fontWeight: FontWeight.w600),
-      ),
-    );
+    return StatusPill(label: label, color: color);
   }
 }
 

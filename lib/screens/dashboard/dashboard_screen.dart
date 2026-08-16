@@ -6,10 +6,8 @@ import '../../providers/budget_provider.dart';
 import '../../providers/account_provider.dart';
 import '../../core/constants/app_constants.dart';
 import 'widgets/balance_card.dart';
-import 'widgets/net_worth_card.dart';
-import 'widgets/summary_row.dart';
 import 'widgets/burn_rate_indicator.dart';
-import 'widgets/budget_overview.dart';
+import 'widgets/spending_heatmap.dart';
 import 'widgets/upcoming_bills.dart';
 import 'widgets/goals_debts_teaser.dart';
 import 'widgets/recent_transactions.dart';
@@ -30,6 +28,7 @@ class DashboardScreen extends StatelessWidget {
         // the user step back to a previous one (see PeriodSelector).
         title: const PeriodSelector(),
         centerTitle: false,
+        actions: const [_HideBalancesButton()],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -71,33 +70,57 @@ class DashboardScreen extends StatelessWidget {
             return ListView(
               padding: const EdgeInsets.fromLTRB(
                 AppConstants.spacingLg,
-                AppConstants.spacingSm,
+                AppConstants.spacingMd,
                 AppConstants.spacingLg,
                 AppConstants.fabClearance,
               ),
               children: [
-                const NetWorthCard(),
-                const SizedBox(height: AppConstants.spacingXxxl),
                 const BalanceCard(),
-                const SizedBox(height: AppConstants.spacingLg),
-                const SummaryRow(),
                 if (showCurrentPeriodSections) ...[
                   const SizedBox(height: AppConstants.spacingLg),
                   const BurnRateIndicator(),
-                  const SizedBox(height: AppConstants.spacingXxxl),
-                  const BudgetOverview(),
-                  const SizedBox(height: AppConstants.spacingXxxl),
+                  const SizedBox(height: AppConstants.spacingLg),
                   const UpcomingBills(),
-                  const SizedBox(height: AppConstants.spacingXxxl),
+                  const SizedBox(height: AppConstants.spacingLg),
                   const GoalsDebtsTeaser(),
                 ],
-                const SizedBox(height: AppConstants.spacingXxxl),
+                const SizedBox(height: AppConstants.spacingLg),
                 const RecentTransactions(),
+                // Last, and outside the gate above: it answers "how did this
+                // period go overall", which is a summary of everything above
+                // rather than something to act on — and a past period's
+                // pattern is as meaningful as the current one's, so the grid
+                // draws whichever period the selector is on.
+                const SizedBox(height: AppConstants.spacingLg),
+                const SpendingHeatmap(),
               ],
             );
           },
         ),
       ),
+    );
+  }
+}
+
+/// The hide-balances toggle. It lives in the app bar rather than on a card
+/// because it is a screen-level privacy switch — it masks the period net,
+/// the income/expense stats and every account balance at once, so hanging
+/// it off any one of them would understate its reach.
+class _HideBalancesButton extends StatelessWidget {
+  const _HideBalancesButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context.watch<SettingsProvider>();
+    final loc = AppLocalizations.of(context)!;
+
+    return IconButton(
+      icon: Icon(
+        settings.hideBalances ? Icons.visibility_off : Icons.visibility,
+        size: 20,
+      ),
+      tooltip: settings.hideBalances ? loc.showBalances : loc.hideBalances,
+      onPressed: () => settings.setHideBalances(!settings.hideBalances),
     );
   }
 }

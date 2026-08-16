@@ -7,6 +7,8 @@ import '../../core/constants/app_constants.dart';
 import '../../core/utils/number_utils.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/masked_amount.dart';
+import '../../widgets/section_card.dart';
+import '../../widgets/tinted_icon.dart';
 import '../../l10n/app_localizations.dart';
 import 'goal_actions.dart';
 import 'goal_detail_screen.dart';
@@ -56,14 +58,22 @@ class GoalsListScreen extends StatelessWidget {
                 AppConstants.fabClearance,
               ),
               children: [
-                for (final goal in goals) ...[
-                  _GoalCard(
-                    goal: goal,
-                    onEdit: () => showGoalForm(context, goal: goal),
-                    onDelete: () => confirmDeleteGoal(context, goal),
+                if (goals.isNotEmpty)
+                  SectionCard(
+                    padding: EdgeInsets.zero,
+                    child: Column(
+                      children: [
+                        for (final goal in goals) ...[
+                          if (goal != goals.first) const Divider(height: 1),
+                          _GoalRow(
+                            goal: goal,
+                            onEdit: () => showGoalForm(context, goal: goal),
+                            onDelete: () => confirmDeleteGoal(context, goal),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: AppConstants.spacingMd),
-                ],
                 if (archived.isNotEmpty) _ArchivedGoals(goals: archived),
               ],
             ),
@@ -98,15 +108,8 @@ class _ArchivedGoals extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(top: AppConstants.spacingLg),
-      child: Card(
-        elevation: 0,
-        margin: EdgeInsets.zero,
-        color: theme.colorScheme.surface,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-          side: BorderSide(color: theme.colorScheme.outline),
-        ),
+      child: SectionCard(
+        padding: EdgeInsets.zero,
         child: ExpansionTile(
           shape: const Border(),
           collapsedShape: const Border(),
@@ -145,12 +148,12 @@ class _ArchivedGoals extends StatelessWidget {
   }
 }
 
-class _GoalCard extends StatelessWidget {
+class _GoalRow extends StatelessWidget {
   final GoalModel goal;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  const _GoalCard({required this.goal, required this.onEdit, required this.onDelete});
+  const _GoalRow({required this.goal, required this.onEdit, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -159,69 +162,51 @@ class _GoalCard extends StatelessWidget {
     final provider = context.watch<GoalProvider>();
     final isComplete = provider.progressOf(goal.id) >= goal.targetAmount;
 
-    return Card(
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      color: theme.colorScheme.surface,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-        side: BorderSide(color: theme.colorScheme.outline),
+    // Tapping the row means "look inside" — the contributions behind the
+    // bar — with edit one tap further in, the same gesture the budget list
+    // uses. The menu button and the Contribute button both absorb their own
+    // taps, so neither falls through to here.
+    return InkWell(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => GoalDetailScreen(goalId: goal.id)),
       ),
-      // Tapping the card means "look inside" — the contributions behind the
-      // bar — with edit one tap further in, the same gesture the budget list
-      // uses. The menu button and the Contribute button both absorb their own
-      // taps, so neither falls through to here.
-      child: InkWell(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => GoalDetailScreen(goalId: goal.id)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(AppConstants.spacingLg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: goal.colorValue.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(AppConstants.radiusSm),
-                    ),
-                    child: Icon(Icons.savings_outlined, color: goal.colorValue),
-                  ),
-                  const SizedBox(width: AppConstants.spacingMd),
-                  Expanded(
-                    child: Text(goal.name, style: theme.textTheme.titleMedium),
-                  ),
-                  PopupMenuButton<String>(
-                    onSelected: (value) {
-                      if (value == 'edit') onEdit();
-                      if (value == 'delete') onDelete();
-                    },
-                    itemBuilder: (_) => [
-                      PopupMenuItem(value: 'edit', child: Text(loc.edit)),
-                      PopupMenuItem(value: 'delete', child: Text(loc.delete)),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppConstants.spacingMd),
-              GoalProgressSummary(goal: goal),
-              if (!isComplete) ...[
-                const SizedBox(height: AppConstants.spacingMd),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () => ContributeToGoalSheet.show(context, goal),
-                    child: Text(loc.contribute),
-                  ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.spacingMd),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                TintedIcon(icon: Icons.savings_outlined, color: goal.colorValue),
+                const SizedBox(width: AppConstants.spacingMd),
+                Expanded(
+                  child: Text(goal.name, style: theme.textTheme.titleMedium),
+                ),
+                PopupMenuButton<String>(
+                  onSelected: (value) {
+                    if (value == 'edit') onEdit();
+                    if (value == 'delete') onDelete();
+                  },
+                  itemBuilder: (_) => [
+                    PopupMenuItem(value: 'edit', child: Text(loc.edit)),
+                    PopupMenuItem(value: 'delete', child: Text(loc.delete)),
+                  ],
                 ),
               ],
+            ),
+            const SizedBox(height: AppConstants.spacingMd),
+            GoalProgressSummary(goal: goal),
+            if (!isComplete) ...[
+              const SizedBox(height: AppConstants.spacingMd),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => ContributeToGoalSheet.show(context, goal),
+                  child: Text(loc.contribute),
+                ),
+              ),
             ],
-          ),
+          ],
         ),
       ),
     );

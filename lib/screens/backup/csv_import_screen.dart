@@ -253,7 +253,7 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
                 final err = _errors[i];
                 return ListTile(
                   dense: true,
-                  leading: const Icon(Icons.error_outline, color: Colors.redAccent),
+                  leading: Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error),
                   title: Text(loc.csvRowNumber(err.rowNumber)),
                   subtitle: Text(err.reason),
                 );

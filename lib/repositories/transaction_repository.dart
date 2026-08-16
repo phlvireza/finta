@@ -62,20 +62,6 @@ class TransactionRepository {
     }
   }
 
-  Future<List<TransactionModel>> getRecent(int limit) async {
-    try {
-      final db = await _dbHelper.database;
-      final maps = await db.query(
-        'transactions',
-        orderBy: 'date DESC, createdAt DESC',
-        limit: limit,
-      );
-      return maps.map((m) => TransactionModel.fromMap(m)).toList();
-    } catch (e) {
-      throw DatabaseException('Failed to get recent transactions', cause: e);
-    }
-  }
-
   Future<double> getSumByTypeAndDateRange(
     String type,
     DateTime start,

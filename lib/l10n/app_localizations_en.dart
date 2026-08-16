@@ -39,6 +39,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get payday => 'Payday (Cycle Reset)';
 
   @override
+  String get languageNameEnglish => 'English';
+
+  @override
+  String get languageNameIndonesian => 'Bahasa Indonesia';
+
+  @override
+  String appVersionLabel(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get appTagline => 'Built for you';
+
+  @override
+  String get csvExportShareSubject => 'Finta export';
+
+  @override
   String get manage => 'Manage';
 
   @override
@@ -297,6 +314,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get category => 'Category';
 
   @override
+  String get defaultCategory => 'Default';
+
+  @override
   String get selectACategory => 'Select a category...';
 
   @override
@@ -482,13 +502,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paceUnder => 'Under pace';
 
   @override
-  String safeToSpendPerDay(String amount, int days) {
-    return 'Safe to spend: $amount/day for $days more days';
+  String get safeToSpendLabel => 'Safe to spend per day';
+
+  @override
+  String get hideBalances => 'Hide balances';
+
+  @override
+  String get showBalances => 'Show balances';
+
+  @override
+  String get currentPayPeriod => 'Current pay period';
+
+  @override
+  String get leftThisPeriod => 'Left this period';
+
+  @override
+  String spentOfTotal(String spent, String total) {
+    return '$spent of $total spent';
   }
 
   @override
-  String percentOfIncomeSpent(String percent) {
-    return '$percent of income spent';
+  String percentVsLast(String percent) {
+    return '$percent% vs last';
   }
 
   @override
@@ -680,6 +715,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get showSubcategories => 'Show sub-categories';
+
+  @override
+  String percentMoreThanLastPeriod(String percent) {
+    return '$percent% more than last period';
+  }
+
+  @override
+  String percentLessThanLastPeriod(String percent) {
+    return '$percent% less than last period';
+  }
 
   @override
   String get overallBudget => 'Overall Budget';
@@ -1201,7 +1246,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get topMerchants => 'Top merchants';
 
   @override
-  String get noMerchantsForThisPeriod => 'No merchants recorded in this period';
+  String get noMerchantsForThisPeriod =>
+      'No merchants recorded in this period. Fill in the Merchant field on an entry and it will show up here.';
 
   @override
   String timesCount(int count) {
@@ -1304,17 +1350,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get financialHealthScore => 'Financial health score';
 
   @override
-  String get healthScoreOutOf100 =>
-      'Out of 100, based on your savings rate, budget adherence, and income stability';
+  String get outOfHundred => 'out of 100';
 
   @override
-  String get healthScoreSavings => 'Savings';
+  String get healthScoreSavings => 'Savings rate';
 
   @override
-  String get healthScoreBudget => 'Budget';
+  String get healthScoreBudget => 'Budget adherence';
 
   @override
-  String get healthScoreStability => 'Stability';
+  String get healthScoreStability => 'Income stability';
 
   @override
   String get spendingInsightsTitle => 'Insights';
@@ -1329,18 +1374,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noUnusualActivity => 'Nothing unusual in the last 30 days';
 
   @override
-  String insightFastestGrowing(String category, String percent) {
-    return '$category is your fastest-growing category, up $percent%';
+  String insightFastestGrowingTitle(String category) {
+    return 'Fastest growing: $category';
   }
 
   @override
-  String insightSpendingIncreased(String category, String percent) {
-    return 'You spent $percent% more on $category than last period';
+  String insightFastestGrowingBody(String percent) {
+    return 'Up $percent% on last pay period';
   }
 
   @override
-  String insightSpendingDecreased(String category, String percent) {
-    return 'You spent $percent% less on $category than last period';
+  String insightSpendingIncreasedTitle(String category) {
+    return '$category is up';
+  }
+
+  @override
+  String insightSpendingIncreasedBody(String percent) {
+    return '$percent% more than last period';
+  }
+
+  @override
+  String insightSpendingDecreasedTitle(String category) {
+    return '$category is down';
+  }
+
+  @override
+  String insightSpendingDecreasedBody(String percent) {
+    return '$percent% less than last period';
   }
 
   @override
