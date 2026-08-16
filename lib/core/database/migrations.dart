@@ -190,6 +190,75 @@ class Migrations {
     });
   }
 
+  /// v9 → v10: two data repairs. No DDL at all, so a fresh `_onCreate`
+  /// install and a fully-upgraded one still produce an identical schema.
+  ///
+  /// **1. Merchant backfill.** `RecurringService._materialize` never copied
+  /// `merchant` off the template, so only the first occurrence (the one the
+  /// entry form posts inline) ever carried one. Every generated occurrence
+  /// after it landed with `merchant` NULL and was then invisible to Top
+  /// Merchants, the merchant autocomplete, `getMerchantDefaults` and
+  /// subscription detection — all four filter on `merchant IS NOT NULL`.
+  /// The service is fixed going forward; this repairs what already posted.
+  /// The `IS NULL OR TRIM(...) = ''` guard means a merchant the user typed
+  /// onto one of those rows by hand is never overwritten.
+  ///
+  /// **2. Default category colours.** Two seeded categories shipped with
+  /// `#D4A05A`, which is `AppColors.warning` exactly — so their budget bars
+  /// wore the "over budget" amber as an identity colour. The seed list now
+  /// draws from the chart ramp instead. Matching on `color = <old hex>` is
+  /// the whole point: a category the user re-coloured keeps their choice,
+  /// and re-running the migration can't undo a later edit.
+  ///
+  /// Rows are matched by name + type because seeded category ids are fresh
+  /// uuids rather than fixed constants.
+  static Future<void> v10(Database db) async {
+    await db.transaction((txn) async {
+      await txn.execute('''
+        UPDATE transactions
+        SET merchant = (
+          SELECT r.merchant FROM recurring_transactions r
+          WHERE r.id = transactions.recurringId
+        )
+        WHERE recurringId IS NOT NULL
+          AND (merchant IS NULL OR TRIM(merchant) = '')
+          AND EXISTS (
+            SELECT 1 FROM recurring_transactions r
+            WHERE r.id = transactions.recurringId
+              AND r.merchant IS NOT NULL
+              AND TRIM(r.merchant) != ''
+          )
+      ''');
+
+      for (final entry in seedCategoryRecolours) {
+        await txn.update(
+          'categories',
+          {'color': entry.newColor},
+          where: 'isDefault = 1 AND type = ? AND name = ? AND color = ?',
+          whereArgs: [entry.type, entry.name, entry.oldColor],
+        );
+      }
+    });
+  }
+
+  /// The v10 colour moves, kept beside the migration that applies them so
+  /// the "before" hex stays readable — [SeedData] only records the "after".
+  static const List<({String type, String name, String oldColor, String newColor})>
+      seedCategoryRecolours = [
+    (type: 'expense', name: 'Food & Drinks', oldColor: '#C87941', newColor: '#3F8B4C'),
+    (type: 'expense', name: 'Transport', oldColor: '#6F8B8A', newColor: '#2E5FA8'),
+    (type: 'expense', name: 'Shopping', oldColor: '#C2665A', newColor: '#C13F55'),
+    (type: 'expense', name: 'Bills & Utilities', oldColor: '#D4A05A', newColor: '#C1661E'),
+    (type: 'expense', name: 'Entertainment', oldColor: '#8B6F7A', newColor: '#7B5B9E'),
+    (type: 'expense', name: 'Health', oldColor: '#5B8C5A', newColor: '#12928C'),
+    (type: 'expense', name: 'Education', oldColor: '#7A8B6F', newColor: '#A0522D'),
+    (type: 'expense', name: 'Groceries', oldColor: '#B07A5B', newColor: '#C87941'),
+    (type: 'income', name: 'Salary', oldColor: '#5B8C5A', newColor: '#3F8B4C'),
+    (type: 'income', name: 'Freelance', oldColor: '#C87941', newColor: '#2E5FA8'),
+    (type: 'income', name: 'Gift', oldColor: '#D4A05A', newColor: '#7B5B9E'),
+    (type: 'income', name: 'Investment', oldColor: '#7A8B6F', newColor: '#12928C'),
+  ];
+
   static const String createTemplatesTable = '''
     CREATE TABLE templates (
       id TEXT PRIMARY KEY,

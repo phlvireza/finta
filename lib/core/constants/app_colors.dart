@@ -77,9 +77,9 @@ class AppColors {
   ];
 
   /// Resolves the bar colour for a budget's spending state — shared by
-  /// `BudgetProgressBar` and `BudgetOverview` so both screens agree on
-  /// what a given ratio means instead of maintaining two copies of the
-  /// same threshold ladder.
+  /// `BudgetProgressBar` and the aggregate donut on the budgets screen so
+  /// both agree on what a given ratio means instead of maintaining two
+  /// copies of the same threshold ladder.
   static Color budgetBarColor({
     required bool isExceeded,
     required bool isWarning,
@@ -91,21 +91,17 @@ class AppColors {
     return categoryColor;
   }
 
-  /// Default category colors for seeding.
-  static const List<Color> categoryColors = [
-    Color(0xFFC87941),
-    Color(0xFF5B8C5A),
-    Color(0xFFC2665A),
-    Color(0xFFD4A05A),
-    Color(0xFF7A8B6F),
-    Color(0xFFB07A5B),
-    Color(0xFF8B6F7A),
-    Color(0xFF6F8B8A),
-    Color(0xFFCBA882),
-    Color(0xFF8A6E5E),
-    Color(0xFF6B8E6B),
-    Color(0xFF9E7B6B),
-    Color(0xFFB8956A),
-    Color(0xFF7B9E8C),
+  /// The swatch picker offered when creating/editing an account or a
+  /// category — was duplicated verbatim as a private `_colorOptions` list in
+  /// both forms. Hex strings (not [Color]s) because that's the format the
+  /// account/category `color` field is stored and compared in.
+  ///
+  /// Every colour [SeedData] assigns appears here, so opening a default
+  /// category shows its swatch already selected. `#D4A05A` was dropped: it
+  /// is [warning] exactly, and a category wearing the "over budget" amber
+  /// as its identity is a colour collision waiting to confuse someone.
+  static const List<String> swatchOptions = [
+    '#3F8B4C', '#2E5FA8', '#C13F55', '#12928C', '#A0522D', '#7B5B9E',
+    '#C1661E', '#C87941', '#5B8C5A', '#C2665A', '#8A7E74',
   ];
 }

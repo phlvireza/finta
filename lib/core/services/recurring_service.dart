@@ -138,6 +138,13 @@ class RecurringService {
       // fall back to the same default account every pre-v3 transaction
       // was backfilled into, so a catch-up run never fails to post.
       accountId: recurring.accountId ?? SeedData.defaultAccountId,
+      // Was omitted, so only the first occurrence — the one the entry form
+      // posts inline — ever carried a merchant. Every auto-generated one
+      // landed with merchant NULL and then vanished from Top Merchants, the
+      // merchant autocomplete and subscription detection, all three of which
+      // filter on `merchant IS NOT NULL`. Migration v10 backfills the rows
+      // already posted without it.
+      merchant: recurring.merchant,
       date: date,
       note: recurring.note,
       recurringId: recurring.id,

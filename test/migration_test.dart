@@ -645,4 +645,240 @@ void main() {
       await db.close();
     });
   });
+
+  group('v10 — merchant backfill and default category colours', () {
+    /// A v1 install replayed to v9, holding the state that produced the bug:
+    /// a recurring template with a merchant, the occurrence its entry form
+    /// posted (merchant intact), and the occurrences RecurringService
+    /// generated afterwards (merchant lost). Plus two seeded categories at
+    /// their pre-v10 colours, one of which the user has since re-coloured.
+    Future<Database> upgradedToV9() async {
+      final db = await databaseFactoryFfi.openDatabase(
+        ':memory:',
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: _createV1Schema,
+          onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
+        ),
+      );
+
+      await db.insert('categories', {
+        'id': 'cat_bills',
+        'name': 'Bills & Utilities',
+        'type': 'expense',
+        'icon': 'receipt_long',
+        'color': '#D4A05A',
+        'isDefault': 1,
+        'sortOrder': 3,
+        'createdAt': '2026-01-01T00:00:00.000',
+      });
+      await db.insert('categories', {
+        'id': 'cat_food',
+        'name': 'Food & Drinks',
+        'type': 'expense',
+        'icon': 'restaurant',
+        'color': '#C87941',
+        'isDefault': 1,
+        'sortOrder': 0,
+        'createdAt': '2026-01-01T00:00:00.000',
+      });
+      await db.insert('categories', {
+        'id': 'cat_user',
+        'name': 'Coffee',
+        'type': 'expense',
+        'icon': 'local_cafe',
+        'color': '#C87941',
+        'isDefault': 0,
+        'sortOrder': 20,
+        'createdAt': '2026-01-01T00:00:00.000',
+      });
+
+      await db.insert('recurring_transactions', {
+        'id': 'rec1',
+        'type': 'expense',
+        'amount': 65000,
+        'categoryId': 'cat_bills',
+        'note': 'streaming',
+        'frequency': 'monthly',
+        'startDate': '2026-01-05',
+        'isActive': 1,
+        'createdAt': '2026-01-01T00:00:00.000',
+      });
+      // A template that never had a merchant — its occurrences must stay
+      // null rather than be filled with an empty string.
+      await db.insert('recurring_transactions', {
+        'id': 'rec2',
+        'type': 'expense',
+        'amount': 40000,
+        'categoryId': 'cat_bills',
+        'frequency': 'monthly',
+        'startDate': '2026-01-07',
+        'isActive': 1,
+        'createdAt': '2026-01-01T00:00:00.000',
+      });
+
+      for (final row in [
+        {'id': 'tx_first', 'date': '2026-01-05', 'recurringId': 'rec1'},
+        {'id': 'tx_gen1', 'date': '2026-02-05', 'recurringId': 'rec1'},
+        {'id': 'tx_gen2', 'date': '2026-03-05', 'recurringId': 'rec1'},
+        {'id': 'tx_nomerchant', 'date': '2026-02-07', 'recurringId': 'rec2'},
+        {'id': 'tx_manual', 'date': '2026-02-09', 'recurringId': null},
+      ]) {
+        await db.insert('transactions', {
+          'id': row['id'],
+          'type': 'expense',
+          'amount': 65000,
+          'categoryId': 'cat_bills',
+          'date': row['date'],
+          'recurringId': row['recurringId'],
+          'createdAt': '2026-01-01T00:00:00.000',
+          'updatedAt': '2026-01-01T00:00:00.000',
+        });
+      }
+
+      await Migrations.v2(db);
+      await Migrations.v3(db);
+      await Migrations.v4(db);
+      await Migrations.v5(db);
+      await Migrations.v6(db);
+      await Migrations.v7(db);
+      await Migrations.v8(db);
+      await Migrations.v9(db);
+
+      // v3 adds transactions.merchant and v6 adds it to the templates, so
+      // the merchant values can only be set once those have run.
+      await db.update('recurring_transactions', {'merchant': 'Netflix'},
+          where: "id = 'rec1'");
+      await db.update('transactions', {'merchant': 'Netflix'},
+          where: "id = 'tx_first'");
+      await db.update('transactions', {'merchant': 'Warung Bu Tini'},
+          where: "id = 'tx_manual'");
+
+      return db;
+    }
+
+    Future<String?> merchantOf(Database db, String id) async {
+      final rows = await db.query('transactions', where: 'id = ?', whereArgs: [id]);
+      return rows.first['merchant'] as String?;
+    }
+
+    Future<String?> colorOf(Database db, String id) async {
+      final rows = await db.query('categories', where: 'id = ?', whereArgs: [id]);
+      return rows.first['color'] as String?;
+    }
+
+    test('backfills generated occurrences from their template', () async {
+      final db = await upgradedToV9();
+
+      expect(await merchantOf(db, 'tx_gen1'), isNull,
+          reason: 'this is the bug the migration repairs');
+
+      await Migrations.v10(db);
+
+      expect(await merchantOf(db, 'tx_gen1'), 'Netflix');
+      expect(await merchantOf(db, 'tx_gen2'), 'Netflix');
+
+      await db.close();
+    });
+
+    test('never overwrites a merchant already on the row', () async {
+      final db = await upgradedToV9();
+      await db.update('recurring_transactions', {'merchant': 'Something Else'},
+          where: "id = 'rec1'");
+
+      await Migrations.v10(db);
+
+      expect(await merchantOf(db, 'tx_first'), 'Netflix');
+
+      await db.close();
+    });
+
+    test('leaves rows alone when the template has no merchant either', () async {
+      final db = await upgradedToV9();
+      await Migrations.v10(db);
+
+      expect(await merchantOf(db, 'tx_nomerchant'), isNull);
+
+      await db.close();
+    });
+
+    test('does not touch transactions with no recurringId', () async {
+      final db = await upgradedToV9();
+      await Migrations.v10(db);
+
+      expect(await merchantOf(db, 'tx_manual'), 'Warung Bu Tini');
+
+      await db.close();
+    });
+
+    test('recolours seeded categories still on their original colour', () async {
+      final db = await upgradedToV9();
+      await Migrations.v10(db);
+
+      // #D4A05A was AppColors.warning exactly — the collision that motivated
+      // the change.
+      expect(await colorOf(db, 'cat_bills'), '#C1661E');
+      expect(await colorOf(db, 'cat_food'), '#3F8B4C');
+
+      await db.close();
+    });
+
+    test('a colour the user picked survives', () async {
+      final db = await upgradedToV9();
+      await db.update('categories', {'color': '#12928C'}, where: "id = 'cat_food'");
+
+      await Migrations.v10(db);
+
+      expect(await colorOf(db, 'cat_food'), '#12928C');
+
+      await db.close();
+    });
+
+    test('leaves non-default categories alone even at a matching colour', () async {
+      final db = await upgradedToV9();
+      await Migrations.v10(db);
+
+      // cat_user is #C87941, the same hex Food & Drinks had, but isDefault=0.
+      expect(await colorOf(db, 'cat_user'), '#C87941');
+
+      await db.close();
+    });
+
+    test('replaying is a no-op', () async {
+      final db = await upgradedToV9();
+      await Migrations.v10(db);
+      await db.update('categories', {'color': '#8A7E74'}, where: "id = 'cat_bills'");
+
+      await Migrations.v10(db);
+
+      expect(await colorOf(db, 'cat_bills'), '#8A7E74',
+          reason: 'a post-migration edit must not be reverted by a replay');
+      expect(await merchantOf(db, 'tx_gen1'), 'Netflix');
+
+      await db.close();
+    });
+
+    test('adds no columns — v10 is data-only', () async {
+      final db = await upgradedToV9();
+
+      Future<Set<String>> columns(String table) async {
+        final info = await db.rawQuery('PRAGMA table_info($table)');
+        return info.map((c) => c['name'] as String).toSet();
+      }
+
+      final before = [
+        await columns('transactions'),
+        await columns('categories'),
+        await columns('recurring_transactions'),
+      ];
+
+      await Migrations.v10(db);
+
+      expect(await columns('transactions'), before[0]);
+      expect(await columns('categories'), before[1]);
+      expect(await columns('recurring_transactions'), before[2]);
+
+      await db.close();
+    });
+  });
 }

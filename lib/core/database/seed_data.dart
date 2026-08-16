@@ -38,15 +38,25 @@ class SeedData {
     final batch = db.batch();
 
     // ── Default Expense Categories ────────────────────────────
+    // Colours come from the chart ramp (AppColors.chartColorsLight) rather
+    // than the older muted swatch list. Two of those swatches were
+    // #D4A05A — byte-identical to AppColors.warning — so a Bills budget at
+    // 30% used was already wearing the colour that is supposed to mean
+    // "75% spent". The chart ramp deliberately omits an amber for exactly
+    // that reason; the seed list never got the same treatment.
+    //
+    // Migration v10 moves existing installs onto these, but only for
+    // categories still sitting on the old hex — a colour the user picked
+    // is theirs.
     final expenseCategories = [
-      {'name': 'Food & Drinks', 'icon': 'restaurant', 'color': '#C87941'},
-      {'name': 'Transport', 'icon': 'directions_car', 'color': '#6F8B8A'},
-      {'name': 'Shopping', 'icon': 'shopping_bag', 'color': '#C2665A'},
-      {'name': 'Bills & Utilities', 'icon': 'receipt_long', 'color': '#D4A05A'},
-      {'name': 'Entertainment', 'icon': 'movie', 'color': '#8B6F7A'},
-      {'name': 'Health', 'icon': 'favorite', 'color': '#5B8C5A'},
-      {'name': 'Education', 'icon': 'school', 'color': '#7A8B6F'},
-      {'name': 'Groceries', 'icon': 'local_grocery_store', 'color': '#B07A5B'},
+      {'name': 'Food & Drinks', 'icon': 'restaurant', 'color': '#3F8B4C'},
+      {'name': 'Transport', 'icon': 'directions_car', 'color': '#2E5FA8'},
+      {'name': 'Shopping', 'icon': 'shopping_bag', 'color': '#C13F55'},
+      {'name': 'Bills & Utilities', 'icon': 'receipt_long', 'color': '#C1661E'},
+      {'name': 'Entertainment', 'icon': 'movie', 'color': '#7B5B9E'},
+      {'name': 'Health', 'icon': 'favorite', 'color': '#12928C'},
+      {'name': 'Education', 'icon': 'school', 'color': '#A0522D'},
+      {'name': 'Groceries', 'icon': 'local_grocery_store', 'color': '#C87941'},
       {'name': 'Other', 'icon': 'more_horiz', 'color': '#8A7E74'},
     ];
 
@@ -65,11 +75,13 @@ class SeedData {
     }
 
     // ── Default Income Categories ─────────────────────────────
+    // Income and expense categories are never charted together, so the same
+    // hues can serve both lists without two slices of one pie colliding.
     final incomeCategories = [
-      {'name': 'Salary', 'icon': 'account_balance_wallet', 'color': '#5B8C5A'},
-      {'name': 'Freelance', 'icon': 'laptop', 'color': '#C87941'},
-      {'name': 'Gift', 'icon': 'card_giftcard', 'color': '#D4A05A'},
-      {'name': 'Investment', 'icon': 'trending_up', 'color': '#7A8B6F'},
+      {'name': 'Salary', 'icon': 'account_balance_wallet', 'color': '#3F8B4C'},
+      {'name': 'Freelance', 'icon': 'laptop', 'color': '#2E5FA8'},
+      {'name': 'Gift', 'icon': 'card_giftcard', 'color': '#7B5B9E'},
+      {'name': 'Investment', 'icon': 'trending_up', 'color': '#12928C'},
       {'name': 'Other', 'icon': 'more_horiz', 'color': '#8A7E74'},
     ];
 
