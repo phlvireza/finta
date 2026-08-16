@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../core/utils/category_color.dart';
+
 /// Data model for a financial account (wallet, bank, card, ...).
 class AccountModel {
   final String id;
@@ -29,10 +31,7 @@ class AccountModel {
   bool get isCreditCard => type == 'credit_card';
 
   /// Parse the hex color string into a Flutter [Color].
-  Color get colorValue {
-    final hex = color.replaceAll('#', '');
-    return Color(int.parse('FF$hex', radix: 16));
-  }
+  Color get colorValue => parseHexColor(color);
 
   IconData get iconData => iconForType(type);
 

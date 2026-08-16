@@ -188,6 +188,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get color => 'Color';
 
   @override
+  String get categoryColor => 'Category Color';
+
+  @override
+  String get changeColor => 'Change color';
+
+  @override
+  String get resetToDefaultColor => 'Reset to default color';
+
+  @override
   String get manageBudgets => 'Manage Budgets';
 
   @override

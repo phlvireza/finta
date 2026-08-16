@@ -6,6 +6,7 @@ import '../../providers/budget_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../models/category_model.dart';
 import '../../core/constants/app_constants.dart';
+import 'widgets/category_color_sheet.dart';
 import 'widgets/category_form.dart';
 import '../../widgets/confirm_dialog.dart';
 import '../../widgets/form_sheet.dart';
@@ -158,8 +159,19 @@ class _CategoryTile extends StatelessWidget {
         subtitle: category.isDefault
             ? Text(loc.defaultCategory, style: theme.textTheme.labelSmall)
             : null,
+        // A default category is still not renameable or deletable — its name
+        // is the key seed-data migrations match on — but its colour is
+        // nobody's key, so it gets a palette button where a custom category
+        // gets the full edit/delete pair.
         trailing: category.isDefault
-            ? null
+            ? IconButton(
+                icon: const Icon(Icons.palette_outlined, size: 20),
+                tooltip: loc.changeColor,
+                onPressed: () => FormSheet.show<String>(
+                  context,
+                  builder: (_) => CategoryColorSheet(category: category),
+                ),
+              )
             : Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

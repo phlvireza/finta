@@ -73,6 +73,9 @@
   "categoryName": "Category Name",
   "icon": "Icon",
   "color": "Color",
+  "categoryColor": "Category Color",
+  "changeColor": "Change color",
+  "resetToDefaultColor": "Reset to default color",
 
   "manageBudgets": "Manage Budgets",
   "addBudget": "Add Budget",

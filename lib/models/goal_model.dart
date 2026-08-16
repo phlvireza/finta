@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../core/utils/category_color.dart';
+
 /// Data model for a savings goal. [targetAmount] is the only amount stored
 /// here — the amount saved so far is always derived from the sum of
 /// transactions tagged with this goal's id (see GoalRepository.getAllProgress),
@@ -26,10 +28,7 @@ class GoalModel {
   });
 
   /// Parse the hex color string into a Flutter [Color].
-  Color get colorValue {
-    final hex = color.replaceAll('#', '');
-    return Color(int.parse('FF$hex', radix: 16));
-  }
+  Color get colorValue => parseHexColor(color);
 
   Map<String, dynamic> toMap() {
     return {

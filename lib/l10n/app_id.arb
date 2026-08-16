@@ -73,6 +73,9 @@
   "categoryName": "Nama Kategori",
   "icon": "Ikon",
   "color": "Warna",
+  "categoryColor": "Warna Kategori",
+  "changeColor": "Ubah warna",
+  "resetToDefaultColor": "Kembalikan ke warna bawaan",
 
   "manageBudgets": "Kelola Anggaran",
   "addBudget": "Tambah Anggaran",

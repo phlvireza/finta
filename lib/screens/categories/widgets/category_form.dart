@@ -4,6 +4,8 @@ import '../../../providers/category_provider.dart';
 import '../../../models/category_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/category_color.dart';
+import '../../../widgets/color_swatch_picker.dart';
 import '../../../widgets/form_sheet.dart';
 import 'icon_picker.dart';
 import '../../../l10n/app_localizations.dart';
@@ -117,8 +119,7 @@ class _CategoryFormState extends State<CategoryForm> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final hexColor = _selectedColor.replaceAll('#', '');
-    final colorValue = Color(int.parse('FF$hexColor', radix: 16));
+    final colorValue = parseHexColor(_selectedColor);
     final loc = AppLocalizations.of(context)!;
 
     return Form(
@@ -255,35 +256,10 @@ class _CategoryFormState extends State<CategoryForm> {
             // Color Picker
             Text(loc.color, style: theme.textTheme.labelMedium),
             const SizedBox(height: AppConstants.spacingMd),
-            SizedBox(
-              height: 48,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: _colorOptions.length,
-                separatorBuilder: (_, _) => const SizedBox(width: AppConstants.spacingMd),
-                itemBuilder: (context, index) {
-                  final hex = _colorOptions[index];
-                  final c = Color(int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
-                  final isSelected = hex == _selectedColor;
-
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedColor = hex),
-                    child: Container(
-                      width: 48,
-                      decoration: BoxDecoration(
-                        color: c,
-                        shape: BoxShape.circle,
-                        border: isSelected
-                            ? Border.all(color: theme.colorScheme.onSurface, width: 3)
-                            : null,
-                      ),
-                      child: isSelected
-                          ? const Icon(Icons.check, color: Colors.white)
-                          : null,
-                    ),
-                  );
-                },
-              ),
+            ColorSwatchPicker(
+              options: _colorOptions,
+              selected: _selectedColor,
+              onSelected: (hex) => setState(() => _selectedColor = hex),
             ),
           ],
           ),

@@ -452,6 +452,24 @@ abstract class AppLocalizations {
   /// **'Color'**
   String get color;
 
+  /// No description provided for @categoryColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Category Color'**
+  String get categoryColor;
+
+  /// No description provided for @changeColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Change color'**
+  String get changeColor;
+
+  /// No description provided for @resetToDefaultColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to default color'**
+  String get resetToDefaultColor;
+
   /// No description provided for @manageBudgets.
   ///
   /// In en, this message translates to:

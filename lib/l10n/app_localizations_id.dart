@@ -188,6 +188,15 @@ class AppLocalizationsId extends AppLocalizations {
   String get color => 'Warna';
 
   @override
+  String get categoryColor => 'Warna Kategori';
+
+  @override
+  String get changeColor => 'Ubah warna';
+
+  @override
+  String get resetToDefaultColor => 'Kembalikan ke warna bawaan';
+
+  @override
   String get manageBudgets => 'Kelola Anggaran';
 
   @override

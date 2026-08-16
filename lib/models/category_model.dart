@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../core/utils/category_color.dart';
+
 /// Data model for a transaction category.
 class CategoryModel {
   final String id;
@@ -33,10 +35,7 @@ class CategoryModel {
   bool get isSubcategory => parentId != null;
 
   /// Parse the hex color string into a Flutter [Color].
-  Color get colorValue {
-    final hex = color.replaceAll('#', '');
-    return Color(int.parse('FF$hex', radix: 16));
-  }
+  Color get colorValue => parseHexColor(color);
 
   /// Resolve the icon name to a Material [IconData].
   IconData get iconData {

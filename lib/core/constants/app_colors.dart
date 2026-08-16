@@ -97,11 +97,15 @@ class AppColors {
   /// account/category `color` field is stored and compared in.
   ///
   /// Every colour [SeedData] assigns appears here, so opening a default
-  /// category shows its swatch already selected. `#D4A05A` was dropped: it
-  /// is [warning] exactly, and a category wearing the "over budget" amber
-  /// as its identity is a colour collision waiting to confuse someone.
+  /// category shows its swatch already selected — and so "reset to the
+  /// colour this category shipped with" always lands on a swatch the strip
+  /// can actually show as selected. `test/seed_colors_test.dart` locks that
+  /// down; `#7A8B6F` (Donation) is only in this list to satisfy it.
+  /// `#D4A05A` was dropped: it is [warning] exactly, and a category wearing
+  /// the "over budget" amber as its identity is a colour collision waiting
+  /// to confuse someone.
   static const List<String> swatchOptions = [
     '#3F8B4C', '#2E5FA8', '#C13F55', '#12928C', '#A0522D', '#7B5B9E',
-    '#C1661E', '#C87941', '#5B8C5A', '#C2665A', '#8A7E74',
+    '#C1661E', '#C87941', '#5B8C5A', '#C2665A', '#7A8B6F', '#8A7E74',
   ];
 }

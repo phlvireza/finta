@@ -33,66 +33,117 @@ class SeedData {
   /// migration can't create a second copy.
   static const String donationCategoryId = 'default_donation';
 
+  /// The expense categories every fresh install starts with, in sort order
+  /// (the index *is* the `sortOrder`).
+  ///
+  /// Colours come from the chart ramp (AppColors.chartColorsLight) rather
+  /// than the older muted swatch list. Two of those swatches were
+  /// #D4A05A — byte-identical to AppColors.warning — so a Bills budget at
+  /// 30% used was already wearing the colour that is supposed to mean
+  /// "75% spent". The chart ramp deliberately omits an amber for exactly
+  /// that reason; the seed list never got the same treatment.
+  ///
+  /// Migration v10 moves existing installs onto these, but only for
+  /// categories still sitting on the old hex — a colour the user picked
+  /// is theirs.
+  ///
+  /// Kept as a const table rather than literals inside [seedCategories] so
+  /// that [shippedColorFor] — which is what "reset to the default colour"
+  /// reads — can never drift from what was actually seeded.
+  static const List<({String name, String icon, String color})>
+      defaultExpenseCategories = [
+    (name: 'Food & Drinks', icon: 'restaurant', color: '#3F8B4C'),
+    (name: 'Transport', icon: 'directions_car', color: '#2E5FA8'),
+    (name: 'Shopping', icon: 'shopping_bag', color: '#C13F55'),
+    (name: 'Bills & Utilities', icon: 'receipt_long', color: '#C1661E'),
+    (name: 'Entertainment', icon: 'movie', color: '#7B5B9E'),
+    (name: 'Health', icon: 'favorite', color: '#12928C'),
+    (name: 'Education', icon: 'school', color: '#A0522D'),
+    (name: 'Groceries', icon: 'local_grocery_store', color: '#C87941'),
+    (name: 'Other', icon: 'more_horiz', color: '#8A7E74'),
+  ];
+
+  /// The income categories every fresh install starts with, in sort order.
+  ///
+  /// Income and expense categories are never charted together, so the same
+  /// hues can serve both lists without two slices of one pie colliding.
+  static const List<({String name, String icon, String color})>
+      defaultIncomeCategories = [
+    (name: 'Salary', icon: 'account_balance_wallet', color: '#3F8B4C'),
+    (name: 'Freelance', icon: 'laptop', color: '#2E5FA8'),
+    (name: 'Gift', icon: 'card_giftcard', color: '#7B5B9E'),
+    (name: 'Investment', icon: 'trending_up', color: '#12928C'),
+    (name: 'Other', icon: 'more_horiz', color: '#8A7E74'),
+  ];
+
+  /// The colour each fixed-id seed ships with. These rows are referenced by
+  /// id (unlike the original seed set, which gets fresh uuids), so they are
+  /// keyed that way here too.
+  static const Map<String, String> _fixedIdSeedColors = {
+    transferCategoryId: '#8A7E74',
+    savingsGoalsCategoryId: '#5B8C5A',
+    debtPaymentsCategoryId: '#C2665A',
+    debtRepaymentsCategoryId: '#5B8C5A',
+    donationCategoryId: '#7A8B6F',
+  };
+
+  /// The colour a seeded category shipped with, or null when it wasn't
+  /// seeded by us — i.e. what "reset to default colour" restores.
+  ///
+  /// Fixed-id seeds match on id. The original seed set gets fresh uuids at
+  /// install time, so those match on type + name, the same key
+  /// `Migrations.seedCategoryRecolours` uses. That is also why the UI lets a
+  /// default category's colour be edited but not its name: a renamed default
+  /// falls out of both lookups.
+  ///
+  /// [isDefault] is required and short-circuits to null, because name is not
+  /// a unique key — a user is free to create their own "Health" expense
+  /// category, and it must not be offered a reset to a colour it never had.
+  static String? shippedColorFor({
+    required String id,
+    required String type,
+    required String name,
+    required bool isDefault,
+  }) {
+    if (!isDefault) return null;
+
+    final fixed = _fixedIdSeedColors[id];
+    if (fixed != null) return fixed;
+
+    final table =
+        type == 'income' ? defaultIncomeCategories : defaultExpenseCategories;
+    for (final row in table) {
+      if (row.name == name) return row.color;
+    }
+    return null;
+  }
+
   static Future<void> seedCategories(Database db) async {
     final now = DateTime.now().toIso8601String();
     final batch = db.batch();
 
-    // ── Default Expense Categories ────────────────────────────
-    // Colours come from the chart ramp (AppColors.chartColorsLight) rather
-    // than the older muted swatch list. Two of those swatches were
-    // #D4A05A — byte-identical to AppColors.warning — so a Bills budget at
-    // 30% used was already wearing the colour that is supposed to mean
-    // "75% spent". The chart ramp deliberately omits an amber for exactly
-    // that reason; the seed list never got the same treatment.
-    //
-    // Migration v10 moves existing installs onto these, but only for
-    // categories still sitting on the old hex — a colour the user picked
-    // is theirs.
-    final expenseCategories = [
-      {'name': 'Food & Drinks', 'icon': 'restaurant', 'color': '#3F8B4C'},
-      {'name': 'Transport', 'icon': 'directions_car', 'color': '#2E5FA8'},
-      {'name': 'Shopping', 'icon': 'shopping_bag', 'color': '#C13F55'},
-      {'name': 'Bills & Utilities', 'icon': 'receipt_long', 'color': '#C1661E'},
-      {'name': 'Entertainment', 'icon': 'movie', 'color': '#7B5B9E'},
-      {'name': 'Health', 'icon': 'favorite', 'color': '#12928C'},
-      {'name': 'Education', 'icon': 'school', 'color': '#A0522D'},
-      {'name': 'Groceries', 'icon': 'local_grocery_store', 'color': '#C87941'},
-      {'name': 'Other', 'icon': 'more_horiz', 'color': '#8A7E74'},
-    ];
-
-    for (var i = 0; i < expenseCategories.length; i++) {
-      final cat = expenseCategories[i];
+    for (var i = 0; i < defaultExpenseCategories.length; i++) {
+      final cat = defaultExpenseCategories[i];
       batch.insert('categories', {
         'id': _uuid.v4(),
-        'name': cat['name'],
+        'name': cat.name,
         'type': 'expense',
-        'icon': cat['icon'],
-        'color': cat['color'],
+        'icon': cat.icon,
+        'color': cat.color,
         'isDefault': 1,
         'sortOrder': i,
         'createdAt': now,
       });
     }
 
-    // ── Default Income Categories ─────────────────────────────
-    // Income and expense categories are never charted together, so the same
-    // hues can serve both lists without two slices of one pie colliding.
-    final incomeCategories = [
-      {'name': 'Salary', 'icon': 'account_balance_wallet', 'color': '#3F8B4C'},
-      {'name': 'Freelance', 'icon': 'laptop', 'color': '#2E5FA8'},
-      {'name': 'Gift', 'icon': 'card_giftcard', 'color': '#7B5B9E'},
-      {'name': 'Investment', 'icon': 'trending_up', 'color': '#12928C'},
-      {'name': 'Other', 'icon': 'more_horiz', 'color': '#8A7E74'},
-    ];
-
-    for (var i = 0; i < incomeCategories.length; i++) {
-      final cat = incomeCategories[i];
+    for (var i = 0; i < defaultIncomeCategories.length; i++) {
+      final cat = defaultIncomeCategories[i];
       batch.insert('categories', {
         'id': _uuid.v4(),
-        'name': cat['name'],
+        'name': cat.name,
         'type': 'income',
-        'icon': cat['icon'],
-        'color': cat['color'],
+        'icon': cat.icon,
+        'color': cat.color,
         'isDefault': 1,
         'sortOrder': i,
         'createdAt': now,
@@ -111,7 +162,7 @@ class SeedData {
       'name': 'Transfer',
       'type': 'expense',
       'icon': 'account_balance_wallet',
-      'color': '#8A7E74',
+      'color': _fixedIdSeedColors[transferCategoryId]!,
       'isDefault': 1,
       'isArchived': 0,
       'isSystem': 1,
@@ -132,7 +183,7 @@ class SeedData {
       'name': 'Savings & Goals',
       'type': 'expense',
       'icon': 'savings',
-      'color': '#5B8C5A',
+      'color': _fixedIdSeedColors[savingsGoalsCategoryId]!,
       'isDefault': 1,
       'sortOrder': 100,
       'createdAt': now,
@@ -142,7 +193,7 @@ class SeedData {
       'name': 'Debt Payments',
       'type': 'expense',
       'icon': 'attach_money',
-      'color': '#C2665A',
+      'color': _fixedIdSeedColors[debtPaymentsCategoryId]!,
       'isDefault': 1,
       'sortOrder': 101,
       'createdAt': now,
@@ -152,7 +203,7 @@ class SeedData {
       'name': 'Debt Repayments',
       'type': 'income',
       'icon': 'redeem',
-      'color': '#5B8C5A',
+      'color': _fixedIdSeedColors[debtRepaymentsCategoryId]!,
       'isDefault': 1,
       'sortOrder': 100,
       'createdAt': now,
@@ -177,7 +228,7 @@ class SeedData {
         'name': 'Donation',
         'type': 'expense',
         'icon': 'volunteer_activism',
-        'color': '#7A8B6F',
+        'color': _fixedIdSeedColors[donationCategoryId]!,
         'isDefault': 1,
         'isArchived': 0,
         'isSystem': 0,
