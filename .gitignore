@@ -2,6 +2,7 @@
 .agents/
 .claude/scheduled_tasks.lock
 .claude/settings.local.json
+graphify-out/
 
 # Project guidance for Claude Code — local-only, not part of the shipped repo
 CLAUDE.md
@@ -52,6 +53,12 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 /android/build/
+
+# Gradle caches under the vendored file_picker fork. These were tracked by
+# mistake: they are daemon-owned lock and hash files that change on every
+# build, and Windows keeps them open, so git cannot even hash them while a
+# Gradle daemon is alive.
+vendor/**/.gradle/
 
 # Local-only docs (not pushed to remote) — README and the shared Claude rules
 # are the deliberate exceptions.
