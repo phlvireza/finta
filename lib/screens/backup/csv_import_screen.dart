@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/services/csv_import_service.dart';
-import '../../models/category_model.dart';
 import '../../models/transaction_model.dart';
 import '../../providers/account_provider.dart';
 import '../../providers/category_provider.dart';
@@ -82,29 +81,6 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
     });
   }
 
-  /// Matches a CSV's category column against the stored English name *and*
-  /// the name shown in the current locale.
-  ///
-  /// The export writes stored names, so a round-trip of our own file matches
-  /// on the first. A user who hand-writes a CSV, though, writes what the app
-  /// showed them — "Makanan & Minuman", not "Food & Drinks" — and without the
-  /// second check every one of those rows would spawn a duplicate custom
-  /// category beside the default it plainly meant.
-  CategoryModel? _findCategory(
-    List<CategoryModel> categories,
-    String name,
-    String type,
-    AppLocalizations loc,
-  ) {
-    final lower = name.toLowerCase();
-    for (final c in categories) {
-      if (c.type != type || c.isSystem) continue;
-      if (c.name.toLowerCase() == lower) return c;
-      if (categoryDisplayName(c, loc).toLowerCase() == lower) return c;
-    }
-    return null;
-  }
-
   Future<void> _confirmImport() async {
     setState(() => _importing = true);
     final loc = AppLocalizations.of(context)!;
@@ -119,7 +95,12 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
 
       for (final row in _rows) {
         final targetName = row.categoryName ?? loc.importedCategoryName;
-        var category = _findCategory(categoryProvider.categories, targetName, row.type, loc);
+        var category = findCategoryByAnyName(
+          categories: categoryProvider.categories,
+          name: targetName,
+          type: row.type,
+          loc: loc,
+        );
         if (category == null) {
           await categoryProvider.addCategory(
             name: targetName,
@@ -127,7 +108,12 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
             icon: 'category',
             color: '#8A7E74',
           );
-          category = _findCategory(categoryProvider.categories, targetName, row.type, loc);
+          category = findCategoryByAnyName(
+            categories: categoryProvider.categories,
+            name: targetName,
+            type: row.type,
+            loc: loc,
+          );
         }
         toInsert.add(TransactionModel(
           id: _uuid.v4(),

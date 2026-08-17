@@ -32,6 +32,43 @@ String categoryDisplayNameOr(
   return category == null ? fallback : categoryDisplayName(category, loc);
 }
 
+/// Resolves a category name read out of a CSV to one of [categories].
+///
+/// Matches the stored English name *and* the name shown in [loc]. The export
+/// writes stored names, so a round-trip of our own file matches on the first.
+/// A user who hand-writes a CSV, though, writes what the app showed them —
+/// "Makanan & Minuman", not "Food & Drinks" — and without the second pass
+/// every one of those rows would spawn a duplicate custom category beside the
+/// default it plainly meant.
+///
+/// **An exact stored-name match always wins**, which is why this is two passes
+/// rather than one loop checking both. Categories arrive in `sortOrder` order,
+/// so the seeded defaults come first: a single loop let a *displayed*-name hit
+/// on an early default beat an *exact* stored-name hit on a user's own
+/// category further down. A user who made their own "Belanja" while the app
+/// was in English, then switched to Indonesian — where seeded "Shopping"
+/// displays as "Belanja" — would have had those rows filed under Shopping.
+///
+/// System categories and the wrong transaction type are never candidates.
+CategoryModel? findCategoryByAnyName({
+  required List<CategoryModel> categories,
+  required String name,
+  required String type,
+  required AppLocalizations loc,
+}) {
+  final lower = name.toLowerCase();
+  final candidates =
+      categories.where((c) => c.type == type && !c.isSystem).toList();
+
+  for (final c in candidates) {
+    if (c.name.toLowerCase() == lower) return c;
+  }
+  for (final c in candidates) {
+    if (categoryDisplayName(c, loc).toLowerCase() == lower) return c;
+  }
+  return null;
+}
+
 /// The translation for a seeded category's canonical English name, or null if
 /// [canonicalName] isn't one the app seeds.
 ///

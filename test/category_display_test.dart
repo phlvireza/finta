@@ -11,6 +11,8 @@ CategoryModel _cat(
   String name, {
   String type = 'expense',
   bool isDefault = true,
+  bool isSystem = false,
+  int sortOrder = 0,
 }) {
   return CategoryModel(
     id: 'id-$name',
@@ -19,7 +21,8 @@ CategoryModel _cat(
     icon: 'category',
     color: '#8A7E74',
     isDefault: isDefault,
-    sortOrder: 0,
+    isSystem: isSystem,
+    sortOrder: sortOrder,
     createdAt: DateTime(2026, 1, 1),
   );
 }
@@ -112,6 +115,94 @@ void main() {
     test('returns null for a name the app never seeded', () {
       expect(seedCategoryDisplayName('Kopi Pagi', id), isNull);
       expect(seedCategoryDisplayName('', en), isNull);
+    });
+  });
+
+  group('findCategoryByAnyName', () {
+    // Categories arrive in sortOrder order, so the seeded defaults come
+    // first — which is exactly what makes the precedence below load-bearing.
+    final shopping = _cat('Shopping', sortOrder: 2);
+    final ownBelanja = _cat('Belanja', isDefault: false, sortOrder: 40);
+
+    test('an exact stored-name match beats an earlier displayed-name match', () {
+      // The regression this function was extracted for: in Indonesian the
+      // seeded "Shopping" displays as "Belanja" and sorts first, so a single
+      // loop checking both names per category filed these rows under
+      // Shopping instead of the user's own identically-named category.
+      final match = findCategoryByAnyName(
+        categories: [shopping, ownBelanja],
+        name: 'Belanja',
+        type: 'expense',
+        loc: id,
+      );
+      expect(match, same(ownBelanja));
+    });
+
+    test('falls back to the displayed name when no stored name matches', () {
+      final match = findCategoryByAnyName(
+        categories: [shopping],
+        name: 'Belanja',
+        type: 'expense',
+        loc: id,
+      );
+      expect(match, same(shopping));
+    });
+
+    test('matches the stored name for a round-trip of our own export', () {
+      // The export writes stored names, so this is the common path.
+      final match = findCategoryByAnyName(
+        categories: [shopping, ownBelanja],
+        name: 'Shopping',
+        type: 'expense',
+        loc: id,
+      );
+      expect(match, same(shopping));
+    });
+
+    test('is case insensitive on both names', () {
+      expect(
+        findCategoryByAnyName(
+          categories: [shopping], name: 'sHoPPing', type: 'expense', loc: id),
+        same(shopping),
+      );
+      expect(
+        findCategoryByAnyName(
+          categories: [shopping], name: 'belanja', type: 'expense', loc: id),
+        same(shopping),
+      );
+    });
+
+    test('never matches across transaction types', () {
+      final salary = _cat('Salary', type: 'income');
+      expect(
+        findCategoryByAnyName(
+          categories: [salary], name: 'Salary', type: 'expense', loc: en),
+        isNull,
+      );
+    });
+
+    test('never matches a system category', () {
+      // The Transfer category backs both legs of every transfer; an import
+      // must not be able to file rows into it by name.
+      final transfer = _cat('Transfer', isSystem: true, sortOrder: -1);
+      expect(
+        findCategoryByAnyName(
+          categories: [transfer], name: 'Transfer', type: 'expense', loc: en),
+        isNull,
+      );
+    });
+
+    test('returns null when nothing matches, so the caller creates one', () {
+      expect(
+        findCategoryByAnyName(
+          categories: [shopping], name: 'Kopi Pagi', type: 'expense', loc: id),
+        isNull,
+      );
+      expect(
+        findCategoryByAnyName(
+          categories: const [], name: 'Shopping', type: 'expense', loc: en),
+        isNull,
+      );
     });
   });
 }
