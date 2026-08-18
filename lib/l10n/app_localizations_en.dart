@@ -521,6 +521,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get switchToDarkTheme => 'Switch to dark';
 
   @override
+  String get switchToEnglish => 'Switch to English';
+
+  @override
+  String get switchToIndonesian => 'Switch to Bahasa Indonesia';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
   String get currentPayPeriod => 'Current pay period';
 
   @override

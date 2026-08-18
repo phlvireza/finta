@@ -28,7 +28,11 @@ class DashboardScreen extends StatelessWidget {
         // the user step back to a previous one (see PeriodSelector).
         title: const PeriodSelector(),
         centerTitle: false,
-        actions: const [_ThemeToggleButton(), _HideBalancesButton()],
+        actions: const [
+          _LanguageToggleButton(),
+          _ThemeToggleButton(),
+          _HideBalancesButton(),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -121,6 +125,49 @@ class _HideBalancesButton extends StatelessWidget {
       ),
       tooltip: settings.hideBalances ? loc.showBalances : loc.hideBalances,
       onPressed: () => settings.setHideBalances(!settings.hideBalances),
+    );
+  }
+}
+
+/// One-tap English/Bahasa Indonesia flip, grouped with the theme toggle
+/// because both are instant appearance switches with no data consequences.
+///
+/// The face is a two-letter code rather than an icon: a globe says
+/// "language" but not *which* language, and knowing which one you are in
+/// at a glance is the whole point. That keeps the same split as the two
+/// buttons beside it — the face shows the current state, the tooltip names
+/// the action.
+///
+/// With exactly two locales a toggle needs no menu, so unlike the theme
+/// button there is no third state to lose. Settings → Language stays the
+/// canonical picker regardless, the way Settings → Theme does.
+class _LanguageToggleButton extends StatelessWidget {
+  const _LanguageToggleButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    // Watched, not read: there is no resolved inherited value to derive
+    // this from the way the theme button reads Theme.of(context), so the
+    // label only refreshes if this widget subscribes to the provider.
+    final isEnglish = context.watch<SettingsProvider>().languageCode == 'en';
+
+    return IconButton(
+      icon: Text(
+        isEnglish ? 'EN' : 'ID',
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              // IconButton tints an Icon child through IconTheme, which a
+              // Text child never picks up. Reading the same value keeps
+              // this in step with the icons either side of it in both
+              // themes.
+              color: IconTheme.of(context).color,
+            ),
+      ),
+      tooltip: isEnglish ? loc.switchToIndonesian : loc.switchToEnglish,
+      onPressed: () =>
+          context.read<SettingsProvider>().setLanguage(isEnglish ? 'id' : 'en'),
     );
   }
 }

@@ -127,6 +127,16 @@
    action-to-action, and reads as a stray gap between the theme and eye icons. */
 .ph-appbar__action + .ph-appbar__action { margin-left: -6px; }
 
+/* The language action is a label, not an icon. Tabular figures keep the box
+   the same width whichever code is showing, so the two icons beside it don't
+   shift when it changes. */
+.ph-appbar__action--text {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
 /* --------------------------------------------------------------------------
    Scrollable body. Content is clipped by the screen, mimicking a scroll
    position partway down a real list.

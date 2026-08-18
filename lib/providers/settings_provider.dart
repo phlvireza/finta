@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants/app_constants.dart';
 
@@ -47,9 +48,24 @@ class SettingsProvider extends ChangeNotifier {
     _payday = _prefs!.getInt(_keyPayday) ?? 1;
     _hasCompletedOnboarding = _prefs!.getBool(_keyOnboarding) ?? false;
     _languageCode = _prefs!.getString(_keyLocale) ?? 'en';
+    _applyDateLocale();
     _hideBalances = _prefs!.getBool(_keyHideBalances) ?? false;
 
     notifyListeners();
+  }
+
+  /// Points `DateFormat` at the chosen language.
+  ///
+  /// `AppDateUtils` builds its formatters without a locale argument, which
+  /// is deliberate — it is a pure layer with no access to settings. This
+  /// global is how the two meet: set it here and every existing
+  /// `DateFormat` in the app starts producing localised month and weekday
+  /// names, with no signature changes anywhere.
+  ///
+  /// `AppDateUtils.formatIso` opts out by pinning its own locale, since it
+  /// serializes rather than displays.
+  void _applyDateLocale() {
+    Intl.defaultLocale = _languageCode;
   }
 
   Future<void> setHideBalances(bool hide) async {
@@ -73,6 +89,7 @@ class SettingsProvider extends ChangeNotifier {
 
   Future<void> setLanguage(String code) async {
     _languageCode = code;
+    _applyDateLocale();
     await _prefs?.setString(_keyLocale, code);
     notifyListeners();
   }

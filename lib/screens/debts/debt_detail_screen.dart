@@ -246,7 +246,7 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
         .map((entry) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                DateGroupHeader(label: entry.key, transactions: entry.value),
+                DateGroupHeader(date: entry.key, transactions: entry.value),
                 ...entry.value.map(
                   (tx) => TransactionTile(
                     transaction: tx,

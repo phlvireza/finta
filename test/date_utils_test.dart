@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:finta/core/utils/date_utils.dart';
 
 void main() {
@@ -240,6 +241,99 @@ void main() {
             referenceDate: DateTime(2026, 8, 5)),
         (start: DateTime(2026, 7, 25), end: DateTime(2026, 8, 24)),
       );
+    });
+  });
+
+  group('relativeLabel', () {
+    // "Today" and "Yesterday" are relative to the wall clock by nature, so
+    // these two derive their input from now rather than a literal. Every
+    // other branch below uses fixed dates.
+    DateTime dayOffset(int days) {
+      final now = DateTime.now();
+      return DateTime(now.year, now.month, now.day).subtract(Duration(days: days));
+    }
+
+    test('uses the caller-supplied word for today', () {
+      expect(
+        AppDateUtils.relativeLabel(dayOffset(0),
+            todayLabel: 'Hari ini', yesterdayLabel: 'Kemarin'),
+        'Hari ini',
+      );
+    });
+
+    test('uses the caller-supplied word for yesterday', () {
+      expect(
+        AppDateUtils.relativeLabel(dayOffset(1),
+            todayLabel: 'Hari ini', yesterdayLabel: 'Kemarin'),
+        'Kemarin',
+      );
+    });
+
+    test('falls through to a formatted date once the day is old enough', () {
+      final label = AppDateUtils.relativeLabel(dayOffset(30),
+          todayLabel: 'Hari ini', yesterdayLabel: 'Kemarin');
+      expect(label, isNot('Hari ini'));
+      expect(label, isNot('Kemarin'));
+      expect(label, isNotEmpty);
+    });
+  });
+
+  group('groupByDate', () {
+    test('groups timestamps that share a calendar day', () {
+      final items = [
+        DateTime(2026, 8, 18, 9, 30),
+        DateTime(2026, 8, 18, 21, 5),
+        DateTime(2026, 8, 17, 12, 0),
+      ];
+
+      final grouped = AppDateUtils.groupByDate(items, (d) => d);
+
+      expect(grouped.keys, hasLength(2));
+      expect(grouped[DateTime(2026, 8, 18)], hasLength(2));
+      expect(grouped[DateTime(2026, 8, 17)], hasLength(1));
+    });
+
+    test('keys are stripped to midnight so the time of day never splits a group', () {
+      final grouped = AppDateUtils.groupByDate(
+        [DateTime(2026, 8, 18, 23, 59, 59)],
+        (d) => d,
+      );
+
+      expect(grouped.keys.single, DateTime(2026, 8, 18));
+    });
+
+    // The list screens render groups in map order, so a sorted input has to
+    // stay sorted on the way through.
+    test('preserves the order days first appear in', () {
+      final items = [
+        DateTime(2026, 8, 18),
+        DateTime(2026, 8, 17),
+        DateTime(2026, 8, 18),
+        DateTime(2026, 8, 15),
+      ];
+
+      final grouped = AppDateUtils.groupByDate(items, (d) => d);
+
+      expect(grouped.keys.toList(), [
+        DateTime(2026, 8, 18),
+        DateTime(2026, 8, 17),
+        DateTime(2026, 8, 15),
+      ]);
+    });
+
+    test('returns an empty map for no items', () {
+      expect(AppDateUtils.groupByDate(<DateTime>[], (d) => d), isEmpty);
+    });
+  });
+
+  group('formatIso', () {
+    // Keys the heatmap's per-day lookup and names exported files, so it must
+    // not follow the UI language the way the display formatters do.
+    test('is stable regardless of the app locale', () {
+      Intl.defaultLocale = 'id';
+      addTearDown(() => Intl.defaultLocale = null);
+
+      expect(AppDateUtils.formatIso(DateTime(2026, 8, 18)), '2026-08-18');
     });
   });
 }

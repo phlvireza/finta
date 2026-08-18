@@ -406,7 +406,10 @@ class TransactionProvider extends ChangeNotifier {
   }
 
   /// Get grouped transactions by date for a list.
-  Map<String, List<TransactionModel>> getGroupedTransactions(
+  ///
+  /// Keyed by calendar day; callers render the key via
+  /// `DateGroupHeader`, which localises it.
+  Map<DateTime, List<TransactionModel>> getGroupedTransactions(
     List<TransactionModel> items,
   ) {
     return AppDateUtils.groupByDate(items, (t) => t.date);

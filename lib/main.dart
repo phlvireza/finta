@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/settings_provider.dart';
@@ -25,8 +26,15 @@ import 'core/services/budget_expiry_service.dart';
 import 'l10n/app_localizations.dart';
 import 'app/app.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Loads the month and weekday names DateFormat needs for locales other
+  // than en_US. Without it every DateFormat silently falls back to English
+  // no matter what language the app is set to, so an Indonesian UI still
+  // showed "Jul 25 – Aug 24" in its own app bar.
+  await initializeDateFormatting();
+
   runApp(const FintaRoot());
 }
 

@@ -457,8 +457,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                   itemCount: grouped.length,
                   padding: const EdgeInsets.only(bottom: AppConstants.fabClearance),
                   itemBuilder: (context, index) {
-                final dateLabel = grouped.keys.elementAt(index);
-                final txList = grouped[dateLabel]!;
+                final groupDate = grouped.keys.elementAt(index);
+                final txList = grouped[groupDate]!;
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -470,7 +470,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                         AppConstants.spacingLg,
                         0,
                       ),
-                      child: DateGroupHeader(label: dateLabel, transactions: txList),
+                      child: DateGroupHeader(date: groupDate, transactions: txList),
                     ),
                     ...txList.map((tx) {
                       final isSelected = _selectedIds.contains(tx.id);

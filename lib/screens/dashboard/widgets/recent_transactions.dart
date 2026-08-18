@@ -45,7 +45,7 @@ class RecentTransactions extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           for (final entry in grouped.entries) ...[
-            DateGroupHeader(label: entry.key, transactions: entry.value),
+            DateGroupHeader(date: entry.key, transactions: entry.value),
             ...entry.value.map(
               (tx) => TransactionTile(transaction: tx, dense: true),
             ),

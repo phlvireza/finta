@@ -5,15 +5,26 @@ class AppDateUtils {
   AppDateUtils._();
 
   /// Returns a human-friendly date label: "Today", "Yesterday", or "Jul 20".
-  static String relativeLabel(DateTime date) {
+  ///
+  /// [todayLabel] and [yesterdayLabel] are passed in rather than looked up
+  /// because this layer has no `BuildContext` — the same split
+  /// `insight_rules.dart` uses, where the rule produces data and the UI
+  /// supplies the words. The remaining branches localise themselves via
+  /// `Intl.defaultLocale`, which `SettingsProvider` keeps in step with the
+  /// chosen language.
+  static String relativeLabel(
+    DateTime date, {
+    required String todayLabel,
+    required String yesterdayLabel,
+  }) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final dateOnly = DateTime(date.year, date.month, date.day);
 
     final diff = today.difference(dateOnly).inDays;
 
-    if (diff == 0) return 'Today';
-    if (diff == 1) return 'Yesterday';
+    if (diff == 0) return todayLabel;
+    if (diff == 1) return yesterdayLabel;
     if (diff < 7) return DateFormat('EEEE').format(date); // e.g. "Wednesday"
     if (date.year == now.year) return DateFormat('MMM d').format(date); // e.g. "Jul 20"
     return DateFormat('MMM d, yyyy').format(date); // e.g. "Jul 20, 2025"
@@ -30,8 +41,14 @@ class AppDateUtils {
   }
 
   /// Format a date as "2026-07-25" (ISO date only).
+  ///
+  /// Pinned to a fixed locale, unlike every other formatter here. This is a
+  /// serialization format — it keys the heatmap's per-day lookup and names
+  /// exported files — so it must produce the same string no matter what
+  /// language the UI is in. Display formats follow `Intl.defaultLocale`;
+  /// this one deliberately does not.
   static String formatIso(DateTime date) {
-    return DateFormat('yyyy-MM-dd').format(date);
+    return DateFormat('yyyy-MM-dd', 'en_US').format(date);
   }
 
   /// Fraction (0.0–1.0) of [period] that has elapsed as of today. Used to
@@ -200,15 +217,24 @@ class AppDateUtils {
     return (start: prevStart, end: prevEnd);
   }
 
-  /// Group a list of dates by their relative label.
-  static Map<String, List<T>> groupByDate<T>(
+  /// Group a list of items by the calendar day they fall on.
+  ///
+  /// Keyed by a date rather than a rendered label so grouping does not
+  /// depend on the current language — keying by the label meant switching
+  /// locale mid-session could regroup the list, and it forced this pure
+  /// layer to produce user-facing words. Callers render the key through
+  /// [relativeLabel] where they have a `BuildContext`.
+  ///
+  /// Insertion order is preserved, so a sorted input stays sorted.
+  static Map<DateTime, List<T>> groupByDate<T>(
     List<T> items,
     DateTime Function(T) dateExtractor,
   ) {
-    final groups = <String, List<T>>{};
+    final groups = <DateTime, List<T>>{};
     for (final item in items) {
-      final label = relativeLabel(dateExtractor(item));
-      groups.putIfAbsent(label, () => []).add(item);
+      final date = dateExtractor(item);
+      final key = DateTime(date.year, date.month, date.day);
+      groups.putIfAbsent(key, () => []).add(item);
     }
     return groups;
   }

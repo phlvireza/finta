@@ -247,7 +247,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
                     AppConstants.spacingLg,
                     0,
                   ),
-                  child: DateGroupHeader(label: entry.key, transactions: entry.value),
+                  child: DateGroupHeader(date: entry.key, transactions: entry.value),
                 ),
                 ...entry.value.map(
                   (tx) => TransactionTile(transaction: tx, dense: true),

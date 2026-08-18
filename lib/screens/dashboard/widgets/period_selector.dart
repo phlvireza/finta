@@ -36,21 +36,36 @@ class PeriodSelector extends StatelessWidget {
               ? null
               : () => transactions.goToPreviousPeriod(payday: settings.payday),
         ),
-        GestureDetector(
-          onTap: transactions.isViewingCurrentPeriod
-              ? null
-              : () => transactions.resetToCurrentPeriod(payday: settings.payday),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                AppDateUtils.formatPeriodRange(period.start, period.end),
-                style: theme.textTheme.titleLarge,
-              ),
-              if (transactions.isViewingCurrentPeriod)
-                Text(loc.currentPayPeriod, style: theme.textTheme.labelSmall),
-            ],
+        // Flexible, because the app bar's actions compete for this space.
+        // formatPeriodRange falls back to the long form across a year
+        // boundary ("Dec 25, 2026 – Jan 24, 2027"), and the Indonesian
+        // caption is longer than the English one — without a bound that
+        // combination overflows into yellow stripes rather than
+        // ellipsising.
+        Flexible(
+          child: GestureDetector(
+            onTap: transactions.isViewingCurrentPeriod
+                ? null
+                : () => transactions.resetToCurrentPeriod(payday: settings.payday),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  AppDateUtils.formatPeriodRange(period.start, period.end),
+                  style: theme.textTheme.titleLarge,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (transactions.isViewingCurrentPeriod)
+                  Text(
+                    loc.currentPayPeriod,
+                    style: theme.textTheme.labelSmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
+            ),
           ),
         ),
         IconButton(

@@ -522,6 +522,18 @@ class AppLocalizationsId extends AppLocalizations {
   String get switchToDarkTheme => 'Ganti ke gelap';
 
   @override
+  String get switchToEnglish => 'Ganti ke Bahasa Inggris';
+
+  @override
+  String get switchToIndonesian => 'Ganti ke Bahasa Indonesia';
+
+  @override
+  String get today => 'Hari ini';
+
+  @override
+  String get yesterday => 'Kemarin';
+
+  @override
   String get currentPayPeriod => 'Periode gaji saat ini';
 
   @override

@@ -1076,6 +1076,30 @@ abstract class AppLocalizations {
   /// **'Switch to dark'**
   String get switchToDarkTheme;
 
+  /// No description provided for @switchToEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to English'**
+  String get switchToEnglish;
+
+  /// No description provided for @switchToIndonesian.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to Bahasa Indonesia'**
+  String get switchToIndonesian;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
   /// No description provided for @currentPayPeriod.
   ///
   /// In en, this message translates to:
