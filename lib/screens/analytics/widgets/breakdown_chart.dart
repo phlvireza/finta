@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +8,7 @@ import '../../../providers/settings_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
+import '../../../core/utils/category_color.dart';
 import '../../../core/utils/number_utils.dart';
 import '../../../core/utils/pie_label_layout.dart';
 import '../../../l10n/app_localizations.dart';
@@ -63,6 +65,22 @@ class BreakdownChart extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
     final palette = isDark ? AppColors.chartColorsDark : AppColors.chartColorsLight;
 
+    // Resolved once and shared by the ring, the leader lines and the
+    // legend, so the three can never disagree about which colour belongs
+    // to which slice. Each entry is the category's own colour, with the
+    // rank-indexed palette as the fallback.
+    //
+    // Because colours are the user's choice now, two slices can end up the
+    // same hue where the old ramp guaranteed they wouldn't. `sectionsSpace`
+    // below keeps them countable and the legend names them.
+    final sliceColors = [
+      for (var i = 0; i < data.length; i++)
+        resolveCategoryChartColor(
+          categories.getCategoryById(data[i].categoryId),
+          fallback: palette[i % palette.length],
+        ),
+    ];
+
     return Column(
       children: [
         SizedBox(
@@ -93,7 +111,7 @@ class BreakdownChart extends StatelessWidget {
                       startDegreeOffset: -90,
                       sections: List.generate(data.length, (i) {
                         return PieChartSectionData(
-                          color: palette[i % palette.length],
+                          color: sliceColors[i],
                           value: data[i].total,
                           // Drawn by the overlay instead, so the two can
                           // never disagree about placement.
@@ -110,7 +128,7 @@ class BreakdownChart extends StatelessWidget {
                       child: CustomPaint(
                         painter: _ArrowLabelPainter(
                           slots: slots,
-                          palette: palette,
+                          sliceColors: sliceColors,
                           textColor: theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface,
                           textDirection: Directionality.of(context),
                         ),
@@ -156,7 +174,7 @@ class BreakdownChart extends StatelessWidget {
             final name = categories.getCategoryById(data[i].categoryId)?.name ?? loc.unknown;
             final percent = total > 0 ? data[i].total / total * 100 : 0.0;
             return _LegendEntry(
-              color: palette[i % palette.length],
+              color: sliceColors[i],
               name: name,
               percent: percent,
             );
@@ -203,13 +221,18 @@ class _LegendEntry extends StatelessWidget {
 /// the canvas edge.
 class _ArrowLabelPainter extends CustomPainter {
   final List<PieLabelSlot> slots;
-  final List<Color> palette;
+
+  /// Already resolved per slice by the caller, indexed the same way as the
+  /// chart's data. Resolving here instead would mean a category lookup
+  /// inside [paint], which runs on every frame.
+  final List<Color> sliceColors;
+
   final Color textColor;
   final TextDirection textDirection;
 
   _ArrowLabelPainter({
     required this.slots,
-    required this.palette,
+    required this.sliceColors,
     required this.textColor,
     required this.textDirection,
   });
@@ -221,7 +244,7 @@ class _ArrowLabelPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     for (final slot in slots) {
-      final color = palette[slot.index % palette.length];
+      final color = sliceColors[slot.index % sliceColors.length];
       linePaint.color = color.withValues(alpha: 0.75);
 
       final label = _buildLabel(slot);
@@ -276,6 +299,12 @@ class _ArrowLabelPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_ArrowLabelPainter oldDelegate) {
-    return oldDelegate.slots != slots || oldDelegate.textColor != textColor;
+    // sliceColors is compared by value: recolouring a category leaves the
+    // data — and so the slots — identical, so without this the leader
+    // lines would keep the old colour until something else forced a
+    // repaint.
+    return oldDelegate.slots != slots ||
+        oldDelegate.textColor != textColor ||
+        !listEquals(oldDelegate.sliceColors, sliceColors);
   }
 }

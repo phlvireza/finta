@@ -5,6 +5,7 @@ import '../../../providers/category_provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/category_color.dart';
 import '../../../core/utils/number_utils.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../l10n/app_localizations.dart';
@@ -42,9 +43,16 @@ class _CategoryRankListState extends State<CategoryRankList> {
       ...List.generate(displayData.length, (i) {
         final item = displayData[i];
         final category = categories.getCategoryById(item.categoryId);
-        final color = palette[i % palette.length];
 
         if (category == null) return const SizedBox.shrink();
+
+        // The category's own colour, so recolouring one in Manage
+        // Categories moves its bar here too. The rank-indexed palette
+        // stays as the fallback for an unparseable hex.
+        final color = resolveCategoryChartColor(
+          category,
+          fallback: palette[i % palette.length],
+        );
 
         return Padding(
           padding: const EdgeInsets.fromLTRB(
