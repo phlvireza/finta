@@ -317,6 +317,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get defaultCategory => 'Default';
 
   @override
+  String get defaultCategoryColorOnly =>
+      'Built-in category — only its colour can be changed.';
+
+  @override
   String get selectACategory => 'Select a category...';
 
   @override

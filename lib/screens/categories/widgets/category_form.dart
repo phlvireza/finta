@@ -41,6 +41,15 @@ class _CategoryFormState extends State<CategoryForm> {
 
   final List<String> _colorOptions = AppColors.swatchOptions;
 
+  /// A seeded category can be recoloured but not otherwise reshaped.
+  ///
+  /// Name is locked because seed-data migrations find these rows by name
+  /// (see `Migrations.v10`) — a rename would silently opt the row out of
+  /// any future fix. Parent and icon are locked because the seeded set is
+  /// meant to stay recognisable across installs; colour is the one part
+  /// that is purely the user's taste.
+  bool get _isSeeded => widget.categoryToEdit?.isDefault ?? false;
+
   @override
   void initState() {
     super.initState();
@@ -141,7 +150,7 @@ class _CategoryFormState extends State<CategoryForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GestureDetector(
-                  onTap: _pickIcon,
+                  onTap: _isSeeded ? null : _pickIcon,
                   child: Container(
                     width: 48,
                     height: 48,
@@ -160,6 +169,7 @@ class _CategoryFormState extends State<CategoryForm> {
                 Expanded(
                   child: TextFormField(
                     controller: _nameController,
+                    enabled: !_isSeeded,
                     decoration: InputDecoration(
                       labelText: loc.categoryName,
                       hintText: '',
@@ -196,6 +206,18 @@ class _CategoryFormState extends State<CategoryForm> {
             ),
             const SizedBox(height: AppConstants.spacingXxl),
 
+            // Says why the fields above are greyed out. Without it a
+            // disabled name field just reads as broken.
+            if (_isSeeded) ...[
+              Text(
+                loc.defaultCategoryColorOnly,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: AppConstants.spacingXxl),
+            ],
+
             // Parent category — sits directly under the name because it is
             // a structural choice (it decides where the category lands in
             // every picker), not decoration like the colour below. It used
@@ -207,6 +229,10 @@ class _CategoryFormState extends State<CategoryForm> {
             // its children grandchildren of its new parent), and only
             // top-level categories are valid choices.
             Builder(builder: (context) {
+              // Seeded categories keep the shape they shipped with, so
+              // there is nothing to choose here.
+              if (_isSeeded) return const SizedBox.shrink();
+
               final provider = context.watch<CategoryProvider>();
               final selfId = widget.categoryToEdit?.id;
               final hasChildren =

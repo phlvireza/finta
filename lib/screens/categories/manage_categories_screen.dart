@@ -158,26 +158,33 @@ class _CategoryTile extends StatelessWidget {
         subtitle: category.isDefault
             ? Text(loc.defaultCategory, style: theme.textTheme.labelSmall)
             : null,
-        trailing: category.isDefault
-            ? null
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit, size: 20),
-                    onPressed: () => ManageCategoriesScreen._showCategoryForm(
-                      context,
-                      isIncome: isIncome,
-                      category: category,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, size: 20),
-                    color: theme.colorScheme.error,
-                    onPressed: () => _deleteCategory(context, category),
-                  ),
-                ],
+        // Default categories are editable too, but only for their colour —
+        // the form locks everything else. They used to have no trailing
+        // row at all, which made the seeded categories most people
+        // actually use the only ones they could never recolour.
+        //
+        // Delete stays hidden for them: SeedData hands out fixed ids that
+        // transfers, goals and debts look up by constant, so removing one
+        // breaks those flows rather than just losing a row.
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.edit, size: 20),
+              onPressed: () => ManageCategoriesScreen._showCategoryForm(
+                context,
+                isIncome: isIncome,
+                category: category,
               ),
+            ),
+            if (!category.isDefault)
+              IconButton(
+                icon: const Icon(Icons.delete, size: 20),
+                color: theme.colorScheme.error,
+                onPressed: () => _deleteCategory(context, category),
+              ),
+          ],
+        ),
       ),
     );
   }

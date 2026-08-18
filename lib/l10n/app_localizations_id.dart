@@ -317,6 +317,10 @@ class AppLocalizationsId extends AppLocalizations {
   String get defaultCategory => 'Bawaan';
 
   @override
+  String get defaultCategoryColorOnly =>
+      'Kategori bawaan — hanya warnanya yang bisa diubah.';
+
+  @override
   String get selectACategory => 'Pilih kategori...';
 
   @override

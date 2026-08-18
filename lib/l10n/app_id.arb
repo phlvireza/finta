@@ -139,6 +139,7 @@
   "expenseAmount": "Jumlah Pengeluaran",
   "category": "Kategori",
   "defaultCategory": "Bawaan",
+  "defaultCategoryColorOnly": "Kategori bawaan — hanya warnanya yang bisa diubah.",
   "selectACategory": "Pilih kategori...",
   "searchCategories": "Cari kategori...",
   "createNewCategory": "Buat Kategori Baru",

@@ -698,6 +698,12 @@ abstract class AppLocalizations {
   /// **'Default'**
   String get defaultCategory;
 
+  /// No description provided for @defaultCategoryColorOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Built-in category — only its colour can be changed.'**
+  String get defaultCategoryColorOnly;
+
   /// No description provided for @selectACategory.
   ///
   /// In en, this message translates to:

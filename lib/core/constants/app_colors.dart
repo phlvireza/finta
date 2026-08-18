@@ -100,8 +100,13 @@ class AppColors {
   /// category shows its swatch already selected. `#D4A05A` was dropped: it
   /// is [warning] exactly, and a category wearing the "over budget" amber
   /// as its identity is a colour collision waiting to confuse someone.
+  ///
+  /// `#7A8B6F` (Donation) was missing until default categories became
+  /// editable — nothing could open that category before, so the gap was
+  /// invisible. Opening it showed no swatch selected and no way back to
+  /// its original colour. Anything added to [SeedData] belongs here too.
   static const List<String> swatchOptions = [
     '#3F8B4C', '#2E5FA8', '#C13F55', '#12928C', '#A0522D', '#7B5B9E',
-    '#C1661E', '#C87941', '#5B8C5A', '#C2665A', '#8A7E74',
+    '#C1661E', '#C87941', '#5B8C5A', '#C2665A', '#7A8B6F', '#8A7E74',
   ];
 }

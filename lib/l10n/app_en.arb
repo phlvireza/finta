@@ -139,6 +139,7 @@
   "expenseAmount": "Expense Amount",
   "category": "Category",
   "defaultCategory": "Default",
+  "defaultCategoryColorOnly": "Built-in category — only its colour can be changed.",
   "selectACategory": "Select a category...",
   "searchCategories": "Search categories...",
   "createNewCategory": "Create New Category",
