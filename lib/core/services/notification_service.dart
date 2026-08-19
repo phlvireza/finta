@@ -104,7 +104,12 @@ class NotificationService {
         iOS: DarwinNotificationDetails(),
         macOS: DarwinNotificationDetails(),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      // Inexact deliberately: SCHEDULE_EXACT_ALARM is a Play-restricted
+      // permission granted to alarm and calendar apps, and a "renews soon"
+      // reminder does not need that precision. Using the exact mode without
+      // the permission throws on Android 14+, where the failure would be
+      // swallowed and the reminder would silently never fire.
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
