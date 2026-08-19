@@ -15,7 +15,10 @@ val keystoreProperties: Properties? =
 
 android {
     namespace = "com.finta.finta"
-    compileSdk = flutter.compileSdkVersion
+    // Pinned rather than tracking flutter.*, so a Flutter SDK upgrade cannot
+    // move the API level under a release that has already been tested. Needs
+    // Android platform 36 installed locally; Gradle fails loudly if it is not.
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -29,8 +32,10 @@ android {
         applicationId = "com.finta.finta"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        minSdk = 24
+        // CONFIRM against Play's current target-API floor before each release —
+        // it rises every August and a stale value blocks upload.
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

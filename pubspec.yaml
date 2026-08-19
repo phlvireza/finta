@@ -5,6 +5,12 @@ version: 1.0.0+1
 
 environment:
   sdk: ^3.12.2
+  # Upper bound is load-bearing, not caution: android/gradle.properties sets
+  # android.builtInKotlin=false because builtInKotlin=true requires Flutter
+  # >=3.47, and the vendored file_picker fork exists for the same reason.
+  # Upgrading past 3.47 means undoing both together — pub refuses the upgrade
+  # until someone does.
+  flutter: ">=3.44.0 <3.47.0"
 
 dependencies:
   flutter:
