@@ -5,12 +5,13 @@ import '../../../providers/category_provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../l10n/app_localizations.dart';
 
-/// Onboarding Screen 1 — Language selection.
+/// Onboarding Screen 2 — Language selection.
 ///
-/// First rather than later on purpose: every page after this one is text, so
-/// the choice has to land before the user has to read anything. The list is
-/// pre-selected from the device language by [SettingsProvider], so for most
-/// users this is a confirmation rather than a decision.
+/// Second rather than first: the welcome page is a brand splash and its one
+/// line of copy is already localized, because [SettingsProvider] resolves the
+/// language from the device before anything renders. So for most users this
+/// page is a confirmation rather than a decision — and it still lands before
+/// the currency and payday pages, which carry the real explanatory copy.
 class LanguagePage extends StatelessWidget {
   final VoidCallback onNext;
 
