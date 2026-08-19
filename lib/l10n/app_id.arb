@@ -151,6 +151,11 @@
   "ofString": "dari",
   "deleteBudget": "Hapus Anggaran",
   "removeBudgetFor": "Hapus anggaran untuk {category}?",
+  "@removeBudgetFor": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
   "editBudget": "Edit Anggaran",
   "newBudget": "Anggaran Baru",
   "saveBudget": "Simpan Anggaran",
