@@ -82,6 +82,30 @@ class CategoryRepository {
   /// Archive a category: it disappears from pickers but every historical
   /// transaction keeps a resolvable name and icon. Related budgets and
   /// recurring templates are deactivated (never deleted) since a budget or
+  /// Renames several categories in one transaction, given id to new name.
+  ///
+  /// Writes only the `name` column, unlike [update], which persists a whole
+  /// [CategoryModel] and would rewrite `isDefault`, `isSystem` and `parentId`
+  /// as a side effect of changing a name.
+  Future<void> renameMany(Map<String, String> idToName) async {
+    if (idToName.isEmpty) return;
+    try {
+      final db = await _dbHelper.database;
+      await db.transaction((txn) async {
+        for (final entry in idToName.entries) {
+          await txn.update(
+            'categories',
+            {'name': entry.value},
+            where: 'id = ?',
+            whereArgs: [entry.key],
+          );
+        }
+      });
+    } catch (e) {
+      throw DatabaseException('Failed to rename categories', cause: e);
+    }
+  }
+
   /// template for a category you can no longer spend on is meaningless.
   /// A group/overall budget that merely *includes* this category among
   /// others is left active — archiving one member shouldn't kill the

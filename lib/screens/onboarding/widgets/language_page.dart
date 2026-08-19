@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../providers/category_provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -65,7 +66,15 @@ class LanguagePage extends StatelessWidget {
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: () => settings.setLanguage(language.code),
+                        onTap: () async {
+                          await settings.setLanguage(language.code);
+                          // SettingsProvider cannot reach CategoryProvider, so
+                          // the caller pairs the two.
+                          if (!context.mounted) return;
+                          await context
+                              .read<CategoryProvider>()
+                              .localizeDefaultNames(language.code);
+                        },
                         borderRadius: BorderRadius.circular(AppConstants.radiusMd),
                         child: AnimatedContainer(
                           duration: AppConstants.animFast,

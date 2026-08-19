@@ -77,6 +77,12 @@ class _FintaAppState extends State<FintaApp> {
     await categories.loadCategories();
     if (!mounted) return;
 
+    // Default categories are seeded in English, so bring them into the active
+    // language here. Also self-heals after a restore, which swaps the whole
+    // database file and can bring back names from another language.
+    await categories.localizeDefaultNames(settings.languageCode);
+    if (!mounted) return;
+
     await accounts.loadAccounts();
     if (!mounted) return;
 

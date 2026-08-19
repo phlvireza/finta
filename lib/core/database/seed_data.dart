@@ -33,6 +33,42 @@ class SeedData {
   /// migration can't create a second copy.
   static const String donationCategoryId = 'default_donation';
 
+  /// Seeded default category names, in sortOrder order.
+  ///
+  /// Public and const because they are the English half of the locale table
+  /// in `core/utils/default_category_names.dart` — the app renames these rows
+  /// when the user changes language, and both sides have to agree on what the
+  /// English name is. Seeding always writes English; the rename happens
+  /// afterwards, in the app layer, so migrations stay locale-free.
+  ///
+  /// Note 'Other' appears in both lists, which is why anything matching these
+  /// by name must also match on type.
+  static const List<String> defaultExpenseCategoryNames = [
+    'Food & Drinks',
+    'Transport',
+    'Shopping',
+    'Bills & Utilities',
+    'Entertainment',
+    'Health',
+    'Education',
+    'Groceries',
+    'Other',
+  ];
+
+  static const List<String> defaultIncomeCategoryNames = [
+    'Salary',
+    'Freelance',
+    'Gift',
+    'Investment',
+    'Other',
+  ];
+
+  /// Names of the fixed-id seeded categories, for the same reason.
+  static const String savingsGoalsCategoryName = 'Savings & Goals';
+  static const String debtPaymentsCategoryName = 'Debt Payments';
+  static const String debtRepaymentsCategoryName = 'Debt Repayments';
+  static const String donationCategoryName = 'Donation';
+
   static Future<void> seedCategories(Database db) async {
     final now = DateTime.now().toIso8601String();
     final batch = db.batch();
@@ -49,22 +85,22 @@ class SeedData {
     // categories still sitting on the old hex — a colour the user picked
     // is theirs.
     final expenseCategories = [
-      {'name': 'Food & Drinks', 'icon': 'restaurant', 'color': '#3F8B4C'},
-      {'name': 'Transport', 'icon': 'directions_car', 'color': '#2E5FA8'},
-      {'name': 'Shopping', 'icon': 'shopping_bag', 'color': '#C13F55'},
-      {'name': 'Bills & Utilities', 'icon': 'receipt_long', 'color': '#C1661E'},
-      {'name': 'Entertainment', 'icon': 'movie', 'color': '#7B5B9E'},
-      {'name': 'Health', 'icon': 'favorite', 'color': '#12928C'},
-      {'name': 'Education', 'icon': 'school', 'color': '#A0522D'},
-      {'name': 'Groceries', 'icon': 'local_grocery_store', 'color': '#C87941'},
-      {'name': 'Other', 'icon': 'more_horiz', 'color': '#8A7E74'},
+      {'icon': 'restaurant', 'color': '#3F8B4C'},
+      {'icon': 'directions_car', 'color': '#2E5FA8'},
+      {'icon': 'shopping_bag', 'color': '#C13F55'},
+      {'icon': 'receipt_long', 'color': '#C1661E'},
+      {'icon': 'movie', 'color': '#7B5B9E'},
+      {'icon': 'favorite', 'color': '#12928C'},
+      {'icon': 'school', 'color': '#A0522D'},
+      {'icon': 'local_grocery_store', 'color': '#C87941'},
+      {'icon': 'more_horiz', 'color': '#8A7E74'},
     ];
 
     for (var i = 0; i < expenseCategories.length; i++) {
       final cat = expenseCategories[i];
       batch.insert('categories', {
         'id': _uuid.v4(),
-        'name': cat['name'],
+        'name': defaultExpenseCategoryNames[i],
         'type': 'expense',
         'icon': cat['icon'],
         'color': cat['color'],
@@ -78,18 +114,18 @@ class SeedData {
     // Income and expense categories are never charted together, so the same
     // hues can serve both lists without two slices of one pie colliding.
     final incomeCategories = [
-      {'name': 'Salary', 'icon': 'account_balance_wallet', 'color': '#3F8B4C'},
-      {'name': 'Freelance', 'icon': 'laptop', 'color': '#2E5FA8'},
-      {'name': 'Gift', 'icon': 'card_giftcard', 'color': '#7B5B9E'},
-      {'name': 'Investment', 'icon': 'trending_up', 'color': '#12928C'},
-      {'name': 'Other', 'icon': 'more_horiz', 'color': '#8A7E74'},
+      {'icon': 'account_balance_wallet', 'color': '#3F8B4C'},
+      {'icon': 'laptop', 'color': '#2E5FA8'},
+      {'icon': 'card_giftcard', 'color': '#7B5B9E'},
+      {'icon': 'trending_up', 'color': '#12928C'},
+      {'icon': 'more_horiz', 'color': '#8A7E74'},
     ];
 
     for (var i = 0; i < incomeCategories.length; i++) {
       final cat = incomeCategories[i];
       batch.insert('categories', {
         'id': _uuid.v4(),
-        'name': cat['name'],
+        'name': defaultIncomeCategoryNames[i],
         'type': 'income',
         'icon': cat['icon'],
         'color': cat['color'],
@@ -129,7 +165,7 @@ class SeedData {
     final batch = db.batch();
     batch.insert('categories', {
       'id': savingsGoalsCategoryId,
-      'name': 'Savings & Goals',
+      'name': savingsGoalsCategoryName,
       'type': 'expense',
       'icon': 'savings',
       'color': '#5B8C5A',
@@ -139,7 +175,7 @@ class SeedData {
     });
     batch.insert('categories', {
       'id': debtPaymentsCategoryId,
-      'name': 'Debt Payments',
+      'name': debtPaymentsCategoryName,
       'type': 'expense',
       'icon': 'attach_money',
       'color': '#C2665A',
@@ -149,7 +185,7 @@ class SeedData {
     });
     batch.insert('categories', {
       'id': debtRepaymentsCategoryId,
-      'name': 'Debt Repayments',
+      'name': debtRepaymentsCategoryName,
       'type': 'income',
       'icon': 'redeem',
       'color': '#5B8C5A',
@@ -174,7 +210,7 @@ class SeedData {
       'categories',
       {
         'id': donationCategoryId,
-        'name': 'Donation',
+        'name': donationCategoryName,
         'type': 'expense',
         'icon': 'volunteer_activism',
         'color': '#7A8B6F',
