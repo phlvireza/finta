@@ -4,6 +4,7 @@ import '../../providers/settings_provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_colors.dart';
 import 'widgets/welcome_page.dart';
+import 'widgets/language_page.dart';
 import 'widgets/currency_page.dart';
 import 'widgets/payday_page.dart';
 import '../../l10n/app_localizations.dart';
@@ -20,8 +21,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _pageController = PageController();
   int _currentPage = 0;
 
+  static const _pageCount = 4;
+
   void _nextPage() {
-    if (_currentPage < 2) {
+    if (_currentPage < _pageCount - 1) {
       _pageController.nextPage(
         duration: AppConstants.animNormal,
         curve: Curves.easeOut,
@@ -74,6 +77,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 },
                 children: [
                   WelcomePage(onNext: _nextPage),
+                  // Language before anything with prose in it, so the rest of
+                  // onboarding is already in the user's language.
+                  LanguagePage(onNext: _nextPage),
                   CurrencyPage(onNext: _nextPage),
                   PaydayPage(onComplete: _complete),
                 ],
@@ -84,7 +90,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               padding: const EdgeInsets.only(bottom: AppConstants.spacingXxxl),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(3, (index) {
+                children: List.generate(_pageCount, (index) {
                   final isActive = index == _currentPage;
                   return AnimatedContainer(
                     duration: AppConstants.animFast,

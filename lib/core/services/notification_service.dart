@@ -1,8 +1,12 @@
 import 'dart:io';
+import 'dart:ui' show Locale;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:intl/intl.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import '../../l10n/app_localizations.dart';
 import '../../models/recurring_transaction_model.dart';
 
 /// Schedules local reminders for upcoming subscription charges.
@@ -15,11 +19,9 @@ import '../../models/recurring_transaction_model.dart';
 /// straight into this service without ever hitting a
 /// `MissingPluginException` — reminders simply never fire there.
 ///
-/// Without a device-timezone plugin in this project's dependency list,
-/// `tz.local` stays at its UTC default, so a scheduled reminder's actual
-/// fire time can be off by the device's UTC offset. Acceptable for a
-/// "heads up, this renews soon" nudge; a future pass could tighten this
-/// with `flutter_timezone`.
+/// [init] seeds `tz.local` from the device's own zone via `flutter_timezone`.
+/// Without that step the timezone package stays on its UTC default and every
+/// "9am" reminder fires at the device's UTC offset instead — 4pm in UTC+7.
 class NotificationService {
   NotificationService._();
   static final NotificationService instance = NotificationService._();
@@ -32,7 +34,19 @@ class NotificationService {
   NotificationService.forTesting();
 
   static const _channelId = 'subscription_reminders';
-  static const _channelName = 'Subscription reminders';
+
+  /// Language used for reminder text. Set from [SettingsProvider] at startup
+  /// and whenever the user switches language, because a service has no
+  /// [BuildContext] to resolve [AppLocalizations] from.
+  ///
+  /// Android caches a notification channel's name at creation, so the channel
+  /// label in system settings keeps whichever language was active on first
+  /// launch. Only the notification bodies follow a later switch.
+  String _languageCode = 'en';
+
+  void setLanguage(String languageCode) => _languageCode = languageCode;
+
+  AppLocalizations get _loc => lookupAppLocalizations(Locale(_languageCode));
 
   final _plugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
@@ -42,6 +56,7 @@ class NotificationService {
   Future<void> init() async {
     if (!isSupported || _initialized) return;
     tz.initializeTimeZones();
+    await _configureLocalTimeZone();
 
     const androidSettings = AndroidInitializationSettings('@mipmap/launcher_icon');
     const darwinSettings = DarwinInitializationSettings();
@@ -63,6 +78,19 @@ class NotificationService {
         ?.requestPermissions(alert: true, badge: true, sound: true);
 
     _initialized = true;
+  }
+
+  /// Points `tz.local` at the device's zone so a reminder scheduled for 9am
+  /// fires at 9am where the user is. Falls back to the UTC default if the
+  /// platform hands back a name the tz database does not know, which is
+  /// better than failing init and losing reminders altogether.
+  Future<void> _configureLocalTimeZone() async {
+    try {
+      final name = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(name));
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to resolve local timezone: $e');
+    }
   }
 
   /// Schedules (or reschedules) [recurring]'s reminder for its current
@@ -92,17 +120,20 @@ class NotificationService {
     }
 
     await init();
-    final name = (recurring.merchant?.trim().isNotEmpty ?? false) ? recurring.merchant! : 'Subscription';
+    final loc = _loc;
+    final name = (recurring.merchant?.trim().isNotEmpty ?? false)
+        ? recurring.merchant!
+        : loc.subscriptionFallbackName;
 
     await _plugin.zonedSchedule(
       _notificationId(recurring.id),
-      '$name renews soon',
-      'Renews on ${_formatDate(chargeDate)}',
+      loc.subscriptionRenewsSoon(name),
+      loc.subscriptionRenewsOn(_formatDate(chargeDate)),
       tz.TZDateTime.from(fireDate, tz.local),
-      const NotificationDetails(
-        android: AndroidNotificationDetails(_channelId, _channelName),
-        iOS: DarwinNotificationDetails(),
-        macOS: DarwinNotificationDetails(),
+      NotificationDetails(
+        android: AndroidNotificationDetails(_channelId, loc.notificationChannelName),
+        iOS: const DarwinNotificationDetails(),
+        macOS: const DarwinNotificationDetails(),
       ),
       // Inexact deliberately: SCHEDULE_EXACT_ALARM is a Play-restricted
       // permission granted to alarm and calendar apps, and a "renews soon"
@@ -123,6 +154,15 @@ class NotificationService {
   /// string can't be used directly, so this derives a stable one from it.
   int _notificationId(String recurringId) => recurringId.hashCode & 0x7fffffff;
 
-  String _formatDate(DateTime d) =>
-      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  /// A medium-form date, e.g. "12 Sep 2026". The previous raw YYYY-MM-DD read
+  /// as a machine timestamp in a user-facing notification.
+  ///
+  /// Deliberately no locale argument: `initializeDateFormatting` is never
+  /// called in this app, so `DateFormat.yMMMd('id')` would throw
+  /// `LocaleDataException` — only the built-in en_US symbols are available.
+  /// Every other DateFormat here does the same (see AppDateUtils and
+  /// backup_restore_screen.dart:67). Localizing dates app-wide is a separate
+  /// change: it needs initializeDateFormatting at startup and a sweep of
+  /// AppDateUtils.
+  String _formatDate(DateTime d) => DateFormat.yMMMd().format(d);
 }

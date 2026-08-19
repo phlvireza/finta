@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../database/database_helper.dart';
 import '../exceptions/app_exceptions.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Result of validating a backup archive before restoring it.
 class BackupValidation {
@@ -32,11 +33,14 @@ class BackupService {
   /// Builds a `finta_backup_<timestamp>.zip` in the app documents directory
   /// containing the live database file plus a manifest recording the
   /// schema version it was written at, and opens the OS share sheet for it.
-  Future<void> shareBackup() async {
+  /// [loc] is passed in rather than resolved here: this class has no
+  /// [BuildContext], and the CSV export path already localizes its own share
+  /// subject the same way (see settings_screen.dart).
+  Future<void> shareBackup(AppLocalizations loc) async {
     final archiveFile = await _createBackupArchive();
     await Share.shareXFiles(
       [XFile(archiveFile.path)],
-      subject: 'Finta backup',
+      subject: loc.backupShareSubject,
     );
   }
 

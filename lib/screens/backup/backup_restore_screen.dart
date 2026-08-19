@@ -30,7 +30,7 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
     final loc = AppLocalizations.of(context)!;
     setState(() => _busy = true);
     try {
-      await _backupService.shareBackup();
+      await _backupService.shareBackup(loc);
     } catch (e) {
       if (mounted) _showError(loc.backupFailed);
     } finally {
