@@ -59,13 +59,13 @@ class BudgetExpiryService {
           expiredCount++;
         } catch (e) {
           // One stubborn row shouldn't stop the rest from retiring.
-          debugPrint('Failed to expire budget ${budget.id}: $e');
+          if (kDebugMode) debugPrint('Failed to expire budget ${budget.id}: $e');
         }
       }
 
       return expiredCount;
     } catch (e) {
-      debugPrint('Failed to expire finished budgets: $e');
+      if (kDebugMode) debugPrint('Failed to expire finished budgets: $e');
       return 0;
     }
   }
