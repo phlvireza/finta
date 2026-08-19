@@ -372,6 +372,8 @@ html.no-js .waitlist { display: none; }
 }
 .form-status[data-state="error"] { color: var(--expense); }
 .form-status[data-state="success"] { color: var(--income); }
+/* Neither a failure nor a signup: the list is not open yet. */
+.form-status[data-state="notice"] { color: var(--text-2-strong); }
 
 /* --------------------------------------------------------------------------
    Footer

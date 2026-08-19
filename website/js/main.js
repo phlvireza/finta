@@ -104,8 +104,14 @@
 
      A static site cannot store a submission on its own. Until FORM_ENDPOINT
      points at a real collector (Formspree, Buttondown, a Google Form, a
-     serverless function -- anything that accepts a POST), the form validates
-     the address, shows the success state, and then throws it away.
+     serverless function -- anything that accepts a POST), there is nowhere to
+     put an address.
+
+     It used to show the success state anyway and then discard the address,
+     which told the visitor "we'll email you at launch" when no such list
+     existed. On a site whose entire argument is that you do not have to take
+     its word for anything, that was the wrong thing to be untruthful about.
+     The unconfigured path now says plainly that nothing was stored.
 
      To make it live, set FORM_ENDPOINT to the POST URL. Nothing else needs
      to change: the submit handler already posts JSON and handles failure.
@@ -153,8 +159,8 @@
       }
 
       if (!FORM_ENDPOINT) {
-        // No collector wired up yet -- acknowledge without pretending to store.
-        window.setTimeout(succeed, 400);
+        // No collector wired up yet. Say so rather than faking a signup.
+        done('notice', 'The list isn’t open yet — nothing was saved. Please check back at launch.');
         return;
       }
 
