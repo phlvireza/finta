@@ -42,6 +42,11 @@ class AppConstants {
   /// Bottom padding so scrollable content clears the FAB and nav bar.
   static const double fabClearance = 100.0;
 
+  /// Cap for a centered content column on a wide screen. Keeps full-width
+  /// controls tied to the text above them instead of stretching across a
+  /// tablet or a landscape window.
+  static const double maxContentWidth = 400.0;
+
   // ── Budget Thresholds ─────────────────────────────────────
   static const double budgetWarningThreshold = 0.75;
   static const double budgetExceededThreshold = 1.0;
