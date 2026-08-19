@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import 'dart:io';
 import '../../l10n/app_localizations.dart';
 import '../backup/backup_restore_screen.dart';
+import '../../core/utils/export_cleanup.dart';
 
 /// Settings screen — preferences, management links, and CSV export.
 class SettingsScreen extends StatelessWidget {
@@ -340,6 +341,7 @@ class SettingsScreen extends StatelessWidget {
       }
 
       final directory = await getApplicationDocumentsDirectory();
+      await pruneExports(directory, prefix: 'finta_export_', extension: '.csv');
       final file = File('${directory.path}/finta_export_${DateTime.now().millisecondsSinceEpoch}.csv');
       await file.writeAsString(buffer.toString());
 

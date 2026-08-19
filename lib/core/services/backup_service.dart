@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import '../database/database_helper.dart';
 import '../exceptions/app_exceptions.dart';
 import '../../l10n/app_localizations.dart';
+import '../utils/export_cleanup.dart';
 
 /// Result of validating a backup archive before restoring it.
 class BackupValidation {
@@ -70,6 +71,9 @@ class BackupService {
       }
 
       final dir = await getApplicationDocumentsDirectory();
+      // Drop earlier backups first: each one is a full copy of the database,
+      // so keeping every generation is the most expensive of the three exports.
+      await pruneExports(dir, prefix: 'finta_backup_', extension: '.zip');
       final outFile = File(
         p.join(dir.path, 'finta_backup_${DateTime.now().millisecondsSinceEpoch}.zip'),
       );
