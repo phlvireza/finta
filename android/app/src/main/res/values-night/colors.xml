@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- AppColors.darkBackground. The platform default here is pure black,
+         which is colder than the app's warm charcoal. -->
+    <color name="splash_background">#1A1816</color>
+</resources>
