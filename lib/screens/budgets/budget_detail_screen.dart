@@ -7,14 +7,18 @@ import '../../providers/transaction_provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/utils/budget_display.dart';
+import '../../core/utils/budget_entry.dart';
+import '../../models/budget_model.dart';
 import '../../models/transaction_model.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/error_state.dart';
 import '../../widgets/form_sheet.dart';
 import '../../widgets/date_group_header.dart';
 import '../../widgets/skeleton_box.dart';
+import '../transactions/widgets/quick_add_sheet.dart';
 import '../transactions/widgets/transaction_tile.dart';
 import 'budget_actions.dart';
+import 'widgets/budget_category_picker_sheet.dart';
 import 'widgets/budget_form.dart';
 import 'widgets/budget_progress_bar.dart';
 import '../../l10n/app_localizations.dart';
@@ -81,6 +85,36 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
       if (!mounted) return;
       setState(() => _error = e.toString());
     }
+  }
+
+  /// Logs spending against this budget without leaving the screen.
+  ///
+  /// The category is decided by [resolveBudgetEntryCategory]: a single-category
+  /// budget prefills straight away, a group budget asks which of *its own*
+  /// categories first, and an overall budget prefills nothing because every
+  /// expense already counts toward it.
+  Future<void> _addExpense(BudgetModel budget) async {
+    final selectable = context.read<CategoryProvider>().expenseCategories;
+    final entry = resolveBudgetEntryCategory(
+      budget: budget,
+      selectableCategoryIds: selectable.map((c) => c.id).toSet(),
+    );
+
+    var categoryId = entry.categoryId;
+    if (entry.choices.isNotEmpty) {
+      categoryId = await BudgetCategoryPickerSheet.show(
+        context,
+        categoryIds: entry.choices,
+      );
+      // Dismissed without choosing — don't open the form on a guess.
+      if (categoryId == null || !mounted) return;
+    }
+    if (!mounted) return;
+
+    await QuickAddSheet.show(context, initialCategoryId: categoryId);
+    // Nothing to reload here: saving calls `loadBudgets`, which replaces this
+    // budget's status object and trips the identity check in
+    // didChangeDependencies — the same path an edit from elsewhere takes.
   }
 
   Future<void> _edit() async {
@@ -177,6 +211,20 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
             child: Text(
               AppDateUtils.formatPeriodRange(status.period.start, status.period.end),
               style: theme.textTheme.bodySmall,
+            ),
+          ),
+          const SizedBox(height: AppConstants.spacingLg),
+          // Always offered, including once the budget is exceeded — going over
+          // is exactly when the next expense still needs recording.
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _addExpense(status.budget),
+                icon: const Icon(Icons.add, size: 20),
+                label: Text(loc.addExpense),
+              ),
             ),
           ),
           const SizedBox(height: AppConstants.spacingXl),

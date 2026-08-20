@@ -834,5 +834,6 @@
       "date": { "type": "String" }
     }
   },
-  "backupShareSubject": "Cadangan Finta"
+  "backupShareSubject": "Cadangan Finta",
+  "addExpense": "Tambah pengeluaran"
 }

@@ -1481,4 +1481,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backupShareSubject => 'Finta backup';
+
+  @override
+  String get addExpense => 'Add expense';
 }

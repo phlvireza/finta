@@ -1484,4 +1484,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get backupShareSubject => 'Cadangan Finta';
+
+  @override
+  String get addExpense => 'Tambah pengeluaran';
 }

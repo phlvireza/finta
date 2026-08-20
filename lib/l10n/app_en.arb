@@ -836,5 +836,6 @@
       "date": { "type": "String" }
     }
   },
-  "backupShareSubject": "Finta backup"
+  "backupShareSubject": "Finta backup",
+  "addExpense": "Add expense"
 }

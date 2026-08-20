@@ -2665,6 +2665,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Finta backup'**
   String get backupShareSubject;
+
+  /// No description provided for @addExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Add expense'**
+  String get addExpense;
 }
 
 class _AppLocalizationsDelegate
