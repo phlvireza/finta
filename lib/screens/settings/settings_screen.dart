@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import 'dart:io';
 import '../../l10n/app_localizations.dart';
 import '../backup/backup_restore_screen.dart';
+import '../../core/utils/export_cleanup.dart';
 
 /// Settings screen — preferences, management links, and CSV export.
 class SettingsScreen extends StatelessWidget {
@@ -189,9 +190,15 @@ class SettingsScreen extends StatelessWidget {
               trailing: settings.languageCode == 'en'
                   ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
                   : null,
-              onTap: () {
-                settings.setLanguage('en');
+              onTap: () async {
+                // Read before popping and before the first await, so the
+                // provider lookup never happens across an async gap.
+                final categories = context.read<CategoryProvider>();
                 Navigator.pop(context);
+                await settings.setLanguage('en');
+                // SettingsProvider has no route to CategoryProvider, so the
+                // default category names are refreshed here.
+                await categories.localizeDefaultNames('en');
               },
             ),
             ListTile(
@@ -200,9 +207,15 @@ class SettingsScreen extends StatelessWidget {
               trailing: settings.languageCode == 'id'
                   ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
                   : null,
-              onTap: () {
-                settings.setLanguage('id');
+              onTap: () async {
+                // Read before popping and before the first await, so the
+                // provider lookup never happens across an async gap.
+                final categories = context.read<CategoryProvider>();
                 Navigator.pop(context);
+                await settings.setLanguage('id');
+                // SettingsProvider has no route to CategoryProvider, so the
+                // default category names are refreshed here.
+                await categories.localizeDefaultNames('id');
               },
             ),
           ],
@@ -340,6 +353,7 @@ class SettingsScreen extends StatelessWidget {
       }
 
       final directory = await getApplicationDocumentsDirectory();
+      await pruneExports(directory, prefix: 'finta_export_', extension: '.csv');
       final file = File('${directory.path}/finta_export_${DateTime.now().millisecondsSinceEpoch}.csv');
       await file.writeAsString(buffer.toString());
 

@@ -151,6 +151,11 @@
   "ofString": "dari",
   "deleteBudget": "Hapus Anggaran",
   "removeBudgetFor": "Hapus anggaran untuk {category}?",
+  "@removeBudgetFor": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
   "editBudget": "Edit Anggaran",
   "newBudget": "Anggaran Baru",
   "saveBudget": "Simpan Anggaran",
@@ -812,5 +817,22 @@
     "placeholders": {
       "day": { "type": "int" }
     }
-  }
+  },
+  "chooseYourLanguage": "Pilih bahasa Anda",
+  "languageChangeableLater": "Anda dapat mengubahnya kapan saja di Pengaturan.",
+  "notificationChannelName": "Pengingat langganan",
+  "subscriptionFallbackName": "Langganan",
+  "subscriptionRenewsSoon": "{name} segera diperpanjang",
+  "@subscriptionRenewsSoon": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "subscriptionRenewsOn": "Diperpanjang pada {date}",
+  "@subscriptionRenewsOn": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "backupShareSubject": "Cadangan Finta"
 }

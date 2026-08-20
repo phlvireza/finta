@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/category_model.dart';
+import '../core/utils/default_category_names.dart';
 import '../repositories/category_repository.dart';
 
 /// Manages category state — load, create, update, delete.
@@ -106,6 +107,29 @@ class CategoryProvider extends ChangeNotifier {
     } catch (e) {
       rethrow;
     }
+  }
+
+  /// Renames the seeded default categories into [languageCode].
+  ///
+  /// Runs at startup and whenever the user changes language. Defaults are
+  /// seeded in English and cannot be renamed through the UI, so rewriting them
+  /// is safe; anything the user created, or any default whose new name would
+  /// collide with an existing category, is left alone by
+  /// [resolveDefaultCategoryRenames].
+  ///
+  /// Reloads rather than patching in place so the whole batch produces a single
+  /// notification, the same shape as [deleteCategory].
+  Future<void> localizeDefaultNames(String languageCode) async {
+    final renames = resolveDefaultCategoryRenames(
+      categories: [
+        for (final c in _categories) (id: c.id, name: c.name, type: c.type),
+      ],
+      languageCode: languageCode,
+    );
+    if (renames.isEmpty) return;
+
+    await _repository.renameMany(renames);
+    await loadCategories();
   }
 
   /// How many transactions still reference this category — used by the UI

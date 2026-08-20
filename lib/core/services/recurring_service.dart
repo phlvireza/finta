@@ -38,7 +38,7 @@ class RecurringService {
     try {
       activeRecurring = await _recurringRepo.getActive();
     } catch (e) {
-      debugPrint('Failed to load active recurring transactions: $e');
+      if (kDebugMode) debugPrint('Failed to load active recurring transactions: $e');
       return 0;
     }
 
@@ -55,7 +55,7 @@ class RecurringService {
       try {
         generatedCount += await _processOne(recurring, todayDate);
       } catch (e) {
-        debugPrint('Failed to process recurring transaction ${recurring.id}: $e');
+        if (kDebugMode) debugPrint('Failed to process recurring transaction ${recurring.id}: $e');
       }
     }
 
@@ -77,7 +77,7 @@ class RecurringService {
         }
       }
     } catch (e) {
-      debugPrint('Failed to reschedule subscription reminders: $e');
+      if (kDebugMode) debugPrint('Failed to reschedule subscription reminders: $e');
     }
   }
 

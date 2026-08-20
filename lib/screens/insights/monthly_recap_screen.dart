@@ -13,6 +13,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/utils/number_utils.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/utils/export_cleanup.dart';
 
 /// A shareable "your pay cycle, summarised" card — captured from a live
 /// widget tree via [RepaintBoundary] rather than drawn with a separate
@@ -112,7 +113,11 @@ class _MonthlyRecapScreenState extends State<MonthlyRecapScreen> {
       final bytes = byteData!.buffer.asUint8List();
 
       final dir = await getApplicationDocumentsDirectory();
-      final file = File('${dir.path}/finta_recap_${AppDateUtils.formatIso(_period.start)}.png');
+      final name = 'finta_recap_${AppDateUtils.formatIso(_period.start)}.png';
+      // Re-sharing the same period overwrites its own file, so keep that one
+      // and clear the rest.
+      await pruneExports(dir, prefix: 'finta_recap_', extension: '.png', keep: name);
+      final file = File('${dir.path}/$name');
       await file.writeAsBytes(bytes);
 
       await Share.shareXFiles([XFile(file.path)]);

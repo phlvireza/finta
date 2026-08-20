@@ -1,8 +1,11 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <application
-        android:label="Finta"
+        android:label="@string/app_name"
         android:name="${applicationName}"
-        android:icon="@mipmap/launcher_icon">
+        android:icon="@mipmap/launcher_icon"
+        android:allowBackup="false"
+        android:fullBackupContent="false">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -45,6 +48,17 @@
 
     <!-- Subscription renewal reminders (flutter_local_notifications). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+    <!-- Exact-alarm permissions are stripped from the merged manifest on
+         purpose. Play restricts them to apps whose core function is alarms or
+         calendars, and a "renews soon" nudge does not need that precision.
+         flutter_local_notifications declares them in its own manifest, so
+         simply omitting them here would not be enough — the merge would
+         reinstate them and put a restricted permission on the listing.
+         NotificationService schedules inexactly to match. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        tools:node="remove"/>
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"
+        tools:node="remove"/>
 </manifest>

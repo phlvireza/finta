@@ -1455,4 +1455,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String paydayDayLabel(int day) {
     return 'Day $day';
   }
+
+  @override
+  String get chooseYourLanguage => 'Choose your language';
+
+  @override
+  String get languageChangeableLater =>
+      'You can change this anytime in Settings.';
+
+  @override
+  String get notificationChannelName => 'Subscription reminders';
+
+  @override
+  String get subscriptionFallbackName => 'Subscription';
+
+  @override
+  String subscriptionRenewsSoon(String name) {
+    return '$name renews soon';
+  }
+
+  @override
+  String subscriptionRenewsOn(String date) {
+    return 'Renews on $date';
+  }
+
+  @override
+  String get backupShareSubject => 'Finta backup';
 }

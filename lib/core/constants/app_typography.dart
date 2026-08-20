@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 /// Finta typography — Inter font family with warm, readable sizing.
+///
+/// Inter is bundled from `assets/fonts/` rather than fetched at runtime. The
+/// app previously used `google_fonts`, which downloads over HTTP on first
+/// launch: that made the release build — which declares no INTERNET permission
+/// — silently fall back to the platform font, and it contradicted the promise
+/// that the app cannot talk to the network at all. Only w400/w500/w600/w700
+/// are shipped, which is exactly what the styles below use.
 class AppTypography {
   AppTypography._();
 
@@ -24,79 +30,99 @@ class AppTypography {
   }) {
     return TextTheme(
       // Balance display — large, bold
-      displayLarge: GoogleFonts.inter(
+      displayLarge: _inter(
         fontSize: 32,
         fontWeight: FontWeight.w700,
         color: textColor,
         letterSpacing: -0.5,
       ),
       // Section headings
-      headlineMedium: GoogleFonts.inter(
+      headlineMedium: _inter(
         fontSize: 22,
         fontWeight: FontWeight.w700,
         color: textColor,
       ),
       // Card titles
-      headlineSmall: GoogleFonts.inter(
+      headlineSmall: _inter(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: textColor,
       ),
       // Subheadings
-      titleLarge: GoogleFonts.inter(
+      titleLarge: _inter(
         fontSize: 17,
         fontWeight: FontWeight.w600,
         color: textColor,
       ),
       // List item titles
-      titleMedium: GoogleFonts.inter(
+      titleMedium: _inter(
         fontSize: 15,
         fontWeight: FontWeight.w500,
         color: textColor,
       ),
       // Small titles
-      titleSmall: GoogleFonts.inter(
+      titleSmall: _inter(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: textColor,
       ),
       // Body text
-      bodyLarge: GoogleFonts.inter(
+      bodyLarge: _inter(
         fontSize: 15,
         fontWeight: FontWeight.w400,
         color: textColor,
       ),
       // Secondary body text
-      bodyMedium: GoogleFonts.inter(
+      bodyMedium: _inter(
         fontSize: 14,
         fontWeight: FontWeight.w400,
         color: textColor,
       ),
       // Small body
-      bodySmall: GoogleFonts.inter(
+      bodySmall: _inter(
         fontSize: 13,
         fontWeight: FontWeight.w400,
         color: secondaryColor,
       ),
       // Labels
-      labelLarge: GoogleFonts.inter(
+      labelLarge: _inter(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: textColor,
       ),
       // Small labels / captions
-      labelMedium: GoogleFonts.inter(
+      labelMedium: _inter(
         fontSize: 12,
         fontWeight: FontWeight.w500,
         color: secondaryColor,
       ),
       // Tiny labels
-      labelSmall: GoogleFonts.inter(
+      labelSmall: _inter(
         fontSize: 11,
         fontWeight: FontWeight.w500,
         color: secondaryColor,
         letterSpacing: 0.5,
       ),
+    );
+  }
+
+  /// The bundled family name, matching the `fonts:` entry in pubspec.yaml.
+  static const String fontFamily = 'Inter';
+
+  static TextStyle _inter({
+    double? fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+    double? letterSpacing,
+    List<FontFeature>? fontFeatures,
+  }) {
+    return TextStyle(
+      fontFamily: fontFamily,
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color,
+      letterSpacing: letterSpacing,
+      fontFeatures: fontFeatures,
     );
   }
 
@@ -106,7 +132,7 @@ class AppTypography {
     double fontSize = 15,
     FontWeight fontWeight = FontWeight.w600,
   }) {
-    return GoogleFonts.inter(
+    return _inter(
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: color,
