@@ -1646,6 +1646,12 @@ abstract class AppLocalizations {
   /// **'This backup was made with a newer version of Finta and can\'t be restored here'**
   String get backupIncompatible;
 
+  /// No description provided for @backupEncrypted.
+  ///
+  /// In en, this message translates to:
+  /// **'This backup is encrypted and can\'t be opened by this version of Finta'**
+  String get backupEncrypted;
+
   /// No description provided for @backupInvalidFile.
   ///
   /// In en, this message translates to:

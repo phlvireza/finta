@@ -411,6 +411,7 @@
   "restore": "Pulihkan",
   "backupFailed": "Gagal membuat cadangan",
   "backupIncompatible": "Cadangan ini dibuat dengan versi Finta yang lebih baru dan tidak bisa dipulihkan di sini",
+  "backupEncrypted": "Cadangan ini terenkripsi dan tidak bisa dibuka oleh versi Finta ini",
   "backupInvalidFile": "File itu bukan cadangan Finta yang valid",
   "restoreBackupTitle": "Pulihkan cadangan ini?",
   "restoreBackupConfirm": "Ini akan mengganti semua data saat ini dengan cadangan dari {date}. Tindakan ini tidak dapat dibatalkan.",

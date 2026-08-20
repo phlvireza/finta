@@ -16,6 +16,7 @@ Future<File> _writeFakeBackup(
   required int schemaVersion,
   bool includeDb = true,
   bool includeMeta = true,
+  bool? encrypted,
 }) async {
   final archive = Archive();
   if (includeDb) {
@@ -27,6 +28,9 @@ Future<File> _writeFakeBackup(
       'schemaVersion': schemaVersion,
       'exportedAt': '2026-07-01T12:00:00.000',
       'app': 'finta',
+      // Omitted entirely when null, which is how archives written before the
+      // field existed look.
+      if (encrypted != null) 'encrypted': encrypted,
     });
     final metaBytes = utf8.encode(meta);
     archive.addFile(ArchiveFile('meta.json', metaBytes.length, metaBytes));
@@ -83,5 +87,38 @@ void main() {
     final file = File(p.join(tempDir.path, 'not_a_zip.zip'));
     await file.writeAsString('this is definitely not a zip archive');
     expect(() => service.validate(file), throwsA(isA<ValidationException>()));
+  });
+
+  group('encrypted marker', () {
+    test('an archive predating the field reads as plaintext, not unknown', () async {
+      final file = await _writeFakeBackup(tempDir, schemaVersion: DatabaseHelper.dbVersion);
+      final result = await service.validate(file);
+      expect(result.isEncrypted, isFalse);
+      expect(result.isCompatible, isTrue);
+    });
+
+    test('an archive marked encrypted:false is compatible', () async {
+      final file = await _writeFakeBackup(
+        tempDir,
+        schemaVersion: DatabaseHelper.dbVersion,
+        encrypted: false,
+      );
+      final result = await service.validate(file);
+      expect(result.isEncrypted, isFalse);
+      expect(result.isCompatible, isTrue);
+    });
+
+    test('an encrypted archive is refused even at the current schema version', () async {
+      // This build has no key, so restoring would overwrite a working database
+      // with bytes sqlite cannot open. Refusing is the whole point of the field.
+      final file = await _writeFakeBackup(
+        tempDir,
+        schemaVersion: DatabaseHelper.dbVersion,
+        encrypted: true,
+      );
+      final result = await service.validate(file);
+      expect(result.isEncrypted, isTrue);
+      expect(result.isCompatible, isFalse);
+    });
   });
 }

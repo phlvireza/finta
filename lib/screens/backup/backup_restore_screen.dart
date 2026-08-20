@@ -55,7 +55,11 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
       setState(() => _busy = false);
 
       if (!validation.isCompatible) {
-        _showError(loc.backupIncompatible);
+        // Two different reasons land here, and "made with a newer version"
+        // would be wrong for the encrypted one.
+        _showError(
+          validation.isEncrypted ? loc.backupEncrypted : loc.backupIncompatible,
+        );
         return;
       }
 

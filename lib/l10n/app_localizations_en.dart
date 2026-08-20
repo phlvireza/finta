@@ -844,6 +844,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'This backup was made with a newer version of Finta and can\'t be restored here';
 
   @override
+  String get backupEncrypted =>
+      'This backup is encrypted and can\'t be opened by this version of Finta';
+
+  @override
   String get backupInvalidFile => 'That file isn\'t a valid Finta backup';
 
   @override

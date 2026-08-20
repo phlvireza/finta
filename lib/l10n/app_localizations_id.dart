@@ -845,6 +845,10 @@ class AppLocalizationsId extends AppLocalizations {
       'Cadangan ini dibuat dengan versi Finta yang lebih baru dan tidak bisa dipulihkan di sini';
 
   @override
+  String get backupEncrypted =>
+      'Cadangan ini terenkripsi dan tidak bisa dibuka oleh versi Finta ini';
+
+  @override
   String get backupInvalidFile => 'File itu bukan cadangan Finta yang valid';
 
   @override

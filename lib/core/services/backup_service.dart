@@ -16,10 +16,18 @@ class BackupValidation {
   final int schemaVersion;
   final DateTime exportedAt;
 
+  /// Whether the archive's `finta.db` is encrypted. Always false for anything
+  /// this build writes — the database is stored in the clear. It exists so a
+  /// future build that encrypts the database can be told apart from this one
+  /// by the archive alone, rather than by restoring the file and discovering
+  /// it is unreadable.
+  final bool isEncrypted;
+
   BackupValidation({
     required this.isCompatible,
     required this.schemaVersion,
     required this.exportedAt,
+    this.isEncrypted = false,
   });
 }
 
@@ -57,6 +65,11 @@ class BackupService {
         'schemaVersion': DatabaseHelper.dbVersion,
         'exportedAt': DateTime.now().toIso8601String(),
         'app': 'finta',
+        // Always false here: this build stores the database in the clear.
+        // Written anyway so that if the database is ever encrypted, archives
+        // from the two eras are distinguishable without opening the payload —
+        // see [BackupValidation.isEncrypted].
+        'encrypted': false,
       });
 
       final archive = Archive();
@@ -110,14 +123,22 @@ class BackupService {
 
       final meta = jsonDecode(utf8.decode(metaEntry.content as List<int>)) as Map<String, dynamic>;
       final schemaVersion = meta['schemaVersion'] as int;
+      // Absent on every archive written before the field existed, and those
+      // are all plaintext — so a missing key means false, not "unknown".
+      final isEncrypted = meta['encrypted'] as bool? ?? false;
       return BackupValidation(
         // A backup from a *newer* app version may contain columns this
         // build doesn't know how to read — refuse it rather than corrupt
         // state silently. An older backup is always safe: onUpgrade runs
         // on the next open exactly as it would for a real old install.
-        isCompatible: schemaVersion <= DatabaseHelper.dbVersion,
+        //
+        // An encrypted payload is refused for the same reason: this build has
+        // no key to open it, and restoring it would replace a working database
+        // with bytes sqlite cannot read.
+        isCompatible: schemaVersion <= DatabaseHelper.dbVersion && !isEncrypted,
         schemaVersion: schemaVersion,
         exportedAt: DateTime.parse(meta['exportedAt'] as String),
+        isEncrypted: isEncrypted,
       );
     } catch (e) {
       throw ValidationException('Not a valid Finta backup file', cause: e);

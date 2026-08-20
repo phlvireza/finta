@@ -413,6 +413,7 @@
   "restore": "Restore",
   "backupFailed": "Failed to create backup",
   "backupIncompatible": "This backup was made with a newer version of Finta and can't be restored here",
+  "backupEncrypted": "This backup is encrypted and can't be opened by this version of Finta",
   "backupInvalidFile": "That file isn't a valid Finta backup",
   "restoreBackupTitle": "Restore this backup?",
   "restoreBackupConfirm": "This will replace all current data with the backup from {date}. This can't be undone.",
