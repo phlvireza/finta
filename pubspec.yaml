@@ -54,6 +54,28 @@ dependencies:
   # 16:00 in UTC+7 — the default market.
   flutter_timezone: ^3.0.1
 
+  # App lock
+  local_auth: ^3.0.2
+  # Pinned exactly, and the pin is load-bearing. local_auth_android 2.0.9
+  # dropped `id("kotlin-android")` from its build.gradle.kts to rely on AGP 9's
+  # built-in Kotlin compiler — the same migration that forced
+  # vendor/file_picker_agp9 — but android/gradle.properties sets
+  # android.builtInKotlin=false, so nothing would compile that module's two
+  # .kt files. 2.0.8 still applies the plugin itself, and its android/src and
+  # lib/ are byte-identical to 2.0.9 (that release changed build files only),
+  # so this costs nothing at runtime and saves carrying a second fork.
+  # Drop the pin together with the file_picker override once Flutter is >=3.47.
+  local_auth_android: 2.0.8
+  # 10.x rather than 11.x: flutter_secure_storage 11.0.0 builds its Android
+  # module against compileSdk 37, and android/app/build.gradle.kts pins 36 on
+  # purpose. 10.3.1 uses 36, is pure Java so it needs no Kotlin plugin at all,
+  # and exposes the same read/write/delete API.
+  flutter_secure_storage: ^10.3.1
+  # Promoted from transitive: pin_hasher.dart builds PBKDF2 on top of this
+  # package's Hmac/sha256, because `crypto` ships the primitives but not the
+  # key-derivation function itself.
+  crypto: ^3.0.7
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
