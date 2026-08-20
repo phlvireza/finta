@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The Android 11 and lower (API <= 30) counterpart to
+  data_extraction_rules.xml. An app targeting Android 12+ still ships both:
+  dataExtractionRules is ignored on older releases, and fullBackupContent is
+  ignored on newer ones.
+
+  Redundant alongside android:allowBackup="false", which already disables
+  Auto Backup on these releases — kept so that flipping allowBackup on later
+  (for settings only, say) cannot silently start backing up the ledger.
+-->
+<full-backup-content>
+    <exclude domain="root" path="." />
+    <exclude domain="file" path="." />
+    <exclude domain="database" path="." />
+    <exclude domain="sharedpref" path="." />
+    <exclude domain="external" path="." />
+    <exclude domain="device_root" path="." />
+    <exclude domain="device_file" path="." />
+    <exclude domain="device_database" path="." />
+    <exclude domain="device_sharedpref" path="." />
+</full-backup-content>

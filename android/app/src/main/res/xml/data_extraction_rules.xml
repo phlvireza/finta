@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Governs Android 12+ (API 31+) data extraction. On those releases
+  android:allowBackup="false" only stops cloud backup on some vendors' devices
+  and does NOT stop device-to-device transfer — this file does, and the
+  <device-transfer> section below is the reason it exists. Without it, setting
+  up a new phone from the old one carried finta.db and every SharedPreference
+  across, which for a finance ledger is the exact case the app is meant to
+  avoid.
+
+  Every domain is listed explicitly: "root" does not subsume "database",
+  "sharedpref" or "external" — they are siblings, and excluding only root
+  leaves the database behind. The device_* variants cover device-protected
+  storage; this app puts nothing there today, but a rule that names every
+  domain cannot be quietly outgrown.
+
+  path="." means "this domain's directory and every subdirectory". The
+  attribute is required — an <exclude> without it is not valid here.
+
+  Both sections are exhaustive on purpose. Backup and restore is an explicit
+  user action in the app (Settings -> Backup & restore), never something the
+  OS does behind the user's back.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" path="." />
+        <exclude domain="file" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="external" path="." />
+        <exclude domain="device_root" path="." />
+        <exclude domain="device_file" path="." />
+        <exclude domain="device_database" path="." />
+        <exclude domain="device_sharedpref" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" path="." />
+        <exclude domain="file" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="external" path="." />
+        <exclude domain="device_root" path="." />
+        <exclude domain="device_file" path="." />
+        <exclude domain="device_database" path="." />
+        <exclude domain="device_sharedpref" path="." />
+    </device-transfer>
+</data-extraction-rules>
