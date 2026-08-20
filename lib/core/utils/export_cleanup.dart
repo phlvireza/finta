@@ -1,6 +1,6 @@
 import 'dart:io';
 
-/// Housekeeping for the share/export files the app writes into its documents
+/// Housekeeping for the share/export files the app writes into its temporary
 /// directory.
 ///
 /// Backups, CSV exports and recap images are all written under a timestamped

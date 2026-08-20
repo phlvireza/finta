@@ -352,7 +352,9 @@ class SettingsScreen extends StatelessWidget {
         ].map(_csvField).join(','));
       }
 
-      final directory = await getApplicationDocumentsDirectory();
+      // Temp rather than documents, so the export doesn't ride along into an
+      // iCloud backup — see the note in BackupService._createBackupArchive.
+      final directory = await getTemporaryDirectory();
       await pruneExports(directory, prefix: 'finta_export_', extension: '.csv');
       final file = File('${directory.path}/finta_export_${DateTime.now().millisecondsSinceEpoch}.csv');
       await file.writeAsString(buffer.toString());

@@ -112,7 +112,10 @@ class _MonthlyRecapScreenState extends State<MonthlyRecapScreen> {
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       final bytes = byteData!.buffer.asUint8List();
 
-      final dir = await getApplicationDocumentsDirectory();
+      // Temp rather than documents: this card renders real figures, and the
+      // documents directory is iCloud-backed on iOS — see the note in
+      // BackupService._createBackupArchive.
+      final dir = await getTemporaryDirectory();
       final name = 'finta_recap_${AppDateUtils.formatIso(_period.start)}.png';
       // Re-sharing the same period overwrites its own file, so keep that one
       // and clear the rest.

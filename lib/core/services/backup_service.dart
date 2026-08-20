@@ -31,7 +31,7 @@ class BackupService {
   static const _metaFileName = 'meta.json';
   static const _dbFileName = 'finta.db';
 
-  /// Builds a `finta_backup_<timestamp>.zip` in the app documents directory
+  /// Builds a `finta_backup_<timestamp>.zip` in the temporary directory
   /// containing the live database file plus a manifest recording the
   /// schema version it was written at, and opens the OS share sheet for it.
   /// [loc] is passed in rather than resolved here: this class has no
@@ -70,7 +70,12 @@ class BackupService {
         throw const FormatException('zip encoding produced no output');
       }
 
-      final dir = await getApplicationDocumentsDirectory();
+      // Temp, not documents: on iOS the documents directory is included in
+      // iCloud backups, so a finished backup zip — a byte-for-byte copy of the
+      // whole ledger — would sync to Apple even though the database itself is
+      // excluded. iOS never backs up tmp/. The share sheet reads the file long
+      // before the OS reaps the directory.
+      final dir = await getTemporaryDirectory();
       // Drop earlier backups first: each one is a full copy of the database,
       // so keeping every generation is the most expensive of the three exports.
       await pruneExports(dir, prefix: 'finta_backup_', extension: '.zip');
