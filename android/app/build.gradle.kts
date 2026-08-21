@@ -59,14 +59,23 @@ android {
             if (keystoreProperties != null) {
                 signingConfig = signingConfigs.getByName("release")
             } else {
-                // Fail loudly rather than silently falling back to the debug
-                // key. Play rejects debug-signed artifacts, and the old
-                // template default made that discoverable only at upload time.
-                // Local `flutter run --release` still works via the debug
-                // signing that AGP applies when no config is set.
+                // Fall back to the debug key so the artifact is at least
+                // installable. AGP does *not* sign a release build when no
+                // signingConfig is set — it emits an unsigned APK, which
+                // Android refuses to install at all ("App not installed",
+                // even over an existing install). An earlier version of this
+                // block left the branch empty on the assumption that AGP
+                // substituted the debug key here; it does not.
+                //
+                // Play still rejects CN=Android Debug, which is what the
+                // warning is for — but a local build that cannot be
+                // installed is a worse failure than one that cannot be
+                // published.
+                signingConfig = signingConfigs.getByName("debug")
                 logger.warn(
                     "WARNING: android/key.properties not found. This release build is " +
-                    "NOT signed with the upload key and cannot be published to Play."
+                    "signed with the DEBUG key: installable locally, but it cannot be " +
+                    "published to Play."
                 )
             }
         }
