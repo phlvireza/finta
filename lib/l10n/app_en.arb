@@ -824,5 +824,23 @@
     "placeholders": {
       "day": { "type": "int" }
     }
-  }
+  },
+  "chooseYourLanguage": "Choose your language",
+  "languageChangeableLater": "You can change this anytime in Settings.",
+  "notificationChannelName": "Subscription reminders",
+  "subscriptionFallbackName": "Subscription",
+  "subscriptionRenewsSoon": "{name} renews soon",
+  "@subscriptionRenewsSoon": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "subscriptionRenewsOn": "Renews on {date}",
+  "@subscriptionRenewsOn": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "backupShareSubject": "Finta backup",
+  "addExpense": "Add expense"
 }

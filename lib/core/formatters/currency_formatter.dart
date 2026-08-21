@@ -139,8 +139,18 @@ double parseFormattedAmount(String formatted) {
 }
 
 /// Format a raw number with commas and optional currency symbol.
+///
+/// The sign is split off before grouping. Grouping the signed digit string
+/// directly treated '-' as a digit, so any negative whose digit count was a
+/// multiple of three had a separator inserted straight after the minus:
+/// -100 rendered as "-,100" and -100000 as "-,100,000". Balances and net
+/// totals go negative in normal use, so this reached the dashboard.
+/// The fractional part is taken from the magnitude for the same reason —
+/// it used to carry its own minus sign and produce "-1,500.-75".
 String formatAmount(double amount, {String symbol = '', bool useDecimals = false}) {
-  final intPart = amount.truncate();
+  final isNegative = amount < 0;
+  final magnitude = amount.abs();
+  final intPart = magnitude.truncate();
   final buffer = StringBuffer();
 
   final digits = intPart.toString();
@@ -155,8 +165,12 @@ String formatAmount(double amount, {String symbol = '', bool useDecimals = false
   String result = buffer.toString();
 
   if (useDecimals) {
-    final decPart = ((amount - intPart) * 100).round().toString().padLeft(2, '0');
+    final decPart = ((magnitude - intPart) * 100).round().toString().padLeft(2, '0');
     result = '$result.$decPart';
+  }
+
+  if (isNegative) {
+    result = '-$result';
   }
 
   if (symbol.isNotEmpty) {

@@ -1,7 +1,10 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants/app_constants.dart';
+import '../core/services/notification_service.dart';
 
 /// Manages app-wide settings: currency, theme, payday, onboarding status.
 class SettingsProvider extends ChangeNotifier {
@@ -21,7 +24,7 @@ class SettingsProvider extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
   int _payday = 1;
   bool _hasCompletedOnboarding = false;
-  String _languageCode = 'en'; // Default language
+  String _languageCode = _fallbackLanguage;
   bool _hideBalances = false;
 
   // Getters
@@ -47,7 +50,10 @@ class SettingsProvider extends ChangeNotifier {
 
     _payday = _prefs!.getInt(_keyPayday) ?? 1;
     _hasCompletedOnboarding = _prefs!.getBool(_keyOnboarding) ?? false;
-    _languageCode = _prefs!.getString(_keyLocale) ?? 'en';
+    // Only fall back to the device language when the user has never chosen
+    // one. An explicit choice, including choosing English on an Indonesian
+    // phone, must survive every later launch.
+    _languageCode = _prefs!.getString(_keyLocale) ?? _deviceLanguage();
     _applyDateLocale();
     _hideBalances = _prefs!.getBool(_keyHideBalances) ?? false;
 
@@ -91,6 +97,9 @@ class SettingsProvider extends ChangeNotifier {
     _languageCode = code;
     _applyDateLocale();
     await _prefs?.setString(_keyLocale, code);
+    // The notification service builds reminder text outside the widget tree,
+    // so it cannot observe this provider — hand it the new language directly.
+    NotificationService.instance.setLanguage(code);
     notifyListeners();
   }
 
@@ -110,6 +119,26 @@ class SettingsProvider extends ChangeNotifier {
     _hasCompletedOnboarding = false;
     await _prefs?.setBool(_keyOnboarding, false);
     notifyListeners();
+  }
+
+  /// Language codes the app has translations for. Kept in step with
+  /// `AppLocalizations.supportedLocales`.
+  static const List<String> supportedLanguages = ['en', 'id'];
+
+  static const String _fallbackLanguage = 'en';
+
+  /// The device's language when the app ships a translation for it.
+  ///
+  /// Without this the app forced 'en' on first launch and `MaterialApp.locale`
+  /// then overrode the platform locale outright, so an Indonesian phone showed
+  /// an entirely English app until the user found the setting.
+  static String _deviceLanguage() {
+    for (final locale in PlatformDispatcher.instance.locales) {
+      if (supportedLanguages.contains(locale.languageCode)) {
+        return locale.languageCode;
+      }
+    }
+    return _fallbackLanguage;
   }
 
   void _updateCurrencyFromCode(String code) {

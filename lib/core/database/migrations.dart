@@ -212,6 +212,14 @@ class Migrations {
   ///
   /// Rows are matched by name + type because seeded category ids are fresh
   /// uuids rather than fixed constants.
+  ///
+  /// Do not copy that pattern into a new migration. Default category names are
+  /// now rewritten into the user's language after startup (see
+  /// `core/utils/default_category_names.dart`), so a `WHERE name = '<English>'`
+  /// matches nothing on a device running in another language — silently, since
+  /// an UPDATE that hits zero rows is not an error. Key on the id, or on a
+  /// column the app never rewrites such as colour. This migration is safe only
+  /// because it has already run everywhere the rename could apply.
   static Future<void> v10(Database db) async {
     await db.transaction((txn) async {
       await txn.execute('''

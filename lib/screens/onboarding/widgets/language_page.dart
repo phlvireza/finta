@@ -1,20 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../providers/category_provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../l10n/app_localizations.dart';
 
-/// Onboarding Screen 2 — Currency selection.
-class CurrencyPage extends StatelessWidget {
+/// Onboarding Screen 2 — Language selection.
+///
+/// Second rather than first: the welcome page is a brand splash and its one
+/// line of copy is already localized, because [SettingsProvider] resolves the
+/// language from the device before anything renders. So for most users this
+/// page is a confirmation rather than a decision — and it still lands before
+/// the currency and payday pages, which carry the real explanatory copy.
+class LanguagePage extends StatelessWidget {
   final VoidCallback onNext;
 
-  const CurrencyPage({super.key, required this.onNext});
+  const LanguagePage({super.key, required this.onNext});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final settings = context.watch<SettingsProvider>();
     final loc = AppLocalizations.of(context)!;
+
+    // Language names are shown in their own language, never translated — a
+    // language picker only works if a user who cannot read the current locale
+    // can still spot their own.
+    final languages = [
+      (code: 'en', flag: '🇺🇸', name: loc.languageNameEnglish),
+      (code: 'id', flag: '🇮🇩', name: loc.languageNameIndonesian),
+    ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingXxxl),
@@ -28,31 +43,39 @@ class CurrencyPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.currency_exchange,
+                  Icons.translate,
                   size: 48,
                   color: theme.colorScheme.primary,
                 ),
                 const SizedBox(height: AppConstants.spacingXxl),
                 Text(
-                  loc.chooseYourCurrency,
+                  loc.chooseYourLanguage,
                   style: theme.textTheme.headlineMedium,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppConstants.spacingSm),
                 Text(
-                  loc.currencyDisplayOnly,
+                  loc.languageChangeableLater,
                   style: theme.textTheme.bodySmall,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppConstants.spacingXxxl),
-                ...AppConstants.currencies.map((currency) {
-                  final isSelected = settings.currencyCode == currency.code;
+                ...languages.map((language) {
+                  final isSelected = settings.languageCode == language.code;
                   return Padding(
                     padding: const EdgeInsets.only(bottom: AppConstants.spacingSm),
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: () => settings.setCurrency(currency.code),
+                        onTap: () async {
+                          await settings.setLanguage(language.code);
+                          // SettingsProvider cannot reach CategoryProvider, so
+                          // the caller pairs the two.
+                          if (!context.mounted) return;
+                          await context
+                              .read<CategoryProvider>()
+                              .localizeDefaultNames(language.code);
+                        },
                         borderRadius: BorderRadius.circular(AppConstants.radiusMd),
                         child: AnimatedContainer(
                           duration: AppConstants.animFast,
@@ -74,36 +97,23 @@ class CurrencyPage extends StatelessWidget {
                           ),
                           child: Row(
                             children: [
-                              SizedBox(
-                                width: 36,
-                                child: Text(
-                                  currency.symbol,
-                                  style: theme.textTheme.titleLarge?.copyWith(
-                                    color: isSelected
-                                        ? theme.colorScheme.primary
-                                        : null,
-                                  ),
-                                ),
+                              Text(
+                                language.flag,
+                                style: const TextStyle(fontSize: 24),
                               ),
                               const SizedBox(width: AppConstants.spacingMd),
                               Expanded(
                                 child: Text(
-                                  currency.name,
+                                  language.name,
                                   style: theme.textTheme.bodyLarge,
                                 ),
                               ),
-                              Text(
-                                currency.code,
-                                style: theme.textTheme.bodySmall,
-                              ),
-                              if (isSelected) ...[
-                                const SizedBox(width: AppConstants.spacingSm),
+                              if (isSelected)
                                 Icon(
                                   Icons.check_circle,
                                   size: 20,
                                   color: theme.colorScheme.primary,
                                 ),
-                              ],
                             ],
                           ),
                         ),

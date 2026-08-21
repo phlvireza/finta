@@ -40,12 +40,19 @@ enum _EntryType { expense, income, transfer }
 /// fields are cheap to show inline under a pinned Save, so that detour is
 /// gone; the full screen is now only for editing an existing transaction.
 class QuickAddSheet extends StatefulWidget {
-  const QuickAddSheet({super.key});
+  /// Category the sheet opens with already selected. Set when the sheet is
+  /// opened from somewhere that already knows what the entry is for — a
+  /// budget's detail screen — so the user isn't asked to re-pick a category
+  /// the screen they came from is named after. Left null by the shell FAB,
+  /// which has no such context.
+  final String? initialCategoryId;
 
-  static Future<void> show(BuildContext context) {
+  const QuickAddSheet({super.key, this.initialCategoryId});
+
+  static Future<void> show(BuildContext context, {String? initialCategoryId}) {
     return FormSheet.show(
       context,
-      builder: (_) => const QuickAddSheet(),
+      builder: (_) => QuickAddSheet(initialCategoryId: initialCategoryId),
     );
   }
 
@@ -81,6 +88,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
   @override
   void initState() {
     super.initState();
+    _categoryId = widget.initialCategoryId;
     _prefillMostRecentAccount();
   }
 

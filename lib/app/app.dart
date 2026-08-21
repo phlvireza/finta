@@ -67,10 +67,20 @@ class _FintaAppState extends State<FintaApp> {
 
     // No-op outside Android/iOS/macOS; requests notification permission
     // up front rather than waiting for the first subscription reminder.
+    // Reminder text is built without a BuildContext, so the service needs the
+    // language handed to it — settings.init() has already resolved it, from
+    // the device locale on a first launch.
+    NotificationService.instance.setLanguage(settings.languageCode);
     await NotificationService.instance.init();
     if (!mounted) return;
 
     await categories.loadCategories();
+    if (!mounted) return;
+
+    // Default categories are seeded in English, so bring them into the active
+    // language here. Also self-heals after a restore, which swaps the whole
+    // database file and can bring back names from another language.
+    await categories.localizeDefaultNames(settings.languageCode);
     if (!mounted) return;
 
     await accounts.loadAccounts();

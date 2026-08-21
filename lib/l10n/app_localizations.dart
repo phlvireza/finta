@@ -2653,6 +2653,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Day {day}'**
   String paydayDayLabel(int day);
+
+  /// No description provided for @chooseYourLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your language'**
+  String get chooseYourLanguage;
+
+  /// No description provided for @languageChangeableLater.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change this anytime in Settings.'**
+  String get languageChangeableLater;
+
+  /// No description provided for @notificationChannelName.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription reminders'**
+  String get notificationChannelName;
+
+  /// No description provided for @subscriptionFallbackName.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription'**
+  String get subscriptionFallbackName;
+
+  /// No description provided for @subscriptionRenewsSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} renews soon'**
+  String subscriptionRenewsSoon(String name);
+
+  /// No description provided for @subscriptionRenewsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Renews on {date}'**
+  String subscriptionRenewsOn(String date);
+
+  /// No description provided for @backupShareSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Finta backup'**
+  String get backupShareSubject;
+
+  /// No description provided for @addExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Add expense'**
+  String get addExpense;
 }
 
 class _AppLocalizationsDelegate

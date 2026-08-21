@@ -9,18 +9,18 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Finta — Track your money, not your stress">
 <meta property="og:description" content="A personal finance tracker that runs entirely on your phone. No account, no cloud, no tracking.">
-<!-- TODO (before launch, both in one edit):
-     1. Make this absolute. Facebook, LinkedIn and Slack do not reliably resolve
-        a relative og:image against the page they just fetched, so the card can
-        come up blank even though the file exists. Needs the real hostname:
-          <meta property="og:image" content="https://HOST/assets/app_icon.png">
-        and add <meta property="og:url" content="https://HOST/"> alongside it.
-     2. Swap in real 1200x630 card art. app_icon.png is square and will
-        letterbox badly in the summary_large_image slot below.
-     This previously pointed at assets/og-image.png, which was never committed,
-     so every share rendered a broken image rather than a bad one. -->
-<meta property="og:image" content="assets/app_icon.png">
-<meta property="og:image:alt" content="The Finta app icon">
+<!-- TODO (before launch): make this absolute. Facebook, LinkedIn and Slack do
+     not reliably resolve a relative og:image against the page they just
+     fetched, so the card can come up blank even though the file exists. Needs
+     the real hostname, which is not chosen yet:
+       <meta property="og:image" content="https://HOST/assets/og-card.png">
+     and add <meta property="og:url" content="https://HOST/"> alongside it.
+     The card art itself is now correct: og-card.png is a real 1200x630 image,
+     so summary_large_image no longer letterboxes a square icon. -->
+<meta property="og:image" content="assets/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Finta — your money stays on your phone. No account, no cloud, no tracking.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#FAF7F2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1A1816" media="(prefers-color-scheme: dark)">

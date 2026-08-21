@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Launcher label. "Finta" is a brand name, so it is deliberately not
+         translated — this exists so the display name has one definition
+         instead of being inlined in the manifest. -->
+    <string name="app_name">Finta</string>
+</resources>

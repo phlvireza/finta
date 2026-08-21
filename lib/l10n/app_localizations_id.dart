@@ -1474,4 +1474,33 @@ class AppLocalizationsId extends AppLocalizations {
   String paydayDayLabel(int day) {
     return 'Tanggal $day';
   }
+
+  @override
+  String get chooseYourLanguage => 'Pilih bahasa Anda';
+
+  @override
+  String get languageChangeableLater =>
+      'Anda dapat mengubahnya kapan saja di Pengaturan.';
+
+  @override
+  String get notificationChannelName => 'Pengingat langganan';
+
+  @override
+  String get subscriptionFallbackName => 'Langganan';
+
+  @override
+  String subscriptionRenewsSoon(String name) {
+    return '$name segera diperpanjang';
+  }
+
+  @override
+  String subscriptionRenewsOn(String date) {
+    return 'Diperpanjang pada $date';
+  }
+
+  @override
+  String get backupShareSubject => 'Cadangan Finta';
+
+  @override
+  String get addExpense => 'Tambah pengeluaran';
 }
