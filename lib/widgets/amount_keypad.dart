@@ -317,12 +317,14 @@ class _AmountKeypadState extends State<AmountKeypad> with SingleTickerProviderSt
                         Expanded(
                           child: _KeypadButton(
                             onPressed: () => _press('backspace'),
-                            // Long-press clears — the grid has no room for
-                            // a C key once 000 takes a slot, and holding
-                            // backspace to wipe is the convention users
-                            // already expect.
-                            onLongPress: () => _press('clear'),
                             child: const Icon(Icons.backspace_outlined, size: 20),
+                          ),
+                        ),
+                        const SizedBox(width: AppConstants.spacingXs),
+                        Expanded(
+                          child: _KeypadButton(
+                            onPressed: () => _press('clear'),
+                            child: const Text('C', style: TextStyle(fontSize: 18)),
                           ),
                         ),
                         const SizedBox(width: AppConstants.spacingXs),
@@ -388,7 +390,6 @@ class _AmountKeypadState extends State<AmountKeypad> with SingleTickerProviderSt
 
 class _KeypadButton extends StatelessWidget {
   final VoidCallback? onPressed;
-  final VoidCallback? onLongPress;
   final Widget child;
   final bool isOperator;
   final bool isPrimary;
@@ -396,7 +397,6 @@ class _KeypadButton extends StatelessWidget {
   const _KeypadButton({
     required this.onPressed,
     required this.child,
-    this.onLongPress,
     this.isOperator = false,
     this.isPrimary = false,
   });
@@ -423,7 +423,6 @@ class _KeypadButton extends StatelessWidget {
 
     return TextButton(
       onPressed: onPressed,
-      onLongPress: onLongPress,
       style: style,
       child: child,
     );
