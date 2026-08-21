@@ -26,6 +26,16 @@ class BudgetModel {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  /// When the user answered the prompt about this budget's unspent money —
+  /// null while it still needs an answer.
+  ///
+  /// Only ever set on an ended one-off budget. It records that the question
+  /// was *asked and answered*, not what the answer was: rolling the leftover
+  /// forward, sweeping it into a goal, spending it, and dismissing outright
+  /// all land here, because the only thing the prompt needs to know later is
+  /// whether to keep asking.
+  final DateTime? leftoverResolvedAt;
+
   const BudgetModel({
     required this.id,
     this.name,
@@ -38,6 +48,7 @@ class BudgetModel {
     this.isRecurring = true,
     required this.createdAt,
     required this.updatedAt,
+    this.leftoverResolvedAt,
   });
 
   bool get hasRollover => rolloverMode != 'none';
@@ -54,6 +65,7 @@ class BudgetModel {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'isRecurring': isRecurring ? 1 : 0,
+      'leftoverResolvedAt': leftoverResolvedAt?.toIso8601String(),
     };
   }
 
@@ -72,6 +84,9 @@ class BudgetModel {
       isRecurring: ((map['isRecurring'] as int?) ?? 1) == 1,
       createdAt: DateTime.parse(map['createdAt'] as String),
       updatedAt: DateTime.parse(map['updatedAt'] as String),
+      leftoverResolvedAt: (map['leftoverResolvedAt'] as String?) == null
+          ? null
+          : DateTime.parse(map['leftoverResolvedAt'] as String),
     );
   }
 
@@ -88,6 +103,7 @@ class BudgetModel {
     bool? isRecurring,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? leftoverResolvedAt,
   }) {
     return BudgetModel(
       id: id ?? this.id,
@@ -101,6 +117,7 @@ class BudgetModel {
       isRecurring: isRecurring ?? this.isRecurring,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      leftoverResolvedAt: leftoverResolvedAt ?? this.leftoverResolvedAt,
     );
   }
 }

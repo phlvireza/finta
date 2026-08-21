@@ -70,10 +70,10 @@ class _BudgetFormState extends State<BudgetForm> {
   }
 
   bool _categoryAlreadyBudgeted(String categoryId) {
-    final provider = context.read<BudgetProvider>();
-    return provider.budgets.any(
-      (b) => b.id != _editingBudget?.id && b.isActive && b.categoryIds.contains(categoryId),
-    );
+    return context.read<BudgetProvider>().isCategoryBudgeted(
+          categoryId,
+          excludingBudgetId: _editingBudget?.id,
+        );
   }
 
   Future<void> _save() async {

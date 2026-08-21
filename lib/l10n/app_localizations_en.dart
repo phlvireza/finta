@@ -1500,4 +1500,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addExpense => 'Add expense';
+
+  @override
+  String get unspentBudgets => 'Unspent budgets';
+
+  @override
+  String budgetLeftoverSubtitle(String amount) {
+    return '$amount left when this ended';
+  }
+
+  @override
+  String get useLeftover => 'Use it';
+
+  @override
+  String get budgetLeftoverTitle => 'Unspent money';
+
+  @override
+  String get rollForwardBudget => 'Roll forward';
+
+  @override
+  String get rollForwardBudgetDesc =>
+      'Budget it again this period, plus what\'s left';
+
+  @override
+  String get moveLeftoverToSavings => 'Move to savings';
+
+  @override
+  String get moveLeftoverToSavingsDesc => 'Put it toward a goal';
+
+  @override
+  String get markLeftoverAsSpent => 'Mark as spent';
+
+  @override
+  String get markLeftoverAsSpentDesc => 'Log an expense so nothing is left';
+
+  @override
+  String get selectAGoal => 'Select a goal...';
 }

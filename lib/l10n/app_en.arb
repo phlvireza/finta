@@ -842,5 +842,23 @@
     }
   },
   "backupShareSubject": "Finta backup",
-  "addExpense": "Add expense"
+  "addExpense": "Add expense",
+  "unspentBudgets": "Unspent budgets",
+  "budgetLeftoverSubtitle": "{amount} left when this ended",
+  "@budgetLeftoverSubtitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "useLeftover": "Use it",
+  "budgetLeftoverTitle": "Unspent money",
+  "rollForwardBudget": "Roll forward",
+  "rollForwardBudgetDesc": "Budget it again this period, plus what's left",
+  "moveLeftoverToSavings": "Move to savings",
+  "moveLeftoverToSavingsDesc": "Put it toward a goal",
+  "markLeftoverAsSpent": "Mark as spent",
+  "markLeftoverAsSpentDesc": "Log an expense so nothing is left",
+  "selectAGoal": "Select a goal..."
 }

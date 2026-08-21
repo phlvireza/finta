@@ -249,6 +249,30 @@ class Migrations {
     });
   }
 
+  /// v10 → v11: records that the user has dealt with a one-off budget's
+  /// unspent money, so the prompt offering to roll it forward can be
+  /// answered once and stay answered.
+  ///
+  /// Nullable rather than a flag with a default: NULL means "still needs an
+  /// answer", and the timestamp of the answer is the only other state worth
+  /// keeping. Nothing derived is stored — the leftover itself is recomputed
+  /// from transactions on every load, like every other budget figure.
+  ///
+  /// The backfill is the load-bearing half. Budgets that had already ended
+  /// before this shipped never got the chance to be answered, and without it
+  /// an upgrading install would open to a card listing every one-off budget
+  /// it has ever retired. Stamping them with `updatedAt` — the moment
+  /// `BudgetExpiryService` retired them — reads as "answered when it ended"
+  /// and leaves only budgets that expire from here on to prompt.
+  static Future<void> v11(Database db) async {
+    await db.transaction((txn) async {
+      await txn.execute('ALTER TABLE budgets ADD COLUMN leftoverResolvedAt TEXT');
+      await txn.execute(
+        'UPDATE budgets SET leftoverResolvedAt = updatedAt WHERE isActive = 0',
+      );
+    });
+  }
+
   /// The v10 colour moves, kept beside the migration that applies them so
   /// the "before" hex stays readable — [SeedData] only records the "after".
   static const List<({String type, String name, String oldColor, String newColor})>
@@ -336,7 +360,8 @@ class Migrations {
   /// `isRecurring` sits last, after `updatedAt`, because [v9] adds it with
   /// `ALTER TABLE … ADD COLUMN`, which always appends. Moving it up beside
   /// the other flags would make a fresh install's column order diverge
-  /// from an upgraded one.
+  /// from an upgraded one. `leftoverResolvedAt` follows it for the same
+  /// reason — [v11] appends it.
   static const String createBudgetsTable = '''
     CREATE TABLE budgets (
       id TEXT PRIMARY KEY,
@@ -348,7 +373,8 @@ class Migrations {
       isActive INTEGER NOT NULL DEFAULT 1,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
-      isRecurring INTEGER NOT NULL DEFAULT 1
+      isRecurring INTEGER NOT NULL DEFAULT 1,
+      leftoverResolvedAt TEXT
     )
   ''';
 

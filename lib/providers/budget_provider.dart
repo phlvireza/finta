@@ -5,6 +5,7 @@ import '../models/transaction_model.dart';
 import '../repositories/budget_repository.dart';
 import '../repositories/transaction_repository.dart';
 import '../core/services/budget_rollover_service.dart';
+import '../core/utils/budget_leftover.dart';
 import '../core/utils/date_utils.dart';
 import '../core/constants/app_constants.dart';
 
@@ -50,6 +51,35 @@ class BudgetStatus {
   bool get isNormal => ratio < AppConstants.budgetWarningThreshold;
 }
 
+/// An ended one-off budget that still has unspent money the user hasn't
+/// decided about.
+///
+/// Separate from [BudgetStatus] rather than folded into it: statuses exist
+/// only for active budgets and describe a *live* period the user can still
+/// spend against, whereas this describes a closed one. Sharing the type
+/// would mean every consumer of `budgetStatuses` had to start asking
+/// whether the budget behind it was still running.
+class BudgetLeftover {
+  final BudgetModel budget;
+  final double spent;
+
+  /// Unspent money, from [computeBudgetLeftover] — always greater than zero
+  /// for anything that reaches the UI.
+  final double leftover;
+
+  /// The period the budget covered, kept for the same reason
+  /// [BudgetStatus.period] is: it dates the "mark as spent" transaction so
+  /// the expense lands in the period being settled rather than today's.
+  final ({DateTime start, DateTime end}) period;
+
+  const BudgetLeftover({
+    required this.budget,
+    required this.spent,
+    required this.leftover,
+    required this.period,
+  });
+}
+
 /// Manages budget state — CRUD + spending calculations.
 class BudgetProvider extends ChangeNotifier {
   final BudgetRepository _repository;
@@ -65,8 +95,25 @@ class BudgetProvider extends ChangeNotifier {
         _transactionRepo = transactionRepo ?? TransactionRepository(),
         _rolloverService = rolloverService ?? BudgetRolloverService();
 
+  /// How many leftover prompts [_calculateLeftovers] will surface at once.
+  /// The prompt is a nudge rather than a ledger — a user sitting on a
+  /// backlog doesn't need all of it on screen. Newest first, so the cap
+  /// drops the stalest.
+  static const _maxLeftoverPrompts = 5;
+
+  /// How many ended budgets [_calculateLeftovers] will price up looking for
+  /// those prompts. Each costs a spend query, so the walk needs a bound.
+  ///
+  /// Separate from [_maxLeftoverPrompts] because most candidates produce no
+  /// prompt: a budget spent to the last cent is never resolved — there was
+  /// nothing to ask — so it stays a candidate forever. Capping candidates
+  /// instead of results would let a handful of those permanently crowd out
+  /// every newer budget that does have money left.
+  static const _maxLeftoverScan = 30;
+
   List<BudgetModel> _budgets = [];
   Map<String, BudgetStatus> _budgetStatuses = {}; // keyed by budget.id
+  List<BudgetLeftover> _pendingLeftovers = [];
   bool _isLoading = false;
   String? _error;
 
@@ -74,6 +121,10 @@ class BudgetProvider extends ChangeNotifier {
   Map<String, BudgetStatus> get budgetStatuses => _budgetStatuses;
   bool get isLoading => _isLoading;
   String? get error => _error;
+
+  /// Ended one-off budgets with unspent money awaiting the user's decision,
+  /// most recently ended first.
+  List<BudgetLeftover> get pendingLeftovers => _pendingLeftovers;
 
   List<BudgetModel> get activeBudgets =>
       _budgets.where((b) => b.isActive).toList();
@@ -101,6 +152,7 @@ class BudgetProvider extends ChangeNotifier {
     try {
       _budgets = await _repository.getAll();
       await _calculateStatuses(payday);
+      await _calculateLeftovers(payday);
     } catch (e) {
       _error = e.toString();
       rethrow;
@@ -124,6 +176,121 @@ class BudgetProvider extends ChangeNotifier {
     }
 
     _budgetStatuses = statuses;
+  }
+
+  /// Price up the ended one-off budgets that still owe the user a decision
+  /// about their unspent money.
+  ///
+  /// Runs after [_calculateStatuses] and covers the budgets that one skips:
+  /// statuses are built for active budgets only, so before this there was
+  /// no spent figure anywhere in the app for a budget that had ended, and
+  /// the leftover was invisible by construction.
+  ///
+  /// Candidates are filtered on the cheap fields *before* the spend query,
+  /// so an install with years of resolved budgets behind it pays nothing.
+  Future<void> _calculateLeftovers(int payday) async {
+    final candidates = _budgets
+        .where((b) => !b.isActive && !b.isRecurring && b.leftoverResolvedAt == null)
+        .toList()
+      // Newest first — `updatedAt` is the moment BudgetExpiryService
+      // retired the budget, which is exactly when it ended.
+      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+    final leftovers = <BudgetLeftover>[];
+    for (final budget in candidates.take(_maxLeftoverScan)) {
+      if (leftovers.length >= _maxLeftoverPrompts) break;
+
+      final period = _periodFor(budget, payday);
+      final spent = await _spentFor(budget, period.start, period.end);
+      final leftover = computeBudgetLeftover(amount: budget.amount, spent: spent);
+
+      if (!needsLeftoverPrompt(
+        isActive: budget.isActive,
+        isRecurring: budget.isRecurring,
+        leftoverResolvedAt: budget.leftoverResolvedAt,
+        leftover: leftover,
+      )) {
+        continue;
+      }
+
+      leftovers.add(BudgetLeftover(
+        budget: budget,
+        spent: spent,
+        leftover: leftover,
+        period: period,
+      ));
+    }
+
+    _pendingLeftovers = leftovers;
+  }
+
+  /// Record that the user has answered the leftover prompt for [budgetId],
+  /// whichever option they picked — including dismissing it.
+  Future<void> resolveLeftover(String budgetId) async {
+    final resolvedAt = DateTime.now();
+    await _repository.markLeftoverResolved(budgetId, at: resolvedAt);
+
+    final index = _budgets.indexWhere((b) => b.id == budgetId);
+    if (index != -1) {
+      _budgets[index] = _budgets[index].copyWith(leftoverResolvedAt: resolvedAt);
+    }
+    _pendingLeftovers =
+        _pendingLeftovers.where((l) => l.budget.id != budgetId).toList();
+    notifyListeners();
+  }
+
+  /// Recreate an ended budget in the current period, worth its original
+  /// limit plus whatever it didn't spend.
+  ///
+  /// The new budget is a fresh one-off: its `createdAt` is now, which is
+  /// what pins it to the current period (budgets carry no period anchor of
+  /// their own). Staying one-off means it will ask the same question again
+  /// when *it* ends, rather than quietly committing the user to a budget
+  /// that renews forever — they chose "roll this forward", not "make this
+  /// permanent".
+  ///
+  /// Throws [StateError] when one of the categories has since been given
+  /// another active budget; rolling forward anyway would leave the category
+  /// covered twice, which the rest of the app assumes cannot happen (see
+  /// [getStatusForCategory]).
+  Future<void> rollForwardLeftover(
+    BudgetLeftover leftover, {
+    required int payday,
+  }) async {
+    final budget = leftover.budget;
+    final conflict = budget.categoryIds.any(isCategoryBudgeted);
+    if (conflict) {
+      throw StateError('A category in this budget is already budgeted');
+    }
+
+    await addBudget(
+      name: budget.name,
+      amount: rollForwardAmount(
+        budgetAmount: budget.amount,
+        leftover: leftover.leftover,
+      ),
+      period: budget.period,
+      rolloverMode: budget.rolloverMode,
+      scope: budget.scope,
+      categoryIds: budget.categoryIds,
+      payday: payday,
+      isRecurring: false,
+    );
+    await resolveLeftover(budget.id);
+  }
+
+  /// Whether an active budget already covers [categoryId].
+  ///
+  /// A category is meant to be covered by at most one budget — several
+  /// places rely on it, [getStatusForCategory] most directly. Lives here
+  /// rather than in the form because the form is no longer the only thing
+  /// that creates budgets: [rollForwardLeftover] needs the same guard.
+  ///
+  /// [excludingBudgetId] is for the edit case, where the budget being
+  /// edited shouldn't count as a conflict with itself.
+  bool isCategoryBudgeted(String categoryId, {String? excludingBudgetId}) {
+    return _budgets.any((b) =>
+        b.id != excludingBudgetId && b.isActive && b.categoryIds.contains(categoryId));
   }
 
   /// The date range [budget] measures spending over.
@@ -294,6 +461,10 @@ class BudgetProvider extends ChangeNotifier {
       if (index != -1) {
         _budgetStatuses.remove(id);
         _budgets.removeAt(index);
+        // Deleting an ended budget answers its leftover prompt by
+        // removing the thing being asked about.
+        _pendingLeftovers =
+            _pendingLeftovers.where((l) => l.budget.id != id).toList();
         notifyListeners();
       }
     } catch (e) {

@@ -18,6 +18,7 @@ import '../../widgets/section_card.dart';
 import 'budget_actions.dart';
 import 'budget_detail_screen.dart';
 import 'widgets/budget_form.dart';
+import 'widgets/budget_leftover_card.dart';
 import 'widgets/budget_progress_bar.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import '../../l10n/app_localizations.dart';
@@ -75,6 +76,12 @@ class ManageBudgetsScreen extends StatelessWidget {
                 AppConstants.fabClearance,
               ),
               children: [
+                // Above the budgets themselves: it's a question waiting on
+                // an answer, and it disappears for good once given.
+                if (budgetProvider.pendingLeftovers.isNotEmpty) ...[
+                  const BudgetLeftoverCard(),
+                  const SizedBox(height: AppConstants.spacingLg),
+                ],
                 if (budgets.isNotEmpty) ...[
                   SectionCard(
                     child: _BudgetChart(budgetProvider: budgetProvider, settings: settings),

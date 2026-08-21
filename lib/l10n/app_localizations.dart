@@ -2701,6 +2701,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add expense'**
   String get addExpense;
+
+  /// No description provided for @unspentBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Unspent budgets'**
+  String get unspentBudgets;
+
+  /// No description provided for @budgetLeftoverSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} left when this ended'**
+  String budgetLeftoverSubtitle(String amount);
+
+  /// No description provided for @useLeftover.
+  ///
+  /// In en, this message translates to:
+  /// **'Use it'**
+  String get useLeftover;
+
+  /// No description provided for @budgetLeftoverTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unspent money'**
+  String get budgetLeftoverTitle;
+
+  /// No description provided for @rollForwardBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Roll forward'**
+  String get rollForwardBudget;
+
+  /// No description provided for @rollForwardBudgetDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget it again this period, plus what\'s left'**
+  String get rollForwardBudgetDesc;
+
+  /// No description provided for @moveLeftoverToSavings.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to savings'**
+  String get moveLeftoverToSavings;
+
+  /// No description provided for @moveLeftoverToSavingsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Put it toward a goal'**
+  String get moveLeftoverToSavingsDesc;
+
+  /// No description provided for @markLeftoverAsSpent.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as spent'**
+  String get markLeftoverAsSpent;
+
+  /// No description provided for @markLeftoverAsSpentDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Log an expense so nothing is left'**
+  String get markLeftoverAsSpentDesc;
+
+  /// No description provided for @selectAGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a goal...'**
+  String get selectAGoal;
 }
 
 class _AppLocalizationsDelegate

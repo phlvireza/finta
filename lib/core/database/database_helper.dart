@@ -13,7 +13,7 @@ class DatabaseHelper {
   /// branch in [_onUpgrade] backed by a method on [Migrations]. `_onCreate`
   /// must always produce a schema identical to a v1 install that has
   /// replayed every migration — see test/migration_test.dart.
-  static const int dbVersion = 10;
+  static const int dbVersion = 11;
 
   static Database? _database;
 
@@ -57,6 +57,7 @@ class DatabaseHelper {
     if (oldVersion < 9) await Migrations.v9(db);
     // Data-only: no DDL, so _onCreate needs no matching change.
     if (oldVersion < 10) await Migrations.v10(db);
+    if (oldVersion < 11) await Migrations.v11(db);
   }
 
   Future<void> _onCreate(Database db, int version) async {

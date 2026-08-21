@@ -109,6 +109,28 @@ class BudgetRepository {
     }
   }
 
+  /// Record that the user has answered the prompt about this budget's
+  /// unspent money. Narrow single-column write for the same reason as
+  /// [deactivate] — the caller has a flag to set, not a model to rewrite.
+  ///
+  /// Deliberately leaves `updatedAt` alone, unlike [deactivate]: for an
+  /// ended budget it holds the moment the budget was retired, which the UI
+  /// shows as "Ended on …". Answering the leftover prompt shouldn't move
+  /// that date.
+  Future<void> markLeftoverResolved(String id, {required DateTime at}) async {
+    try {
+      final db = await _dbHelper.database;
+      await db.update(
+        'budgets',
+        {'leftoverResolvedAt': at.toIso8601String()},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } catch (e) {
+      throw DatabaseException('Failed to resolve budget leftover', cause: e);
+    }
+  }
+
   Future<void> delete(String id) async {
     try {
       final db = await _dbHelper.database;

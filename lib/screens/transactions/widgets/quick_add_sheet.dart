@@ -47,13 +47,42 @@ class QuickAddSheet extends StatefulWidget {
   /// which has no such context.
   final String? initialCategoryId;
 
-  const QuickAddSheet({super.key, this.initialCategoryId});
+  /// Amount the sheet opens with already filled in. Set when the caller
+  /// knows the figure — settling an ended budget's leftover — so the user
+  /// confirms a number rather than re-deriving it. Still editable.
+  final double? initialAmount;
 
-  static Future<void> show(BuildContext context, {String? initialCategoryId}) {
-    return FormSheet.show(
+  /// Date the sheet opens on, instead of today. Settling a budget that has
+  /// already ended needs the expense to land *in that budget's period*; a
+  /// transaction dated today would count against the current period and
+  /// leave the ended budget reading exactly as under-spent as before.
+  final DateTime? initialDate;
+
+  const QuickAddSheet({
+    super.key,
+    this.initialCategoryId,
+    this.initialAmount,
+    this.initialDate,
+  });
+
+  /// Resolves to true when a transaction was actually saved, false when the
+  /// sheet was dismissed — callers that act on the outcome (marking a
+  /// budget's leftover as dealt with) must not do so on a cancel.
+  static Future<bool> show(
+    BuildContext context, {
+    String? initialCategoryId,
+    double? initialAmount,
+    DateTime? initialDate,
+  }) async {
+    final saved = await FormSheet.show<bool>(
       context,
-      builder: (_) => QuickAddSheet(initialCategoryId: initialCategoryId),
+      builder: (_) => QuickAddSheet(
+        initialCategoryId: initialCategoryId,
+        initialAmount: initialAmount,
+        initialDate: initialDate,
+      ),
     );
+    return saved ?? false;
   }
 
   @override
@@ -65,7 +94,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
   _EntryType _entryType = _EntryType.expense;
-  DateTime _date = DateTime.now();
+  late DateTime _date;
   String? _categoryId;
   String? _accountId;
   String? _toAccountId;
@@ -89,6 +118,16 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
   void initState() {
     super.initState();
     _categoryId = widget.initialCategoryId;
+    _date = widget.initialDate ?? DateTime.now();
+    if (widget.initialAmount != null) {
+      // Written through the formatter rather than as a raw toString: the
+      // field is masked by CurrencyInputFormatter, and "200000.0" would
+      // render as typed garbage next to every other amount in the app.
+      _amountController.text = formatAmount(
+        widget.initialAmount!,
+        useDecimals: context.read<SettingsProvider>().currencyUseDecimals,
+      );
+    }
     _prefillMostRecentAccount();
   }
 
@@ -265,7 +304,8 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
         await context.read<AnalyticsProvider>().loadForCurrentPeriod(settings.payday);
       }
 
-      if (mounted) Navigator.of(context).pop();
+      // true == a transaction was written; see [QuickAddSheet.show].
+      if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -308,7 +348,8 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
         await context.read<AnalyticsProvider>().loadForCurrentPeriod(settings.payday);
       }
 
-      if (mounted) Navigator.of(context).pop();
+      // true == a transaction was written; see [QuickAddSheet.show].
+      if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) {
         setState(() {

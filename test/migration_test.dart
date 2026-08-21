@@ -881,4 +881,160 @@ void main() {
       await db.close();
     });
   });
+
+  group('v11 — the leftoverResolvedAt column on budgets', () {
+    /// A v1 install replayed to v10, holding one budget that has already
+    /// ended and one still running — the two states v11 has to tell apart.
+    Future<Database> upgradedToV10() async {
+      final db = await databaseFactoryFfi.openDatabase(
+        ':memory:',
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: _createV1Schema,
+          onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
+        ),
+      );
+      await db.insert('categories', {
+        'id': 'cat1',
+        'name': 'Groceries',
+        'type': 'expense',
+        'icon': 'shopping_cart',
+        'color': '#C87941',
+        'isDefault': 0,
+        'sortOrder': 0,
+        'createdAt': '2026-01-01T00:00:00.000',
+      });
+      await db.insert('budgets', {
+        'id': 'ended',
+        'categoryId': 'cat1',
+        'amount': 500000,
+        'isActive': 0,
+        'createdAt': '2026-01-01T00:00:00.000',
+        'updatedAt': '2026-02-25T08:00:00.000',
+      });
+      await db.insert('budgets', {
+        'id': 'live',
+        'categoryId': 'cat1',
+        'amount': 300000,
+        'isActive': 1,
+        'createdAt': '2026-02-01T00:00:00.000',
+        'updatedAt': '2026-02-01T00:00:00.000',
+      });
+      await Migrations.v2(db);
+      await Migrations.v3(db);
+      await Migrations.v4(db);
+      await Migrations.v5(db);
+      await Migrations.v6(db);
+      await Migrations.v7(db);
+      await Migrations.v8(db);
+      await Migrations.v9(db);
+      await Migrations.v10(db);
+      return db;
+    }
+
+    Future<Database> upgradedToV11() async {
+      final db = await upgradedToV10();
+      await Migrations.v11(db);
+      return db;
+    }
+
+    Future<Set<String>> budgetColumns(Database db) async {
+      final info = await db.rawQuery('PRAGMA table_info(budgets)');
+      return info.map((c) => c['name'] as String).toSet();
+    }
+
+    test('marks already-ended budgets as resolved', () async {
+      final db = await upgradedToV10();
+
+      expect(
+        await budgetColumns(db),
+        isNot(contains('leftoverResolvedAt')),
+        reason: 'the column should not exist before v11 runs',
+      );
+
+      await Migrations.v11(db);
+
+      // The load-bearing assertion: a budget that ended before this feature
+      // shipped never got the chance to be asked about. Leaving it NULL
+      // would greet the user with a card listing their whole history.
+      final ended = (await db.query('budgets', where: "id = 'ended'")).first;
+      expect(ended['leftoverResolvedAt'], '2026-02-25T08:00:00.000',
+          reason: 'stamped with updatedAt — the moment it was retired');
+
+      await db.close();
+    });
+
+    test('leaves active budgets unresolved', () async {
+      final db = await upgradedToV11();
+      // A live budget has nothing to resolve yet; it must be able to prompt
+      // once it ends.
+      final live = (await db.query('budgets', where: "id = 'live'")).first;
+      expect(live['leftoverResolvedAt'], isNull);
+
+      await db.close();
+    });
+
+    test('preserves the rest of the budget row', () async {
+      final db = await upgradedToV11();
+
+      final ended = (await db.query('budgets', where: "id = 'ended'")).first;
+      expect(ended['amount'], 500000);
+      expect(ended['isActive'], 0);
+      expect(ended['isRecurring'], 1);
+      expect(ended['createdAt'], '2026-01-01T00:00:00.000');
+      expect(ended['updatedAt'], '2026-02-25T08:00:00.000',
+          reason: 'the migration must not move the date the budget ended');
+
+      final links = await db.query('budget_categories', where: "budgetId = 'ended'");
+      expect(links, hasLength(1));
+      expect(links.first['categoryId'], 'cat1');
+
+      await db.close();
+    });
+
+    test('a fresh install has the same budgets columns as an upgraded one', () async {
+      final upgraded = await upgradedToV11();
+
+      final fresh = await databaseFactoryFfi.openDatabase(
+        ':memory:',
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (db, _) async {
+            await db.execute(Migrations.createBudgetsTable);
+          },
+          onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
+        ),
+      );
+
+      expect(await budgetColumns(fresh), await budgetColumns(upgraded));
+
+      await upgraded.close();
+      await fresh.close();
+    });
+
+    test('a fresh install defaults the column to null', () async {
+      // createBudgetsTable and the ALTER must agree: a budget inserted
+      // without the field means "not yet answered" either way.
+      final db = await databaseFactoryFfi.openDatabase(
+        ':memory:',
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (db, _) async {
+            await db.execute(Migrations.createBudgetsTable);
+          },
+        ),
+      );
+      await db.insert('budgets', {
+        'id': 'b1',
+        'amount': 100,
+        'isActive': 1,
+        'createdAt': '2026-01-01T00:00:00.000',
+        'updatedAt': '2026-01-01T00:00:00.000',
+      });
+
+      expect((await db.query('budgets')).first['leftoverResolvedAt'], isNull);
+
+      await db.close();
+    });
+  });
 }

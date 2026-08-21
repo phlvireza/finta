@@ -840,5 +840,23 @@
     }
   },
   "backupShareSubject": "Cadangan Finta",
-  "addExpense": "Tambah pengeluaran"
+  "addExpense": "Tambah pengeluaran",
+  "unspentBudgets": "Anggaran tersisa",
+  "budgetLeftoverSubtitle": "Tersisa {amount} saat berakhir",
+  "@budgetLeftoverSubtitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "useLeftover": "Gunakan",
+  "budgetLeftoverTitle": "Sisa anggaran",
+  "rollForwardBudget": "Lanjutkan",
+  "rollForwardBudgetDesc": "Anggarkan lagi periode ini, plus sisanya",
+  "moveLeftoverToSavings": "Pindah ke tabungan",
+  "moveLeftoverToSavingsDesc": "Alokasikan ke sebuah target",
+  "markLeftoverAsSpent": "Tandai terpakai",
+  "markLeftoverAsSpentDesc": "Catat pengeluaran agar tidak ada sisa",
+  "selectAGoal": "Pilih target..."
 }

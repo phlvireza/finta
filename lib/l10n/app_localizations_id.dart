@@ -1503,4 +1503,40 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get addExpense => 'Tambah pengeluaran';
+
+  @override
+  String get unspentBudgets => 'Anggaran tersisa';
+
+  @override
+  String budgetLeftoverSubtitle(String amount) {
+    return 'Tersisa $amount saat berakhir';
+  }
+
+  @override
+  String get useLeftover => 'Gunakan';
+
+  @override
+  String get budgetLeftoverTitle => 'Sisa anggaran';
+
+  @override
+  String get rollForwardBudget => 'Lanjutkan';
+
+  @override
+  String get rollForwardBudgetDesc =>
+      'Anggarkan lagi periode ini, plus sisanya';
+
+  @override
+  String get moveLeftoverToSavings => 'Pindah ke tabungan';
+
+  @override
+  String get moveLeftoverToSavingsDesc => 'Alokasikan ke sebuah target';
+
+  @override
+  String get markLeftoverAsSpent => 'Tandai terpakai';
+
+  @override
+  String get markLeftoverAsSpentDesc => 'Catat pengeluaran agar tidak ada sisa';
+
+  @override
+  String get selectAGoal => 'Pilih target...';
 }

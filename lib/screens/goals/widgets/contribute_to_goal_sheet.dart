@@ -28,14 +28,33 @@ import '../../transactions/widgets/date_picker_field.dart';
 class ContributeToGoalSheet extends StatefulWidget {
   final GoalModel goal;
 
-  const ContributeToGoalSheet({super.key, required this.goal});
+  /// Amount the sheet opens with already filled in, for callers that
+  /// already know the figure — sweeping an ended budget's leftover into
+  /// this goal. Still editable; null leaves the field empty as usual.
+  final double? initialAmount;
 
-  static void show(BuildContext context, GoalModel goal) {
-    showModalBottomSheet(
+  const ContributeToGoalSheet({
+    super.key,
+    required this.goal,
+    this.initialAmount,
+  });
+
+  /// Resolves to true when a contribution was actually saved, false when
+  /// the sheet was dismissed.
+  static Future<bool> show(
+    BuildContext context,
+    GoalModel goal, {
+    double? initialAmount,
+  }) async {
+    final saved = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => ContributeToGoalSheet(goal: goal),
+      builder: (_) => ContributeToGoalSheet(
+        goal: goal,
+        initialAmount: initialAmount,
+      ),
     );
+    return saved ?? false;
   }
 
   @override
@@ -54,6 +73,14 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialAmount != null) {
+      // Through the formatter, not toString: KeypadAmountField shows a
+      // masked amount and a raw "200000.0" would read as typed garbage.
+      _amountController.text = formatAmount(
+        widget.initialAmount!,
+        useDecimals: context.read<SettingsProvider>().currencyUseDecimals,
+      );
+    }
     // "Savings & Goals" is seeded as an ordinary category, so a user can
     // archive it. CategoryPicker only resolves non-archived categories and
     // renders blank when the id doesn't match one, which would leave the
@@ -107,7 +134,8 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
       await accountProvider.loadAccounts();
       await analytics.loadForCurrentPeriod(settings.payday);
       await goalProvider.loadGoals();
-      if (mounted) Navigator.of(context).pop();
+      // true == a contribution was written; see [ContributeToGoalSheet.show].
+      if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
