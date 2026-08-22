@@ -363,18 +363,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 },
               ),
 
-              // Merchant is the second field — it's what the transaction
-              // list leads with, category is secondary metadata.
-              MerchantField(
-                initialValue: _merchant,
-                onChanged: (val) => _merchant = val,
-                onAccountDefault: (accountId) => setState(() => _accountId = accountId),
-              ),
-              const SizedBox(height: AppConstants.spacingXxl),
-
-              // Date sits right under the amount — it's changed far more
-              // often than the note below, so it shouldn't be the field
-              // furthest from the top.
+              // Field order below is deliberately identical to QuickAddSheet:
+              // date, account, merchant, category. This screen handles both
+              // creating and editing, and the sheet handles the FAB create, so
+              // any divergence means the same user meets two different layouts
+              // for the same task. Merchant used to sit directly under the
+              // amount here; it was moved down to match the sheet.
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
                 child: DatePickerField(
@@ -389,6 +383,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 selectedAccountId: _accountId,
                 onAccountSelected: (id) => setState(() => _accountId = id),
                 validator: (val) => val == null ? loc.selectAnAccount : null,
+              ),
+              const SizedBox(height: AppConstants.spacingXxl),
+
+              MerchantField(
+                initialValue: _merchant,
+                onChanged: (val) => _merchant = val,
+                onAccountDefault: (accountId) => setState(() => _accountId = accountId),
               ),
               const SizedBox(height: AppConstants.spacingXxl),
 
