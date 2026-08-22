@@ -21,6 +21,12 @@
   /* Brand */
   --primary: #C87941;
   --on-primary: #FFFFFF;
+  /* WCAG 1.4.3: --primary is a decorative accent -- white on it reaches only
+     3.35:1, and as small text on --bg only 3.14:1, both under the 4.5:1 floor.
+     This darkened partner is used wherever the brand colour carries TEXT:
+     button fills, the eyebrow label, and links in body copy.
+     Measured 5.44:1 with white text, 5.09:1 as text on --bg. */
+  --primary-ink: #A25526;
 
   /* Text */
   --text: #2C2520;
@@ -38,6 +44,11 @@
   --warning-surface: #F5E6CC;
 
   --border: #E5DED5;
+  /* WCAG 1.4.11: --border sits at 1.25:1 on --bg. That is fine for decorative
+     hairlines (cards, dividers), which the criterion exempts, but a real
+     control boundary needs 3:1. Used only by .field and .icon-btn.
+     Measured 3.07:1 on --bg. */
+  --border-strong: #9A8C7A;
 
   /* Categorical chart ramp. Hue ORDER is load-bearing: the app validated this
      sequence for lightness spacing and CVD separation, so series N must keep
@@ -90,6 +101,9 @@
     --surface: #242120;
     --surface-2: #2E2A27;
     --primary: #D4956A;
+    /* Dark --primary already clears 4.5:1 both ways (7.0 as text on --bg,
+       7.0 for --on-primary on it), so the ink partner is the same colour. */
+    --primary-ink: #D4956A;
     --on-primary: #1A1816;
     --text: #EDE8E2;
     --text-2: #9C8E82;
@@ -99,6 +113,9 @@
     --warning: #D4A05A;
     --warning-surface: #3D3225;
     --border: #3A3533;
+    /* Dark --border is 1.46:1 on --bg -- it fails 1.4.11 for control
+       boundaries just as the light one does. Measured 3.55:1. */
+    --border-strong: #776E68;
     --c1: #4F9E4F;
     --c2: #7C63B8;
     --c3: #C24F62;
@@ -117,6 +134,7 @@
   --surface: #242120;
   --surface-2: #2E2A27;
   --primary: #D4956A;
+  --primary-ink: #D4956A;
   --on-primary: #1A1816;
   --text: #EDE8E2;
   --text-2: #9C8E82;
@@ -126,6 +144,7 @@
   --warning: #D4A05A;
   --warning-surface: #3D3225;
   --border: #3A3533;
+  --border-strong: #776E68;
   --c1: #4F9E4F;
   --c2: #7C63B8;
   --c3: #C24F62;

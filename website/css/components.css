@@ -54,7 +54,12 @@
 }
 @media (min-width: 860px) { .nav__links { display: flex; } }
 
+/* 2.5.8 Target Size (Minimum): these measured 22px tall. The hit area grows
+   to 24px; the visual text size is unchanged. */
 .nav__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
   color: var(--text-2-strong);
   font-size: 0.9375rem;
   font-weight: 500;
@@ -70,6 +75,28 @@
    down this file, so a bare .nav__toggle would lose the display battle on
    source order alone. */
 .nav__toggle.icon-btn { display: inline-flex; }
+
+/* Language toggle. Sized like .icon-btn so the nav's right cluster stays on one
+   rhythm, but it is a link, not a button -- it navigates to the other page. */
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Same 38x38 box as .icon-btn so the nav's right-hand cluster reads as one
+     row of controls rather than a link that happens to sit next to buttons. */
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-sm);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-2-strong);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.lang-toggle:hover { background: var(--surface-2); color: var(--text); opacity: 1; }
+
 
 @media (min-width: 860px) {
   .nav__toggle.icon-btn { display: none; }
@@ -128,7 +155,9 @@ html:not(.no-js) .nav__panel.is-open { display: block; }
 }
 
 .btn--primary {
-  background: var(--primary);
+  /* --primary-ink, not --primary: white on the lighter accent is 3.35:1,
+     under the 4.5:1 that 15px button text needs (WCAG 1.4.3). */
+  background: var(--primary-ink);
   color: var(--on-primary);
 }
 .btn--primary:hover { opacity: 0.88; }
@@ -150,7 +179,8 @@ html:not(.no-js) .nav__panel.is-open { display: block; }
   height: 38px;
   border-radius: var(--r-sm);
   background: transparent;
-  border: 1px solid var(--border);
+  /* 1.4.11: no fill at all, so the boundary must reach 3:1. */
+  border: 1px solid var(--border-strong);
   color: var(--text-2-strong);
   cursor: pointer;
   transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
@@ -296,6 +326,16 @@ html:not(.no-js) .nav__panel.is-open { display: block; }
 }
 .faq__item summary::-webkit-details-marker { display: none; }
 
+/* The question is an <h3> so the FAQ enters the document outline, but it must
+   not look like one: the UA gives h3 its own bold 1.17em, which would override
+   the weight and size set on the summary above. min-width lets a long question
+   wrap instead of pushing the chevron off the row. */
+.faq__question {
+  font-size: inherit;
+  font-weight: inherit;
+  min-width: 0;
+}
+
 .faq__item summary::after {
   content: "";
   flex: none;
@@ -344,7 +384,9 @@ html.no-js .waitlist { display: none; }
   flex: 1;
   min-width: 0;
   background: var(--surface-2);
-  border: 1px solid var(--border);
+  /* 1.4.11: the fill sits 1.11:1 from the page, so the border is the only
+     thing identifying this control -- it has to carry the 3:1 itself. */
+  border: 1px solid var(--border-strong);
   border-radius: var(--r-md);
   padding: var(--s-md) var(--s-lg);
   color: var(--text);
@@ -370,10 +412,22 @@ html.no-js .waitlist { display: none; }
   font-weight: 500;
   min-height: 1.4em;
 }
+/* WCAG 1.4.1 Use of Color (Level A): these three states used to differ by
+   colour alone, so a red-green colourblind visitor could not tell a
+   rejected address from a successful signup. The glyph is the second,
+   non-colour channel. It is decorative to AT -- the message text already
+   says what happened, and .form-status is a live region. */
+.form-status[data-state]::before {
+  margin-right: 0.4em;
+  font-weight: 700;
+}
 .form-status[data-state="error"] { color: var(--expense); }
+.form-status[data-state="error"]::before { content: "⚠"; }
 .form-status[data-state="success"] { color: var(--income); }
+.form-status[data-state="success"]::before { content: "✓"; }
 /* Neither a failure nor a signup: the list is not open yet. */
 .form-status[data-state="notice"] { color: var(--text-2-strong); }
+.form-status[data-state="notice"]::before { content: "ℹ"; }
 
 /* --------------------------------------------------------------------------
    Footer
@@ -397,5 +451,11 @@ html.no-js .waitlist { display: none; }
   display: flex;
   flex-wrap: wrap;
   gap: var(--s-lg);
+}
+/* 2.5.8: these measured 22px tall. Hit area only -- text size unchanged. */
+.footer__meta a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
 }
 

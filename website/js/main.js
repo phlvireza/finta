@@ -40,7 +40,12 @@
     var setMenu = function (open) {
       navPanel.classList.toggle('is-open', open);
       navToggle.setAttribute('aria-expanded', String(open));
-      navToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      // Locale-aware: the strings come from data-* on the button, which
+      // build.py fills from the locale file. Hardcoding English here would
+      // announce the wrong language on /id/ the moment the menu is opened.
+      navToggle.setAttribute('aria-label',
+        open ? navToggle.getAttribute('data-label-close')
+             : navToggle.getAttribute('data-label-open'));
     };
 
     navToggle.addEventListener('click', function () {
@@ -125,6 +130,16 @@
     if (!el) return;
     el.setAttribute('data-state', state);
     el.textContent = message;
+
+    // aria-invalid marks the field itself, not just the live region, so a
+    // screen reader user who tabs back to the input still hears that it is in
+    // an error state. Only 'error' is a validity failure -- 'notice' means the
+    // list is not open yet, which is not the visitor's fault.
+    var input = form.querySelector('input[type="email"]');
+    if (input) {
+      if (state === 'error') input.setAttribute('aria-invalid', 'true');
+      else input.removeAttribute('aria-invalid');
+    }
   }
 
   Array.prototype.forEach.call(document.querySelectorAll('.waitlist'), function (form) {

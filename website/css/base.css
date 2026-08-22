@@ -9,6 +9,10 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  /* The nav is sticky at 64px. Without this, an anchor jump can park the
+     target under it -- today the section padding happens to clear it, but
+     that is luck, not intent. Hardening for WCAG 2.4.11. */
+  scroll-padding-top: calc(64px + var(--s-lg));
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -40,7 +44,10 @@ img, svg { max-width: 100%; display: block; }
 button, input, select, textarea { font: inherit; color: inherit; }
 
 a {
-  color: var(--primary);
+  /* Body-copy links are small text, so they need the full 4.5:1 that
+     --primary misses (3.14:1 in light). --primary-ink is the same hue,
+     and in dark it resolves back to --primary, which already passes. */
+  color: var(--primary-ink);
   text-decoration: none;
   transition: opacity var(--t-fast) var(--ease);
 }
@@ -93,7 +100,8 @@ a:hover { opacity: 0.75; }
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--primary);
+  /* 11px, so it needs the full 4.5:1 -- --primary only reaches 3.14:1 here. */
+  color: var(--primary-ink);
 }
 
 /* Every money value in the app uses tabular figures so digits line up in
