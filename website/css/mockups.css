@@ -43,6 +43,29 @@
 
 .phone--short .phone__screen { height: 480px; }
 
+/* --------------------------------------------------------------------------
+   Phone pair. Quick add is genuinely two stacked modal sheets in the app --
+   the form (FormSheet, capped at 90% height) and the amount keypad
+   (FractionallySizedBox at 92%), which opens *over* it when the amount is
+   tapped. One frame cannot show that honestly: it would either hide the
+   keypad or invent a screen where the keypad lives inside the form. So the
+   quick-add section gets two narrower frames side by side.
+   -------------------------------------------------------------------------- */
+.phone-pair {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  /* Below ~560px the pair no longer fits the column; wrapping stacks them
+     centered rather than letting the page scroll sideways. */
+  flex-wrap: wrap;
+}
+
+.phone--pair { --pw: 236px; }
+/* Taller than .phone--short: the form sheet carries six stacked elements
+   above its pinned button, and the narrower frame needs the height back to
+   keep a phone-like proportion. */
+.phone--pair .phone__screen { height: 530px; }
+
 /* The dashboard mockup carries a five-week heatmap grid, which is simply a
    taller element than the two budget rows it replaced. Without the extra
    height the last card falls entirely below the fold and the screen reads as
@@ -522,7 +545,9 @@
 
 /* --------------------------------------------------------------------------
    Quick-add sheet. Top corners radius 20, 40x4 drag handle -- straight from
-   sheet_shell.dart.
+   sheet_shell.dart. Both quick-add frames share this chrome: the form sheet
+   and the keypad sheet are the same SheetShell handle + surface + radius,
+   which is why they read as one flow rather than two unrelated screens.
    -------------------------------------------------------------------------- */
 .ph-sheet-scrim {
   position: absolute;
@@ -542,6 +567,15 @@
   padding: 8px 12px 14px;
 }
 
+/* The keypad opens at heightFactor 0.92, tall enough that the sheet is
+   effectively the whole screen -- pinning the top rather than the height
+   keeps that proportion at any frame size. */
+.ph-sheet--tall {
+  top: 8%;
+  display: flex;
+  flex-direction: column;
+}
+
 .ph-handle {
   width: 40px;
   height: 4px;
@@ -550,13 +584,34 @@
   margin: 0 auto 10px;
 }
 
+/* Pinned title row: sheet title plus the two header actions -- "save as
+   template" and the info affordance that explains what a template is. */
+.ph-sheet-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.ph-sheet-title__text {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.ph-sheet-title__action { color: var(--text-2); display: flex; }
+/* info_outline is drawn at primary with alpha 180/255. */
+.ph-sheet-title__action--info { color: color-mix(in srgb, var(--primary) 71%, transparent); }
+
+/* Radius 12 on the track with an 8 on the selected pill, not one radius for
+   both -- the 3px inset plus the smaller inner radius is what makes the
+   control read as "three options in a group" rather than one filled button. */
 .ph-segments {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 4px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: var(--r-sm);
+  border-radius: var(--r-md);
   padding: 3px;
 }
 .ph-segment {
@@ -564,8 +619,9 @@
   font-size: 10px;
   font-weight: 500;
   padding: 5px 0;
-  border-radius: 6px;
-  color: var(--text-2);
+  border-radius: var(--r-sm);
+  /* Unselected segments keep full text color in-app, not the muted one. */
+  color: var(--text);
 }
 .ph-segment.is-active {
   background: var(--primary);
@@ -573,50 +629,128 @@
   font-weight: 600;
 }
 
-.ph-field {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  padding: 8px 10px;
+/* --------------------------------------------------------------------------
+   The amount. Deliberately NOT a bordered input: the app renders it as a
+   tinted label above a large centered number in the money color, with the
+   OS keyboard suppressed entirely (readOnly + showCursor: false). There is
+   no caret to draw, and boxing it would misrepresent the one element the
+   whole sheet is built around.
+   -------------------------------------------------------------------------- */
+.ph-amount {
+  text-align: center;
+  padding: 12px 0;
+  color: var(--tint);
 }
-.ph-field--focus { border-color: var(--primary); border-width: 1.5px; }
-.ph-field__label { font-size: 9px; color: var(--text-2); font-weight: 500; }
-.ph-field__value {
-  font-size: 17px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+.ph-amount__label { font-size: 9px; font-weight: 500; }
+.ph-amount__value {
   display: flex;
   align-items: baseline;
-  gap: 1px;
+  justify-content: center;
+  gap: 3px;
+  margin-top: 5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
+/* Symbol at headlineMedium against the auto-fitting number -- the ratio,
+   not the absolute sizes, is what carries over from the app. */
+.ph-amount__symbol { font-size: 13px; font-weight: 700; }
+.ph-amount__number { font-size: 27px; letter-spacing: -0.02em; }
+/* The keypad's display is a FittedBox(scaleDown) in-app, so a long live
+   expression shrinks rather than overflowing. Sized here for the longest
+   string the mockup shows. */
+.ph-amount--lg .ph-amount__symbol { font-size: 14px; }
+.ph-amount--lg .ph-amount__number { font-size: 23px; }
 
-/* The live expression the amount field evaluates. */
-.ph-caret {
-  display: inline-block;
-  width: 1.5px;
-  height: 15px;
-  background: var(--primary);
-  transform: translateY(2px);
-  animation: ph-blink 1.1s steps(1, end) infinite;
-}
-@keyframes ph-blink { 50% { opacity: 0; } }
-
+/* Favourites are full pills carrying the amount, not bare rounded rects --
+   the amount is what makes a one-tap favourite trustworthy enough to tap. */
 .ph-templates { display: flex; gap: 5px; overflow: hidden; }
 .ph-template {
   flex: none;
   display: flex;
   align-items: center;
-  gap: 4px;
-  border: 1px solid var(--border);
+  gap: 5px;
   background: var(--surface-2);
-  border-radius: var(--r-sm);
-  padding: 4px 8px;
-  font-size: 9.5px;
+  border-radius: var(--r-full);
+  padding: 5px 8px;
+  font-size: 9px;
   font-weight: 500;
   white-space: nowrap;
 }
+.ph-template__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--chip);
+  flex: none;
+}
+.ph-template__amt { color: var(--text-2); font-variant-numeric: tabular-nums; }
 
+/* Labelled picker rows -- date, account, merchant, category all share one
+   shape in-app, so they share one rule here. */
+.ph-fieldrow { position: relative; }
+.ph-fieldrow + .ph-fieldrow { margin-top: 8px; }
+.ph-fieldrow__label {
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-2);
+  margin-bottom: 4px;
+}
+.ph-fieldrow__box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 7px 9px;
+  font-size: 10.5px;
+}
+.ph-fieldrow__box .ph-chevron { margin-left: auto; color: var(--text-2); display: flex; }
+.ph-fieldrow__icon { color: var(--chip); display: flex; flex: none; }
+
+/* Merchant autocomplete list: elevation 4, radius 12, capped height. The one
+   place in these mockups a shadow is allowed besides the FAB, because in-app
+   this really is a floating overlay. Drawn in flow rather than absolutely
+   positioned so it does not hide the field below it in a still image. */
+.ph-suggest {
+  margin-top: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: 0 4px 12px color-mix(in srgb, #2C2520 14%, transparent);
+  overflow: hidden;
+}
+.ph-suggest__item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 9px;
+  font-size: 10px;
+  color: var(--text);
+}
+.ph-suggest__item + .ph-suggest__item { border-top: 1px solid var(--border); }
+.ph-suggest__item svg { color: var(--text-2); flex: none; }
+
+/* The pinned save button. Its fill is the money accent, not the brand
+   color -- expense rose here, income green on the income tab. */
+.ph-cta {
+  margin-top: 12px;
+  text-align: center;
+  padding: 9px 0;
+  border-radius: var(--r-md);
+  background: var(--tint);
+  /* onPrimary, not white -- in dark mode the money accent is a light rose
+     and the app puts near-black on it. */
+  color: var(--on-primary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Keypad. Four 4-key rows then a separate action row -- C and = are NOT in
+   the grid, and the last grid row is `000 0 . +`, with 000 leading because
+   six-digit rupiah amounts are the common case.
+   -------------------------------------------------------------------------- */
 .ph-keypad {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -624,16 +758,29 @@
 }
 .ph-key {
   text-align: center;
-  padding: 7px 0;
-  border-radius: var(--r-sm);
+  padding: 9px 0;
+  border-radius: var(--r-md);
   background: var(--surface-2);
-  border: 1px solid var(--border);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .ph-key--op { color: var(--primary); }
-.ph-key--wide { grid-column: span 1; font-size: 11px; }
+/* 000 is set smaller than the digits in-app (18 against 22). */
+.ph-key--wide { font-size: 11px; }
+/* The decimal point keeps its place in the grid whatever the currency, so
+   the layout does not reflow when the user switches to a decimal one. */
+.ph-key--primary {
+  grid-column: span 2;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-size: 11px;
+}
+.ph-keypad--actions { margin-top: 5px; grid-template-columns: repeat(5, 1fr); }
 
 /* --------------------------------------------------------------------------
    Analytics vignette: donut + heatmap. Not inside a phone frame -- these sit
