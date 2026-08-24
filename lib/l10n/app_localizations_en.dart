@@ -454,9 +454,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get overBudget => 'Over Budget!';
 
   @override
-  String get backupYourData => 'Backup your data';
-
-  @override
   String get upcoming => 'Upcoming';
 
   @override
@@ -826,28 +823,42 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get backupAndRestore => 'Backup & Restore';
+  String get backupAndData => 'Backup & data';
 
   @override
-  String get backupAndRestoreSubtitle =>
-      'Back up your data, or import from a CSV file';
+  String get backupAndDataSubtitle =>
+      'Full backups, plus CSV export and import';
 
   @override
-  String get backupSectionTitle => 'Backup';
+  String get backupSectionTitle => 'Full backup';
+
+  @override
+  String get backupSectionExplainer =>
+      'Everything: accounts, budgets, goals, debts, recurring and settings.';
 
   @override
   String get createBackup => 'Create backup';
 
   @override
-  String get createBackupSubtitle =>
-      'Save a full copy of your data to share or store safely';
+  String get createBackupSubtitle => 'Save a complete copy to a .zip file';
 
   @override
   String get restoreFromBackup => 'Restore from backup';
 
   @override
   String get restoreFromBackupSubtitle =>
-      'Replace your data with a previously saved backup';
+      'Replaces all current data. Can\'t be undone.';
+
+  @override
+  String get csvSectionTitle => 'Transactions (CSV)';
+
+  @override
+  String get csvSectionExplainer =>
+      'Transactions only — no accounts, budgets or goals. Opens in any spreadsheet.';
+
+  @override
+  String get exportCsvSubtitle =>
+      'Save your transactions as a spreadsheet file';
 
   @override
   String get restore => 'Restore';
@@ -881,14 +892,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please close and reopen Squirio to finish loading your restored data.';
 
   @override
-  String get csvImportSectionTitle => 'Import';
-
-  @override
   String get importCsv => 'Import from CSV';
 
   @override
   String get importCsvSubtitle =>
-      'Bring in transactions from Squirio or another app\'s export';
+      'Adds transactions from Squirio or another app. Never replaces what you have.';
 
   @override
   String get csvReadFailed => 'Failed to read that CSV file';
@@ -934,12 +942,27 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String csvRowNumber(int number) {
-    return 'Row $number';
+  String csvPreviewReadySection(int count) {
+    return 'Ready to import ($count)';
   }
 
   @override
-  String get csvNoErrors => 'Every row looks good';
+  String csvPreviewSkippedSection(int count) {
+    return 'Skipped ($count)';
+  }
+
+  @override
+  String csvNewCategoriesNote(String names) {
+    return 'New categories will be created: $names';
+  }
+
+  @override
+  String get csvCategoryNew => 'New';
+
+  @override
+  String csvRowNumber(int number) {
+    return 'Row $number';
+  }
 
   @override
   String confirmImportCount(int count) {

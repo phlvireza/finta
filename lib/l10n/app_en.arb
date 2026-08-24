@@ -190,7 +190,6 @@
   "categoryAlreadyExists": "A category with this name already exists",
   "retry": "Retry",
   "overBudget": "Over Budget!",
-  "backupYourData": "Backup your data",
   "upcoming": "Upcoming",
   "dueToday": "Today",
   "dueTomorrow": "Tomorrow",
@@ -408,13 +407,17 @@
     }
   },
 
-  "backupAndRestore": "Backup & Restore",
-  "backupAndRestoreSubtitle": "Back up your data, or import from a CSV file",
-  "backupSectionTitle": "Backup",
+  "backupAndData": "Backup & data",
+  "backupAndDataSubtitle": "Full backups, plus CSV export and import",
+  "backupSectionTitle": "Full backup",
+  "backupSectionExplainer": "Everything: accounts, budgets, goals, debts, recurring and settings.",
   "createBackup": "Create backup",
-  "createBackupSubtitle": "Save a full copy of your data to share or store safely",
+  "createBackupSubtitle": "Save a complete copy to a .zip file",
   "restoreFromBackup": "Restore from backup",
-  "restoreFromBackupSubtitle": "Replace your data with a previously saved backup",
+  "restoreFromBackupSubtitle": "Replaces all current data. Can't be undone.",
+  "csvSectionTitle": "Transactions (CSV)",
+  "csvSectionExplainer": "Transactions only — no accounts, budgets or goals. Opens in any spreadsheet.",
+  "exportCsvSubtitle": "Save your transactions as a spreadsheet file",
   "restore": "Restore",
   "backupFailed": "Failed to create backup",
   "backupIncompatible": "This backup was made with a newer version of Squirio and can't be restored here",
@@ -430,9 +433,8 @@
   "restoreCompleteTitle": "Backup restored",
   "restoreCompleteMessage": "Please close and reopen Squirio to finish loading your restored data.",
 
-  "csvImportSectionTitle": "Import",
   "importCsv": "Import from CSV",
-  "importCsvSubtitle": "Bring in transactions from Squirio or another app's export",
+  "importCsvSubtitle": "Adds transactions from Squirio or another app. Never replaces what you have.",
   "csvReadFailed": "Failed to read that CSV file",
   "mapCsvColumns": "Map columns",
   "reviewImport": "Review import",
@@ -457,13 +459,31 @@
       "skipped": { "type": "int" }
     }
   },
+  "csvPreviewReadySection": "Ready to import ({count})",
+  "@csvPreviewReadySection": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "csvPreviewSkippedSection": "Skipped ({count})",
+  "@csvPreviewSkippedSection": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "csvNewCategoriesNote": "New categories will be created: {names}",
+  "@csvNewCategoriesNote": {
+    "placeholders": {
+      "names": { "type": "String" }
+    }
+  },
+  "csvCategoryNew": "New",
   "csvRowNumber": "Row {number}",
   "@csvRowNumber": {
     "placeholders": {
       "number": { "type": "int" }
     }
   },
-  "csvNoErrors": "Every row looks good",
   "confirmImportCount": "Import {count} transactions",
   "@confirmImportCount": {
     "placeholders": {

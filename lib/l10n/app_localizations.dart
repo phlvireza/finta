@@ -950,12 +950,6 @@ abstract class AppLocalizations {
   /// **'Over Budget!'**
   String get overBudget;
 
-  /// No description provided for @backupYourData.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup your data'**
-  String get backupYourData;
-
   /// No description provided for @upcoming.
   ///
   /// In en, this message translates to:
@@ -1616,23 +1610,29 @@ abstract class AppLocalizations {
   /// **'{amount} over from last period'**
   String rolledOverNegative(String amount);
 
-  /// No description provided for @backupAndRestore.
+  /// No description provided for @backupAndData.
   ///
   /// In en, this message translates to:
-  /// **'Backup & Restore'**
-  String get backupAndRestore;
+  /// **'Backup & data'**
+  String get backupAndData;
 
-  /// No description provided for @backupAndRestoreSubtitle.
+  /// No description provided for @backupAndDataSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Back up your data, or import from a CSV file'**
-  String get backupAndRestoreSubtitle;
+  /// **'Full backups, plus CSV export and import'**
+  String get backupAndDataSubtitle;
 
   /// No description provided for @backupSectionTitle.
   ///
   /// In en, this message translates to:
-  /// **'Backup'**
+  /// **'Full backup'**
   String get backupSectionTitle;
+
+  /// No description provided for @backupSectionExplainer.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything: accounts, budgets, goals, debts, recurring and settings.'**
+  String get backupSectionExplainer;
 
   /// No description provided for @createBackup.
   ///
@@ -1643,7 +1643,7 @@ abstract class AppLocalizations {
   /// No description provided for @createBackupSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Save a full copy of your data to share or store safely'**
+  /// **'Save a complete copy to a .zip file'**
   String get createBackupSubtitle;
 
   /// No description provided for @restoreFromBackup.
@@ -1655,8 +1655,26 @@ abstract class AppLocalizations {
   /// No description provided for @restoreFromBackupSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Replace your data with a previously saved backup'**
+  /// **'Replaces all current data. Can\'t be undone.'**
   String get restoreFromBackupSubtitle;
+
+  /// No description provided for @csvSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions (CSV)'**
+  String get csvSectionTitle;
+
+  /// No description provided for @csvSectionExplainer.
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions only — no accounts, budgets or goals. Opens in any spreadsheet.'**
+  String get csvSectionExplainer;
+
+  /// No description provided for @exportCsvSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save your transactions as a spreadsheet file'**
+  String get exportCsvSubtitle;
 
   /// No description provided for @restore.
   ///
@@ -1712,12 +1730,6 @@ abstract class AppLocalizations {
   /// **'Please close and reopen Squirio to finish loading your restored data.'**
   String get restoreCompleteMessage;
 
-  /// No description provided for @csvImportSectionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Import'**
-  String get csvImportSectionTitle;
-
   /// No description provided for @importCsv.
   ///
   /// In en, this message translates to:
@@ -1727,7 +1739,7 @@ abstract class AppLocalizations {
   /// No description provided for @importCsvSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Bring in transactions from Squirio or another app\'s export'**
+  /// **'Adds transactions from Squirio or another app. Never replaces what you have.'**
   String get importCsvSubtitle;
 
   /// No description provided for @csvReadFailed.
@@ -1808,17 +1820,35 @@ abstract class AppLocalizations {
   /// **'{ready} ready to import, {skipped} skipped'**
   String csvImportSummary(int ready, int skipped);
 
+  /// No description provided for @csvPreviewReadySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to import ({count})'**
+  String csvPreviewReadySection(int count);
+
+  /// No description provided for @csvPreviewSkippedSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped ({count})'**
+  String csvPreviewSkippedSection(int count);
+
+  /// No description provided for @csvNewCategoriesNote.
+  ///
+  /// In en, this message translates to:
+  /// **'New categories will be created: {names}'**
+  String csvNewCategoriesNote(String names);
+
+  /// No description provided for @csvCategoryNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get csvCategoryNew;
+
   /// No description provided for @csvRowNumber.
   ///
   /// In en, this message translates to:
   /// **'Row {number}'**
   String csvRowNumber(int number);
-
-  /// No description provided for @csvNoErrors.
-  ///
-  /// In en, this message translates to:
-  /// **'Every row looks good'**
-  String get csvNoErrors;
 
   /// No description provided for @confirmImportCount.
   ///

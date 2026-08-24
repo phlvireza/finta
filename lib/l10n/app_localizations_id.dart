@@ -455,9 +455,6 @@ class AppLocalizationsId extends AppLocalizations {
   String get overBudget => 'Melebihi Anggaran!';
 
   @override
-  String get backupYourData => 'Cadangkan data Anda';
-
-  @override
   String get upcoming => 'Akan Datang';
 
   @override
@@ -827,28 +824,42 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String get backupAndRestore => 'Cadangkan & Pulihkan';
+  String get backupAndData => 'Cadangan & data';
 
   @override
-  String get backupAndRestoreSubtitle =>
-      'Cadangkan data Anda, atau impor dari file CSV';
+  String get backupAndDataSubtitle =>
+      'Cadangan lengkap, plus ekspor dan impor CSV';
 
   @override
-  String get backupSectionTitle => 'Cadangan';
+  String get backupSectionTitle => 'Cadangan lengkap';
+
+  @override
+  String get backupSectionExplainer =>
+      'Semuanya: akun, anggaran, tujuan, utang, transaksi berulang, dan pengaturan.';
 
   @override
   String get createBackup => 'Buat cadangan';
 
   @override
-  String get createBackupSubtitle =>
-      'Simpan salinan lengkap data Anda untuk dibagikan atau disimpan dengan aman';
+  String get createBackupSubtitle => 'Simpan salinan lengkap ke berkas .zip';
 
   @override
   String get restoreFromBackup => 'Pulihkan dari cadangan';
 
   @override
   String get restoreFromBackupSubtitle =>
-      'Ganti data Anda saat ini dengan cadangan yang pernah disimpan';
+      'Mengganti semua data saat ini. Tidak bisa dibatalkan.';
+
+  @override
+  String get csvSectionTitle => 'Transaksi (CSV)';
+
+  @override
+  String get csvSectionExplainer =>
+      'Hanya transaksi — tanpa akun, anggaran, atau tujuan. Bisa dibuka di aplikasi spreadsheet apa pun.';
+
+  @override
+  String get exportCsvSubtitle =>
+      'Simpan transaksi Anda sebagai berkas spreadsheet';
 
   @override
   String get restore => 'Pulihkan';
@@ -882,14 +893,11 @@ class AppLocalizationsId extends AppLocalizations {
       'Silakan tutup dan buka kembali Squirio untuk menyelesaikan pemuatan data yang dipulihkan.';
 
   @override
-  String get csvImportSectionTitle => 'Impor';
-
-  @override
   String get importCsv => 'Impor dari CSV';
 
   @override
   String get importCsvSubtitle =>
-      'Bawa masuk transaksi dari Squirio atau ekspor aplikasi lain';
+      'Menambahkan transaksi dari Squirio atau aplikasi lain. Tidak pernah mengganti data Anda.';
 
   @override
   String get csvReadFailed => 'Gagal membaca file CSV itu';
@@ -935,12 +943,27 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String csvRowNumber(int number) {
-    return 'Baris $number';
+  String csvPreviewReadySection(int count) {
+    return 'Siap diimpor ($count)';
   }
 
   @override
-  String get csvNoErrors => 'Semua baris terlihat baik';
+  String csvPreviewSkippedSection(int count) {
+    return 'Dilewati ($count)';
+  }
+
+  @override
+  String csvNewCategoriesNote(String names) {
+    return 'Kategori baru akan dibuat: $names';
+  }
+
+  @override
+  String get csvCategoryNew => 'Baru';
+
+  @override
+  String csvRowNumber(int number) {
+    return 'Baris $number';
+  }
 
   @override
   String confirmImportCount(int count) {

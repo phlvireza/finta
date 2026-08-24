@@ -2,21 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import '../../providers/settings_provider.dart';
-import '../../providers/transaction_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../widgets/section_card.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
-import 'dart:io';
 import '../../l10n/app_localizations.dart';
 import '../backup/backup_restore_screen.dart';
 import 'privacy_policy_screen.dart';
-import '../../core/utils/export_cleanup.dart';
 
 final Future<PackageInfo> _packageInfo = PackageInfo.fromPlatform();
 
-/// Settings screen — preferences, management links, and CSV export.
+/// Settings screen — preferences and management links. The data-portability
+/// flows (backup, restore, CSV export/import) all live in
+/// [BackupRestoreScreen], reached from the Data section below.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -129,17 +126,14 @@ class SettingsScreen extends StatelessWidget {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
-                ListTile(
-                  leading: const Icon(Icons.download),
-                  title: Text(loc.exportCsv),
-                  subtitle: Text(loc.backupYourData),
-                  onTap: () => _exportCsv(context),
-                ),
-                const Divider(),
+                // One entry point, not two. Export used to live here while
+                // import lived inside the screen below, which is how "Export
+                // as CSV" ended up subtitled "Backup your data" — all four
+                // data flows now sit together, grouped by what they cover.
                 ListTile(
                   leading: const Icon(Icons.settings_backup_restore),
-                  title: Text(loc.backupAndRestore),
-                  subtitle: Text(loc.backupAndRestoreSubtitle),
+                  title: Text(loc.backupAndData),
+                  subtitle: Text(loc.backupAndDataSubtitle),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => const BackupRestoreScreen(),
@@ -398,63 +392,6 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _exportCsv(BuildContext context) async {
-    final loc = AppLocalizations.of(context)!;
-    try {
-      final txProvider = context.read<TransactionProvider>();
-      final categoryProvider = context.read<CategoryProvider>();
-      final transactions = await txProvider.getAllTransactions();
-
-      // Header row is a data-interchange contract, not UI copy: it must
-      // stay exactly "Date,Type,Amount,Category,Note" in every locale so
-      // CsvImportService's header auto-detection (and re-importing a file
-      // this screen exported) keeps working.
-      final buffer = StringBuffer();
-      buffer.writeln('Date,Type,Amount,Category,Note');
-
-      for (final tx in transactions) {
-        // Resolve to the human-readable category name — archived
-        // categories still resolve here since getCategoryById isn't
-        // filtered, only the active-category pickers are.
-        final categoryName =
-            categoryProvider.getCategoryById(tx.categoryId)?.name ??
-            loc.unknown;
-        buffer.writeln(
-          [
-            tx.date.toIso8601String().substring(0, 10),
-            tx.type,
-            tx.amount,
-            categoryName,
-            tx.note ?? '',
-          ].map(_csvField).join(','),
-        );
-      }
-
-      final directory = await getApplicationDocumentsDirectory();
-      await pruneExports(directory, prefix: 'finta_export_', extension: '.csv');
-      await pruneExports(
-        directory,
-        prefix: 'squirio_export_',
-        extension: '.csv',
-      );
-      final file = File(
-        '${directory.path}/squirio_export_${DateTime.now().millisecondsSinceEpoch}.csv',
-      );
-      await file.writeAsString(buffer.toString());
-
-      await Share.shareXFiles([
-        XFile(file.path),
-      ], subject: loc.csvExportShareSubject);
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(loc.errorFailedToExport)));
-      }
-    }
-  }
-
   String _themeModeName(AppLocalizations loc, ThemeMode mode) {
     switch (mode) {
       case ThemeMode.light:
@@ -464,15 +401,5 @@ class SettingsScreen extends StatelessWidget {
       default:
         return loc.systemDefault;
     }
-  }
-
-  /// Quote a CSV field only when it contains a character that would
-  /// otherwise break column alignment, doubling any embedded quotes.
-  static String _csvField(Object value) {
-    final s = value.toString();
-    if (s.contains(',') || s.contains('"') || s.contains('\n')) {
-      return '"${s.replaceAll('"', '""')}"';
-    }
-    return s;
   }
 }

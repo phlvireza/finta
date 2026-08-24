@@ -188,7 +188,6 @@
   "categoryAlreadyExists": "Kategori dengan nama ini sudah ada",
   "retry": "Coba Lagi",
   "overBudget": "Melebihi Anggaran!",
-  "backupYourData": "Cadangkan data Anda",
   "upcoming": "Akan Datang",
   "dueToday": "Hari ini",
   "dueTomorrow": "Besok",
@@ -406,13 +405,17 @@
     }
   },
 
-  "backupAndRestore": "Cadangkan & Pulihkan",
-  "backupAndRestoreSubtitle": "Cadangkan data Anda, atau impor dari file CSV",
-  "backupSectionTitle": "Cadangan",
+  "backupAndData": "Cadangan & data",
+  "backupAndDataSubtitle": "Cadangan lengkap, plus ekspor dan impor CSV",
+  "backupSectionTitle": "Cadangan lengkap",
+  "backupSectionExplainer": "Semuanya: akun, anggaran, tujuan, utang, transaksi berulang, dan pengaturan.",
   "createBackup": "Buat cadangan",
-  "createBackupSubtitle": "Simpan salinan lengkap data Anda untuk dibagikan atau disimpan dengan aman",
+  "createBackupSubtitle": "Simpan salinan lengkap ke berkas .zip",
   "restoreFromBackup": "Pulihkan dari cadangan",
-  "restoreFromBackupSubtitle": "Ganti data Anda saat ini dengan cadangan yang pernah disimpan",
+  "restoreFromBackupSubtitle": "Mengganti semua data saat ini. Tidak bisa dibatalkan.",
+  "csvSectionTitle": "Transaksi (CSV)",
+  "csvSectionExplainer": "Hanya transaksi — tanpa akun, anggaran, atau tujuan. Bisa dibuka di aplikasi spreadsheet apa pun.",
+  "exportCsvSubtitle": "Simpan transaksi Anda sebagai berkas spreadsheet",
   "restore": "Pulihkan",
   "backupFailed": "Gagal membuat cadangan",
   "backupIncompatible": "Cadangan ini dibuat dengan versi Squirio yang lebih baru dan tidak bisa dipulihkan di sini",
@@ -428,9 +431,8 @@
   "restoreCompleteTitle": "Cadangan dipulihkan",
   "restoreCompleteMessage": "Silakan tutup dan buka kembali Squirio untuk menyelesaikan pemuatan data yang dipulihkan.",
 
-  "csvImportSectionTitle": "Impor",
   "importCsv": "Impor dari CSV",
-  "importCsvSubtitle": "Bawa masuk transaksi dari Squirio atau ekspor aplikasi lain",
+  "importCsvSubtitle": "Menambahkan transaksi dari Squirio atau aplikasi lain. Tidak pernah mengganti data Anda.",
   "csvReadFailed": "Gagal membaca file CSV itu",
   "mapCsvColumns": "Petakan kolom",
   "reviewImport": "Tinjau impor",
@@ -455,13 +457,31 @@
       "skipped": { "type": "int" }
     }
   },
+  "csvPreviewReadySection": "Siap diimpor ({count})",
+  "@csvPreviewReadySection": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "csvPreviewSkippedSection": "Dilewati ({count})",
+  "@csvPreviewSkippedSection": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "csvNewCategoriesNote": "Kategori baru akan dibuat: {names}",
+  "@csvNewCategoriesNote": {
+    "placeholders": {
+      "names": { "type": "String" }
+    }
+  },
+  "csvCategoryNew": "Baru",
   "csvRowNumber": "Baris {number}",
   "@csvRowNumber": {
     "placeholders": {
       "number": { "type": "int" }
     }
   },
-  "csvNoErrors": "Semua baris terlihat baik",
   "confirmImportCount": "Impor {count} transaksi",
   "@confirmImportCount": {
     "placeholders": {

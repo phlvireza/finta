@@ -2,19 +2,28 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/exceptions/app_exceptions.dart';
 import '../../core/services/backup_service.dart';
+import '../../core/services/csv_export_service.dart';
+import '../../providers/category_provider.dart';
+import '../../providers/transaction_provider.dart';
 import '../../widgets/section_card.dart';
 import '../../widgets/tinted_icon.dart';
 import '../../l10n/app_localizations.dart';
 import 'csv_import_screen.dart';
 import 'restart_required_screen.dart';
 
-/// Hub for the three data-portability flows: full-database backup/restore
-/// (a zip of the live sqlite file — the safest round trip, since it's
-/// exactly what the app has, not a hand-written re-serialization), and CSV
-/// import from Squirio's own export or another app's.
+/// Hub for all four data-portability flows.
+///
+/// They are grouped by *scope*, not by file format, because scope is the
+/// thing users were getting wrong: a backup is the entire database and
+/// restoring it replaces everything, while a CSV is transactions only and
+/// importing one adds to what is already there. Presented apart — CSV
+/// export used to sit in Settings labelled "Backup your data", with CSV
+/// import buried down here — the two read as interchangeable, and choosing
+/// wrong either loses the rest of the user's data or fails to move it.
 class BackupRestoreScreen extends StatefulWidget {
   const BackupRestoreScreen({super.key});
 
@@ -24,6 +33,7 @@ class BackupRestoreScreen extends StatefulWidget {
 
 class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
   final _backupService = BackupService();
+  final _csvExportService = CsvExportService();
   bool _busy = false;
 
   Future<void> _createBackup() async {
@@ -64,7 +74,9 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
         builder: (_) => AlertDialog(
           title: Text(loc.restoreBackupTitle),
           content: Text(
-            loc.restoreBackupConfirm(DateFormat.yMMMd().add_jm().format(validation.exportedAt)),
+            loc.restoreBackupConfirm(
+              DateFormat.yMMMd().add_jm().format(validation.exportedAt),
+            ),
           ),
           actions: [
             TextButton(
@@ -96,6 +108,28 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
     }
   }
 
+  Future<void> _exportCsv() async {
+    final loc = AppLocalizations.of(context)!;
+    final transactions = context.read<TransactionProvider>();
+    final categories = context.read<CategoryProvider>();
+    setState(() => _busy = true);
+    try {
+      final all = await transactions.getAllTransactions();
+      // Archived categories still resolve here — getCategoryById isn't
+      // filtered, only the active-category pickers are — so an export never
+      // silently loses the category of an older transaction.
+      final csv = _csvExportService.buildCsv(
+        all,
+        (id) => categories.getCategoryById(id)?.name ?? loc.unknown,
+      );
+      await _csvExportService.shareCsv(csv, loc.csvExportShareSubject);
+    } catch (e) {
+      if (mounted) _showError(loc.errorFailedToExport);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   Future<void> _importCsv() async {
     final loc = AppLocalizations.of(context)!;
     final result = await FilePicker.pickFiles(
@@ -112,9 +146,9 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
         MaterialPageRoute(builder: (_) => CsvImportScreen(csvContent: content)),
       );
       if (imported != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(loc.csvImportedCount(imported))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(loc.csvImportedCount(imported))));
       }
     } catch (e) {
       if (mounted) _showError(loc.csvReadFailed);
@@ -123,7 +157,9 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -131,7 +167,7 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
     final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(loc.backupAndRestore)),
+      appBar: AppBar(title: Text(loc.backupAndData)),
       body: AbsorbPointer(
         absorbing: _busy,
         child: Opacity(
@@ -149,6 +185,7 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
                 padding: EdgeInsets.zero,
                 child: Column(
                   children: [
+                    _SectionExplainer(loc.backupSectionExplainer),
                     _ActionRow(
                       icon: Icons.backup_outlined,
                       title: loc.createBackup,
@@ -167,16 +204,61 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
               ),
               const SizedBox(height: AppConstants.spacingLg),
               SectionCard(
-                title: loc.csvImportSectionTitle,
+                title: loc.csvSectionTitle,
                 padding: EdgeInsets.zero,
-                child: _ActionRow(
-                  icon: Icons.upload_file_outlined,
-                  title: loc.importCsv,
-                  subtitle: loc.importCsvSubtitle,
-                  onTap: _importCsv,
+                child: Column(
+                  children: [
+                    _SectionExplainer(loc.csvSectionExplainer),
+                    _ActionRow(
+                      icon: Icons.download_outlined,
+                      title: loc.exportCsv,
+                      subtitle: loc.exportCsvSubtitle,
+                      onTap: _exportCsv,
+                    ),
+                    const Divider(height: 1),
+                    _ActionRow(
+                      icon: Icons.upload_file_outlined,
+                      title: loc.importCsv,
+                      subtitle: loc.importCsvSubtitle,
+                      onTap: _importCsv,
+                    ),
+                  ],
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The one-line "what this section actually covers" note under a section
+/// heading. Carries the distinction the labels alone were failing to make —
+/// everything vs. transactions only — so it sits above the rows rather than
+/// as a subtitle on one of them.
+class _SectionExplainer extends StatelessWidget {
+  final String text;
+
+  const _SectionExplainer(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      // No top inset: SectionCard's header already pads below the title.
+      padding: const EdgeInsets.fromLTRB(
+        AppConstants.spacingMd,
+        0,
+        AppConstants.spacingMd,
+        AppConstants.spacingSm,
+      ),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          text,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
       ),

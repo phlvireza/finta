@@ -34,6 +34,12 @@ class CsvImportError {
 /// resolving it (and auto-creating missing categories) needs the database,
 /// which this pure-Dart parser deliberately has no dependency on.
 class ParsedImportRow {
+  /// 1-based position in the file's data rows, counted the same way
+  /// [CsvImportError.rowNumber] is. Carried so the preview can show the user
+  /// which line of their file each transaction came from; without it the two
+  /// lists could only be numbered independently and would disagree wherever
+  /// a row was skipped.
+  final int rowNumber;
   final DateTime date;
   final double amount;
   final String type;
@@ -42,6 +48,7 @@ class ParsedImportRow {
   final String? merchant;
 
   ParsedImportRow({
+    required this.rowNumber,
     required this.date,
     required this.amount,
     required this.type,
@@ -72,8 +79,10 @@ class CsvImportService {
     // string) using the other convention would otherwise fail to split
     // into rows at all.
     final normalized = content.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
-    final rows = const CsvToListConverter(shouldParseNumbers: false, eol: '\n')
-        .convert(normalized);
+    final rows = const CsvToListConverter(
+      shouldParseNumbers: false,
+      eol: '\n',
+    ).convert(normalized);
     if (rows.isEmpty) return CsvParseResult(const [], const []);
     final headers = rows.first.map((h) => h.toString().trim()).toList();
     return CsvParseResult(headers, rows.skip(1).toList());
@@ -110,22 +119,28 @@ class CsvImportService {
           throw FormatException('unrecognized amount "$rawAmount"');
         }
 
-        final type = _parseType(_columnValue(row, mapping.type)) ??
+        final type =
+            _parseType(_columnValue(row, mapping.type)) ??
             (signedAmount < 0 ? 'expense' : 'income');
 
-        rows.add(ParsedImportRow(
-          date: date,
-          amount: signedAmount.abs(),
-          type: type,
-          categoryName: _nullIfEmpty(_columnValue(row, mapping.category)),
-          note: _nullIfEmpty(_columnValue(row, mapping.note)),
-          merchant: _nullIfEmpty(_columnValue(row, mapping.merchant)),
-        ));
+        rows.add(
+          ParsedImportRow(
+            rowNumber: rowNumber,
+            date: date,
+            amount: signedAmount.abs(),
+            type: type,
+            categoryName: _nullIfEmpty(_columnValue(row, mapping.category)),
+            note: _nullIfEmpty(_columnValue(row, mapping.note)),
+            merchant: _nullIfEmpty(_columnValue(row, mapping.merchant)),
+          ),
+        );
       } catch (e) {
-        errors.add(CsvImportError(
-          rowNumber,
-          e is FormatException ? e.message : e.toString(),
-        ));
+        errors.add(
+          CsvImportError(
+            rowNumber,
+            e is FormatException ? e.message : e.toString(),
+          ),
+        );
       }
     }
 
@@ -190,8 +205,12 @@ class CsvImportService {
   String? _parseType(String raw) {
     final s = raw.toLowerCase();
     if (s.isEmpty) return null;
-    if (const ['income', 'credit', 'deposit', 'in'].contains(s)) return 'income';
-    if (const ['expense', 'debit', 'withdrawal', 'out'].contains(s)) return 'expense';
+    if (const ['income', 'credit', 'deposit', 'in'].contains(s)) {
+      return 'income';
+    }
+    if (const ['expense', 'debit', 'withdrawal', 'out'].contains(s)) {
+      return 'expense';
+    }
     return null;
   }
 }

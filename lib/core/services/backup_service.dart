@@ -36,7 +36,7 @@ class BackupService {
   /// schema version it was written at, and opens the OS share sheet for it.
   /// [loc] is passed in rather than resolved here: this class has no
   /// [BuildContext], and the CSV export path already localizes its own share
-  /// subject the same way (see settings_screen.dart).
+  /// subject the same way (see `CsvExportService.shareCsv`).
   Future<void> shareBackup(AppLocalizations loc) async {
     final archiveFile = await _createBackupArchive();
     await Share.shareXFiles([
