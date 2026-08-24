@@ -126,6 +126,25 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
         (id) => accounts.getAccountById(id)?.name ?? loc.unknown,
       );
       await _csvExportService.shareCsv(csv, loc.csvExportShareSubject);
+
+      // A transfer's two legs are written as one row, so the file holds fewer
+      // rows than the ledger has entries. Said here rather than discovered by
+      // counting lines in the exported file and concluding a leg was dropped.
+      if (mounted) {
+        final transfers = CsvExportService.transferPairCount(all);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              transfers == 0
+                  ? loc.csvExportedCount(all.length)
+                  : loc.csvExportedCountWithTransfers(
+                      all.length - transfers,
+                      transfers,
+                    ),
+            ),
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) _showError(loc.errorFailedToExport);
     } finally {

@@ -490,13 +490,33 @@
       "number": { "type": "int" }
     }
   },
-  "confirmImportCount": "Impor {count} transaksi",
-  "@confirmImportCount": {
+  "confirmImportRows": "Impor {count} baris",
+  "@confirmImportRows": {
     "placeholders": {
       "count": { "type": "int" }
     }
   },
-  "csvImportedCount": "Berhasil mengimpor {count} transaksi",
+  "csvTransferExpansionNote": "{transfers} baris transfer masing-masing menjadi sepasang entri terkait, sehingga {entries} entri akan ditambahkan.",
+  "@csvTransferExpansionNote": {
+    "placeholders": {
+      "transfers": { "type": "int" },
+      "entries": { "type": "int" }
+    }
+  },
+  "csvExportedCount": "Berhasil mengekspor {count} baris",
+  "@csvExportedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "csvExportedCountWithTransfers": "Berhasil mengekspor {rows} baris. Masing-masing dari {transfers} transfer ditulis sebagai satu baris, dan diimpor kembali menjadi kedua sisinya.",
+  "@csvExportedCountWithTransfers": {
+    "placeholders": {
+      "rows": { "type": "int" },
+      "transfers": { "type": "int" }
+    }
+  },
+  "csvImportedCount": "Berhasil mengimpor {count} baris",
   "@csvImportedCount": {
     "placeholders": {
       "count": { "type": "int" }

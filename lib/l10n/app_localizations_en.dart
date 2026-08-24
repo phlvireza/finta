@@ -977,13 +977,28 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String confirmImportCount(int count) {
-    return 'Import $count transactions';
+  String confirmImportRows(int count) {
+    return 'Import $count rows';
+  }
+
+  @override
+  String csvTransferExpansionNote(int transfers, int entries) {
+    return '$transfers transfer rows each become a linked pair, so $entries entries will be added.';
+  }
+
+  @override
+  String csvExportedCount(int count) {
+    return 'Exported $count rows';
+  }
+
+  @override
+  String csvExportedCountWithTransfers(int rows, int transfers) {
+    return 'Exported $rows rows. Each of the $transfers transfers is one row, and imports back as both legs.';
   }
 
   @override
   String csvImportedCount(int count) {
-    return 'Imported $count transactions';
+    return 'Imported $count rows';
   }
 
   @override

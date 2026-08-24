@@ -124,3 +124,17 @@ List<CsvImportError> transferRowErrors({
 
   return errors;
 }
+
+/// How many ledger entries [rows] will write.
+///
+/// One per row, except a transfer: the app stores that as two linked legs — an
+/// expense on the source account and an income on the destination — so a single
+/// `transfer` row in the file becomes two rows in the database. The import
+/// screen shows row counts throughout, and uses this only to say *why* the
+/// ledger grows by more than the file suggests.
+int ledgerEntryCount(List<ParsedImportRow> rows) =>
+    rows.length + transferRowCount(rows);
+
+/// How many of [rows] are transfers, i.e. how many rows expand into a pair.
+int transferRowCount(List<ParsedImportRow> rows) =>
+    rows.where((r) => r.isTransfer).length;
