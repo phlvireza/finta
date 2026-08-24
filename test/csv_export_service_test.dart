@@ -353,4 +353,75 @@ void main() {
       expect(result.rows.every((r) => !r.isTransfer), isTrue);
     });
   });
+
+  group('transferPairCount', () {
+    test('counts pairs, not legs, so it matches the rows written', () {
+      // What the export snackbar reports: the ledger holds 30 entries, the
+      // file gets 28 rows, and the difference is exactly the two pairs.
+      final ledger = [
+        for (var i = 0; i < 26; i++)
+          tx(type: 'expense', amount: 1000 + i, date: DateTime(2026, 2, 12)),
+        ...transferLegs(
+          from: 'acc1',
+          to: 'acc2',
+          amount: 500000,
+          date: DateTime(2026, 2, 12),
+          transferId: 'tr1',
+        ),
+        ...transferLegs(
+          from: 'acc2',
+          to: 'acc1',
+          amount: 250000,
+          date: DateTime(2026, 2, 13),
+          transferId: 'tr2',
+        ),
+      ];
+
+      expect(ledger, hasLength(30));
+      expect(CsvExportService.transferPairCount(ledger), 2);
+      expect(
+        ledger.length - CsvExportService.transferPairCount(ledger),
+        _dataRowCount(ledger),
+      );
+    });
+
+    test('a ledger with no transfers has no pairs', () {
+      final ledger = [
+        tx(type: 'expense', amount: 1000, date: DateTime(2026, 2, 12)),
+      ];
+
+      expect(CsvExportService.transferPairCount(ledger), 0);
+      expect(ledger.length, _dataRowCount(ledger));
+    });
+
+    test('an orphan leg is not a pair — it is written as an ordinary row', () {
+      final ledger = [
+        tx(
+          type: 'expense',
+          amount: 500000,
+          date: DateTime(2026, 2, 12),
+          categoryId: SeedData.transferCategoryId,
+          transferId: 'tr-orphan',
+          isTransfer: true,
+        ),
+      ];
+
+      expect(CsvExportService.transferPairCount(ledger), 0);
+      expect(ledger.length, _dataRowCount(ledger));
+    });
+
+    test('an empty ledger has no pairs', () {
+      expect(CsvExportService.transferPairCount(const []), 0);
+    });
+  });
 }
+
+/// Data rows the export actually writes, so the arithmetic the snackbar does
+/// (`ledger.length - transferPairCount`) is checked against the real file
+/// rather than restated.
+int _dataRowCount(List<TransactionModel> ledger) => CsvExportService()
+    .buildCsv(ledger, (id) => 'Category', (id) => 'Wallet')
+    .trim()
+    .split('\n')
+    .length -
+    1;

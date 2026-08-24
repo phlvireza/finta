@@ -311,4 +311,45 @@ void main() {
       );
     });
   });
+
+  group('ledgerEntryCount', () {
+    test('a transfer row counts as two ledger entries', () {
+      // The reported case: a 28-row file whose ledger grows by 30. The gap is
+      // the two transfers, each stored as a linked expense/income pair.
+      final rows = [
+        for (var i = 0; i < 26; i++)
+          row(type: 'expense', categoryName: 'Groceries', rowNumber: i + 1),
+        transferRow(from: 'Cash Wallet', to: 'BCA', rowNumber: 27),
+        transferRow(from: 'BCA', to: 'Cash Wallet', rowNumber: 28),
+      ];
+
+      expect(rows.length, 28);
+      expect(transferRowCount(rows), 2);
+      expect(ledgerEntryCount(rows), 30);
+    });
+
+    test('a file with no transfers writes one entry per row', () {
+      final rows = [
+        row(type: 'expense', rowNumber: 1),
+        row(type: 'income', rowNumber: 2),
+      ];
+
+      expect(transferRowCount(rows), 0);
+      expect(ledgerEntryCount(rows), rows.length);
+    });
+
+    test('a file of nothing but transfers doubles', () {
+      final rows = [
+        transferRow(from: 'Cash Wallet', to: 'BCA', rowNumber: 1),
+        transferRow(from: 'BCA', to: 'Cash Wallet', rowNumber: 2),
+      ];
+
+      expect(ledgerEntryCount(rows), 4);
+    });
+
+    test('an empty row list produces zero entries', () {
+      expect(ledgerEntryCount(const []), 0);
+      expect(transferRowCount(const []), 0);
+    });
+  });
 }

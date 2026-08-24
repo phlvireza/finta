@@ -492,13 +492,33 @@
       "number": { "type": "int" }
     }
   },
-  "confirmImportCount": "Import {count} transactions",
-  "@confirmImportCount": {
+  "confirmImportRows": "Import {count} rows",
+  "@confirmImportRows": {
     "placeholders": {
       "count": { "type": "int" }
     }
   },
-  "csvImportedCount": "Imported {count} transactions",
+  "csvTransferExpansionNote": "{transfers} transfer rows each become a linked pair, so {entries} entries will be added.",
+  "@csvTransferExpansionNote": {
+    "placeholders": {
+      "transfers": { "type": "int" },
+      "entries": { "type": "int" }
+    }
+  },
+  "csvExportedCount": "Exported {count} rows",
+  "@csvExportedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "csvExportedCountWithTransfers": "Exported {rows} rows. Each of the {transfers} transfers is one row, and imports back as both legs.",
+  "@csvExportedCountWithTransfers": {
+    "placeholders": {
+      "rows": { "type": "int" },
+      "transfers": { "type": "int" }
+    }
+  },
+  "csvImportedCount": "Imported {count} rows",
   "@csvImportedCount": {
     "placeholders": {
       "count": { "type": "int" }

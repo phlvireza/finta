@@ -92,6 +92,22 @@ class CsvExportService {
     return buffer.toString();
   }
 
+  /// How many transfer *pairs* [transactions] holds, i.e. how many rows
+  /// [buildCsv] collapses two ledger entries into.
+  ///
+  /// Same rule as [buildCsv] — grouped by `transferId`, and only a complete
+  /// pair counts — so the two can never disagree about the shape of the file.
+  /// An orphan leg is written as an ordinary row, and is not counted here.
+  /// The file's row count is therefore `transactions.length - transferPairCount`.
+  static int transferPairCount(List<TransactionModel> transactions) {
+    final legsByTransfer = <String, int>{};
+    for (final tx in transactions) {
+      final id = tx.transferId;
+      if (id != null) legsByTransfer[id] = (legsByTransfer[id] ?? 0) + 1;
+    }
+    return legsByTransfer.values.where((count) => count == 2).length;
+  }
+
   String _row({
     required DateTime date,
     required String type,

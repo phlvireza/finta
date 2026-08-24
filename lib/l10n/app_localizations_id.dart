@@ -978,13 +978,28 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String confirmImportCount(int count) {
-    return 'Impor $count transaksi';
+  String confirmImportRows(int count) {
+    return 'Impor $count baris';
+  }
+
+  @override
+  String csvTransferExpansionNote(int transfers, int entries) {
+    return '$transfers baris transfer masing-masing menjadi sepasang entri terkait, sehingga $entries entri akan ditambahkan.';
+  }
+
+  @override
+  String csvExportedCount(int count) {
+    return 'Berhasil mengekspor $count baris';
+  }
+
+  @override
+  String csvExportedCountWithTransfers(int rows, int transfers) {
+    return 'Berhasil mengekspor $rows baris. Masing-masing dari $transfers transfer ditulis sebagai satu baris, dan diimpor kembali menjadi kedua sisinya.';
   }
 
   @override
   String csvImportedCount(int count) {
-    return 'Berhasil mengimpor $count transaksi';
+    return 'Berhasil mengimpor $count baris';
   }
 
   @override

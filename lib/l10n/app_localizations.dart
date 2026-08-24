@@ -1868,16 +1868,34 @@ abstract class AppLocalizations {
   /// **'Row {number}'**
   String csvRowNumber(int number);
 
-  /// No description provided for @confirmImportCount.
+  /// No description provided for @confirmImportRows.
   ///
   /// In en, this message translates to:
-  /// **'Import {count} transactions'**
-  String confirmImportCount(int count);
+  /// **'Import {count} rows'**
+  String confirmImportRows(int count);
+
+  /// No description provided for @csvTransferExpansionNote.
+  ///
+  /// In en, this message translates to:
+  /// **'{transfers} transfer rows each become a linked pair, so {entries} entries will be added.'**
+  String csvTransferExpansionNote(int transfers, int entries);
+
+  /// No description provided for @csvExportedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported {count} rows'**
+  String csvExportedCount(int count);
+
+  /// No description provided for @csvExportedCountWithTransfers.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported {rows} rows. Each of the {transfers} transfers is one row, and imports back as both legs.'**
+  String csvExportedCountWithTransfers(int rows, int transfers);
 
   /// No description provided for @csvImportedCount.
   ///
   /// In en, this message translates to:
-  /// **'Imported {count} transactions'**
+  /// **'Imported {count} rows'**
   String csvImportedCount(int count);
 
   /// No description provided for @importFailed.

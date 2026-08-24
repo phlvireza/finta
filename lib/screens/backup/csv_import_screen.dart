@@ -86,9 +86,12 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
   List<String> _newCategories = const [];
   List<String> _newAccounts = const [];
 
-  /// Rows produce transactions one-to-one except transfers, which expand into
-  /// two legs — so the confirm button cannot just count rows.
-  int _transactionCount = 0;
+  /// Every count on screen is a *row* count, so the file, the preview and the
+  /// button can never disagree. These two exist only to explain the gap between
+  /// the rows in the file and the entries the ledger gains: a transfer row is
+  /// stored as two linked legs.
+  int _entryCount = 0;
+  int _transferRowCount = 0;
 
   @override
   void initState() {
@@ -174,8 +177,6 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
       ..sort((a, b) => a.rowNumber.compareTo(b.rowNumber));
 
     final ready = rows.toList();
-    final transactionCount =
-        ready.length + ready.where((r) => r.isTransfer).length;
 
     final entries = <_PreviewEntry>[
       if (ready.isNotEmpty) ...[
@@ -202,7 +203,8 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
       _entries = entries;
       _newCategories = newCategories;
       _newAccounts = newAccounts;
-      _transactionCount = transactionCount;
+      _entryCount = ledgerEntryCount(ready);
+      _transferRowCount = transferRowCount(ready);
       _previewing = true;
     });
   }
@@ -351,7 +353,9 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
         accountProvider.loadAccounts(),
       ]);
 
-      if (mounted) Navigator.of(context).pop(toInsert.length);
+      // The row count, not toInsert.length: the button the user pressed said
+      // rows, and a confirmation reporting a larger number reads as duplication.
+      if (mounted) Navigator.of(context).pop(_rows.length);
     } catch (e) {
       setState(() => _importing = false);
       if (mounted) {
@@ -516,6 +520,18 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
                   ),
                 ),
               ],
+              // The one place the row/entry gap is stated. Without it the
+              // ledger simply grows by more rows than the file had, which
+              // reads as the import duplicating the transfers.
+              if (_transferRowCount > 0) ...[
+                const SizedBox(height: AppConstants.spacingXs),
+                Text(
+                  loc.csvTransferExpansionNote(_transferRowCount, _entryCount),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
               // A CSV carries an account's name and nothing else, so a wallet
               // created from one cannot reproduce the balance it had on the
               // other phone. Say it here rather than let the user discover it
@@ -571,7 +587,7 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : Text(loc.confirmImportCount(_transactionCount)),
+                  : Text(loc.confirmImportRows(_rows.length)),
             ),
           ),
         ),
