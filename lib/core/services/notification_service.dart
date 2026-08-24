@@ -51,15 +51,22 @@ class NotificationService {
   final _plugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
-  bool get isSupported => Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
+  bool get isSupported =>
+      Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
 
   Future<void> init() async {
     if (!isSupported || _initialized) return;
     tz.initializeTimeZones();
     await _configureLocalTimeZone();
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/launcher_icon');
-    const darwinSettings = DarwinInitializationSettings();
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/launcher_icon',
+    );
+    const darwinSettings = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
     const initSettings = InitializationSettings(
       android: androidSettings,
       iOS: darwinSettings,
@@ -67,17 +74,35 @@ class NotificationService {
     );
     await _plugin.initialize(initSettings);
 
-    await _plugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
-    await _plugin
-        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(alert: true, badge: true, sound: true);
-    await _plugin
-        .resolvePlatformSpecificImplementation<MacOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(alert: true, badge: true, sound: true);
-
     _initialized = true;
+  }
+
+  /// Requests notification access only after a user has chosen to enable a
+  /// reminder. Initializing the app must never display a permission prompt.
+  Future<void> _requestPermissions() async {
+    if (Platform.isAndroid) {
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
+          ?.requestNotificationsPermission();
+      return;
+    }
+    if (Platform.isIOS) {
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >()
+          ?.requestPermissions(alert: true, badge: true, sound: true);
+      return;
+    }
+    if (Platform.isMacOS) {
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+            MacOSFlutterLocalNotificationsPlugin
+          >()
+          ?.requestPermissions(alert: true, badge: true, sound: true);
+    }
   }
 
   /// Points `tz.local` at the device's zone so a reminder scheduled for 9am
@@ -110,7 +135,12 @@ class NotificationService {
     }
 
     final chargeDate = recurring.nextOccurrence;
-    final fireDate = DateTime(chargeDate.year, chargeDate.month, chargeDate.day - days, 9);
+    final fireDate = DateTime(
+      chargeDate.year,
+      chargeDate.month,
+      chargeDate.day - days,
+      9,
+    );
     if (!fireDate.isAfter(DateTime.now())) {
       // Too late for this occurrence's reminder. Nothing to schedule until
       // lastRunDate advances past it on the next recurring-service run,
@@ -120,6 +150,7 @@ class NotificationService {
     }
 
     await init();
+    await _requestPermissions();
     final loc = _loc;
     final name = (recurring.merchant?.trim().isNotEmpty ?? false)
         ? recurring.merchant!
@@ -131,7 +162,10 @@ class NotificationService {
       loc.subscriptionRenewsOn(_formatDate(chargeDate)),
       tz.TZDateTime.from(fireDate, tz.local),
       NotificationDetails(
-        android: AndroidNotificationDetails(_channelId, loc.notificationChannelName),
+        android: AndroidNotificationDetails(
+          _channelId,
+          loc.notificationChannelName,
+        ),
         iOS: const DarwinNotificationDetails(),
         macOS: const DarwinNotificationDetails(),
       ),
@@ -141,7 +175,8 @@ class NotificationService {
       // the permission throws on Android 14+, where the failure would be
       // swallowed and the reminder would silently never fire.
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 
