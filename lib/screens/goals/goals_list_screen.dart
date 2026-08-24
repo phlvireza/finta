@@ -5,7 +5,8 @@ import '../../providers/settings_provider.dart';
 import '../../models/goal_model.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/number_utils.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/squi/squi_state.dart';
+import '../../core/constants/squi.dart';
 import '../../widgets/masked_amount.dart';
 import '../../widgets/section_card.dart';
 import '../../widgets/tinted_icon.dart';
@@ -41,10 +42,10 @@ class GoalsListScreen extends StatelessWidget {
       // Archived goals alone used to fall into it, hiding the very goals the
       // delete flow promised were kept.
       body: goals.isEmpty && archived.isEmpty
-          ? EmptyState(
-              icon: Icons.savings_outlined,
-              title: loc.noGoalsYet,
-              subtitle: loc.noGoalsYetMessage,
+          ? SquiState(
+              pose: SquiPose.empty,
+              title: loc.squiEmptyGoals,
+              subtitle: loc.squiEmptyGoalsBody,
               action: ElevatedButton(
                 onPressed: () => showGoalForm(context),
                 child: Text(loc.addGoal),
@@ -114,7 +115,10 @@ class _ArchivedGoals extends StatelessWidget {
           shape: const Border(),
           collapsedShape: const Border(),
           leading: const Icon(Icons.inventory_2_outlined),
-          title: Text(loc.archivedCount(goals.length), style: theme.textTheme.titleSmall),
+          title: Text(
+            loc.archivedCount(goals.length),
+            style: theme.textTheme.titleSmall,
+          ),
           children: [
             for (final goal in goals)
               ListTile(
@@ -134,11 +138,16 @@ class _ArchivedGoals extends StatelessWidget {
                   },
                   itemBuilder: (_) => [
                     PopupMenuItem(value: 'restore', child: Text(loc.restore)),
-                    PopupMenuItem(value: 'purge', child: Text(loc.deletePermanently)),
+                    PopupMenuItem(
+                      value: 'purge',
+                      child: Text(loc.deletePermanently),
+                    ),
                   ],
                 ),
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => GoalDetailScreen(goalId: goal.id)),
+                  MaterialPageRoute(
+                    builder: (_) => GoalDetailScreen(goalId: goal.id),
+                  ),
                 ),
               ),
           ],
@@ -153,7 +162,11 @@ class _GoalRow extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  const _GoalRow({required this.goal, required this.onEdit, required this.onDelete});
+  const _GoalRow({
+    required this.goal,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +190,10 @@ class _GoalRow extends StatelessWidget {
           children: [
             Row(
               children: [
-                TintedIcon(icon: Icons.savings_outlined, color: goal.colorValue),
+                TintedIcon(
+                  icon: Icons.savings_outlined,
+                  color: goal.colorValue,
+                ),
                 const SizedBox(width: AppConstants.spacingMd),
                 Expanded(
                   child: Text(goal.name, style: theme.textTheme.titleMedium),

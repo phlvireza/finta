@@ -12,10 +12,11 @@ class TransactionProvider extends ChangeNotifier {
   static const _uuid = Uuid();
 
   TransactionProvider({TransactionRepository? repository})
-      : _repository = repository ?? TransactionRepository();
+    : _repository = repository ?? TransactionRepository();
 
   List<TransactionModel> _transactions = [];
   List<TransactionModel> _allTransactions = [];
+  bool? _hasAnyTransactions;
   bool _isLoading = false;
   String? _error; // Store latest error message
 
@@ -57,6 +58,7 @@ class TransactionProvider extends ChangeNotifier {
       _transactions.take(AppConstants.recentTransactionCount).toList();
 
   List<TransactionModel> get allTransactions => _allTransactions;
+  bool? get hasAnyTransactions => _hasAnyTransactions;
   bool get isLoading => _isLoading;
   String? get error => _error;
   double get totalIncome => _totalIncome;
@@ -93,7 +95,11 @@ class TransactionProvider extends ChangeNotifier {
         period = AppDateUtils.getPreviousPeriod(period);
       }
       _period = period;
-      _transactions = await _repository.getByDateRange(period.start, period.end);
+      _transactions = await _repository.getByDateRange(
+        period.start,
+        period.end,
+      );
+      _hasAnyTransactions = await _repository.hasAnyNonTransferTransaction();
 
       _totalIncome = await _repository.getSumByTypeAndDateRange(
         'income',
@@ -204,6 +210,7 @@ class TransactionProvider extends ChangeNotifier {
 
       await _repository.insert(transaction);
       _applyInsert(transaction);
+      _hasAnyTransactions = true;
 
       notifyListeners();
       return transaction;
@@ -360,13 +367,17 @@ class TransactionProvider extends ChangeNotifier {
       if (transferId != null) {
         await _repository.deleteTransferPair(transferId);
         for (final leg
-            in _allTransactions.where((t) => t.transferId == transferId).toList()) {
+            in _allTransactions
+                .where((t) => t.transferId == transferId)
+                .toList()) {
           _removeFromMemory(leg);
         }
       } else {
         await _repository.delete(id);
         _removeFromMemory(target);
       }
+
+      _hasAnyTransactions = await _repository.hasAnyNonTransferTransaction();
 
       notifyListeners();
     } catch (e) {
@@ -393,7 +404,13 @@ class TransactionProvider extends ChangeNotifier {
   Future<void> importTransactions(List<TransactionModel> transactions) async {
     if (transactions.isEmpty) return;
     await _repository.insertBatch(transactions);
+    _hasAnyTransactions = await _repository.hasAnyNonTransferTransaction();
+    notifyListeners();
   }
+
+  /// Reads the authoritative ledger state immediately before a user save.
+  Future<bool> hasAnyNonTransferTransaction() =>
+      _repository.hasAnyNonTransferTransaction();
 
   /// Search transactions by note content.
   Future<List<TransactionModel>> searchTransactions(String query) async {
@@ -416,10 +433,7 @@ class TransactionProvider extends ChangeNotifier {
   }
 
   /// Get the sum spent in a specific category for the current period.
-  Future<double> getCategorySpending(
-    String categoryId,
-    int payday,
-  ) async {
+  Future<double> getCategorySpending(String categoryId, int payday) async {
     try {
       final period = AppDateUtils.getCurrentPeriod(payday);
       return await _repository.getCategorySumByDateRange(
@@ -434,10 +448,12 @@ class TransactionProvider extends ChangeNotifier {
 
   /// Merchants matching [query], most-used first — powers the entry
   /// form's autocomplete.
-  Future<List<String>> suggestMerchants(String query) => _repository.getMerchantSuggestions(query);
+  Future<List<String>> suggestMerchants(String query) =>
+      _repository.getMerchantSuggestions(query);
 
   /// The category/account this merchant is most often paired with, or
   /// null if it's never been used before.
-  Future<({String categoryId, String accountId})?> getMerchantDefaults(String merchant) =>
-      _repository.getMerchantDefaults(merchant);
+  Future<({String categoryId, String accountId})?> getMerchantDefaults(
+    String merchant,
+  ) => _repository.getMerchantDefaults(merchant);
 }

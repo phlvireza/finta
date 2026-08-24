@@ -79,6 +79,7 @@ flutter:
   generate: true
   assets:
     - assets/images/
+    - assets/images/squi/
 
   # Inter is bundled rather than fetched at runtime, so the app works offline
   # and needs no INTERNET permission. Only the four weights AppTypography uses

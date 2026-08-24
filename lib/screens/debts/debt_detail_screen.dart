@@ -6,7 +6,8 @@ import '../../models/debt_model.dart';
 import '../../models/transaction_model.dart';
 import '../../core/constants/app_constants.dart';
 import '../../widgets/date_group_header.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/squi/squi_state.dart';
+import '../../core/constants/squi.dart';
 import '../../widgets/error_state.dart';
 import '../../widgets/skeleton_box.dart';
 import '../../widgets/section_card.dart';
@@ -87,7 +88,9 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
   Future<void> _openTransaction(TransactionModel transaction) async {
     final provider = context.read<DebtProvider>();
     await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => AddTransactionScreen(editTransaction: transaction)),
+      MaterialPageRoute(
+        builder: (_) => AddTransactionScreen(editTransaction: transaction),
+      ),
     );
     if (!mounted) return;
     await provider.loadDebts();
@@ -138,7 +141,8 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
             IconButton(
               icon: const Icon(Icons.calculate_outlined),
               tooltip: loc.payoffCalculator,
-              onPressed: () => PayoffCalculatorDialog.show(context, debt, outstanding),
+              onPressed: () =>
+                  PayoffCalculatorDialog.show(context, debt, outstanding),
             ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
@@ -170,7 +174,10 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                     Icon(
                       debt.isLent ? Icons.call_made : Icons.call_received,
                       size: 18,
-                      color: DebtProgressSummary.colorFor(debt, theme.brightness == Brightness.dark),
+                      color: DebtProgressSummary.colorFor(
+                        debt,
+                        theme.brightness == Brightness.dark,
+                      ),
                     ),
                     const SizedBox(width: AppConstants.spacingSm),
                     Text(
@@ -203,7 +210,10 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
     );
   }
 
-  List<Widget> _buildRepaymentSection(BuildContext context, AppLocalizations loc) {
+  List<Widget> _buildRepaymentSection(
+    BuildContext context,
+    AppLocalizations loc,
+  ) {
     // Both branches below need an explicit height: they are children of a
     // scrolling ListView, so they are laid out unbounded, and neither a
     // ListView (the skeleton) nor a full-height Column (ErrorState) can size
@@ -232,30 +242,34 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
       return [
         Padding(
           padding: const EdgeInsets.only(top: AppConstants.spacingXl),
-          child: EmptyState(
-            icon: Icons.handshake_outlined,
-            title: loc.noRepaymentsYet,
-            subtitle: loc.noRepaymentsYetMessage,
+          child: SquiState(
+            pose: SquiPose.empty,
+            title: loc.squiEmptyRepayments,
+            subtitle: loc.squiEmptyRepaymentsBody,
           ),
         ),
       ];
     }
 
-    final grouped = context.read<TransactionProvider>().getGroupedTransactions(transactions);
+    final grouped = context.read<TransactionProvider>().getGroupedTransactions(
+      transactions,
+    );
     return grouped.entries
-        .map((entry) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DateGroupHeader(date: entry.key, transactions: entry.value),
-                ...entry.value.map(
-                  (tx) => TransactionTile(
-                    transaction: tx,
-                    dense: true,
-                    onTap: () => _openTransaction(tx),
-                  ),
+        .map(
+          (entry) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DateGroupHeader(date: entry.key, transactions: entry.value),
+              ...entry.value.map(
+                (tx) => TransactionTile(
+                  transaction: tx,
+                  dense: true,
+                  onTap: () => _openTransaction(tx),
                 ),
-              ],
-            ))
+              ),
+            ],
+          ),
+        )
         .toList();
   }
 }

@@ -11,8 +11,11 @@ import '../../../models/debt_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/formatters/currency_formatter.dart';
 import '../../../core/database/seed_data.dart';
+import '../../../core/utils/squi_moments.dart';
+import '../../../core/services/squi_milestone_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/keypad_amount_field.dart';
+import '../../../widgets/squi/squi_moment_sheet.dart';
 import '../../transactions/widgets/account_picker.dart';
 import '../../transactions/widgets/category_picker.dart';
 import '../../transactions/widgets/date_picker_field.dart';
@@ -34,12 +37,19 @@ class RepaymentSheet extends StatefulWidget {
 
   const RepaymentSheet({super.key, required this.debt});
 
-  static void show(BuildContext context, DebtModel debt) {
-    showModalBottomSheet(
+  static Future<void> show(BuildContext context, DebtModel debt) async {
+    final result = await showModalBottomSheet<SquiSaveResult>(
       context: context,
       isScrollControlled: true,
       builder: (_) => RepaymentSheet(debt: debt),
     );
+    if (result?.moment != null && context.mounted) {
+      await SquiMomentSheet.show(
+        context,
+        result!.moment!,
+        name: result.subjectName,
+      );
+    }
   }
 
   @override
@@ -73,8 +83,12 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final provider = context.read<CategoryProvider>();
-      final categories = _isIncome ? provider.incomeCategories : provider.expenseCategories;
-      if (categories.any((c) => c.id == _categoryId) || categories.isEmpty) return;
+      final categories = _isIncome
+          ? provider.incomeCategories
+          : provider.expenseCategories;
+      if (categories.any((c) => c.id == _categoryId) || categories.isEmpty) {
+        return;
+      }
       setState(() => _categoryId = categories.first.id);
     });
   }
@@ -106,13 +120,17 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
     final analytics = context.read<AnalyticsProvider>();
     final settings = context.read<SettingsProvider>();
     try {
+      final wasSettled = debtProvider.isSettled(widget.debt);
+      final wasLedgerEmpty = !await txProvider.hasAnyNonTransferTransaction();
       await txProvider.addTransaction(
         type: widget.debt.isBorrowed ? 'expense' : 'income',
         amount: parseFormattedAmount(_amountController.text),
         categoryId: _categoryId,
         accountId: _accountId!,
         date: _date,
-        note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+        note: _noteController.text.trim().isEmpty
+            ? null
+            : _noteController.text.trim(),
         debtId: widget.debt.id,
       );
       await txProvider.loadTransactions(payday: settings.payday);
@@ -120,12 +138,31 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
       await accountProvider.loadAccounts();
       await analytics.loadForCurrentPeriod(settings.payday);
       await debtProvider.loadDebts();
-      if (mounted) Navigator.of(context).pop();
+      final isSettled = debtProvider.isSettled(widget.debt);
+      final eligible = <SquiMoment>{
+        if (wasLedgerEmpty) SquiMoment.firstTransaction,
+        if (!wasSettled && isSettled) SquiMoment.debtSettled,
+      };
+      final moment = await SquiMilestoneService.instance.claim(
+        eligible: eligible,
+        debtId: widget.debt.id,
+      );
+      if (mounted) {
+        Navigator.of(context).pop(
+          SquiSaveResult(
+            saved: true,
+            moment: moment,
+            subjectName: widget.debt.name,
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.errorFailedToSave)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(loc.errorFailedToSave)));
       }
     }
   }
@@ -140,7 +177,8 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
         left: AppConstants.spacingLg,
         right: AppConstants.spacingLg,
         top: AppConstants.spacingLg,
-        bottom: MediaQuery.of(context).viewInsets.bottom + AppConstants.spacingLg,
+        bottom:
+            MediaQuery.of(context).viewInsets.bottom + AppConstants.spacingLg,
       ),
       child: Form(
         key: _formKey,
@@ -168,7 +206,8 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
                 label: widget.debt.isBorrowed ? loc.fromAccount : loc.toAccount,
                 selectedAccountId: _accountId,
                 onAccountSelected: (id) => setState(() => _accountId = id),
-                validator: (_) => _accountId == null ? loc.selectAnAccount : null,
+                validator: (_) =>
+                    _accountId == null ? loc.selectAnAccount : null,
               ),
               const SizedBox(height: AppConstants.spacingLg),
               CategoryPicker(
@@ -180,7 +219,9 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
               // Padded to line up with AccountPicker and CategoryPicker,
               // which both inset themselves; DatePickerField doesn't.
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spacingLg,
+                ),
                 child: DatePickerField(
                   selectedDate: _date,
                   onDateSelected: (date) => setState(() => _date = date),

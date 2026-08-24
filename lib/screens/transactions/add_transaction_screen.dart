@@ -13,6 +13,9 @@ import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/formatters/currency_formatter.dart';
 import '../../core/utils/number_utils.dart';
+import '../../core/utils/squi_moments.dart';
+import '../../core/services/squi_milestone_service.dart';
+import '../../widgets/squi/squi_moment_sheet.dart';
 import '../../widgets/amount_input_field.dart';
 import '../../widgets/amount_keypad.dart';
 import 'widgets/category_picker.dart';
@@ -60,7 +63,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
     // We format the amount without symbols for the input field
     final settings = context.read<SettingsProvider>();
-    final initialAmount = tx != null ? formatAmount(tx.amount, useDecimals: settings.currencyUseDecimals) : '';
+    final initialAmount = tx != null
+        ? formatAmount(tx.amount, useDecimals: settings.currencyUseDecimals)
+        : '';
     _amountController = TextEditingController(text: initialAmount);
     _noteController = TextEditingController(text: tx?.note ?? '');
     _date = tx?.date ?? DateTime.now();
@@ -110,17 +115,33 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     // A statistical-outlier nudge, not a hard block — only for a brand-new
     // expense, where there's a category chosen to check history against.
     if (widget.editTransaction == null && !_isIncome && _categoryId != null) {
-      final check = await context.read<InsightsProvider>().checkAnomaly(_categoryId!, amount);
+      final check = await context.read<InsightsProvider>().checkAnomaly(
+        _categoryId!,
+        amount,
+      );
       if (!mounted) return;
       if (check != null && check.isAnomaly) {
-        final categoryName = context.read<CategoryProvider>().getCategoryById(_categoryId!)?.name ?? loc.unknown;
+        final categoryName =
+            context
+                .read<CategoryProvider>()
+                .getCategoryById(_categoryId!)
+                ?.name ??
+            loc.unknown;
         final settings = context.read<SettingsProvider>();
         final proceed = await confirmUnusualAmount(
           context,
           loc: loc,
           categoryName: categoryName,
-          formattedAmount: NumberUtils.formatCurrency(amount, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals),
-          formattedTypical: NumberUtils.formatCurrency(check.mean, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals),
+          formattedAmount: NumberUtils.formatCurrency(
+            amount,
+            symbol: settings.currencySymbol,
+            useDecimals: settings.currencyUseDecimals,
+          ),
+          formattedTypical: NumberUtils.formatCurrency(
+            check.mean,
+            symbol: settings.currencySymbol,
+            useDecimals: settings.currencyUseDecimals,
+          ),
         );
         if (!proceed || !mounted) return;
       }
@@ -133,12 +154,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       final recurringProvider = context.read<RecurringProvider>();
       final budgetProvider = context.read<BudgetProvider>();
       final settings = context.read<SettingsProvider>();
+      final wasLedgerEmpty =
+          widget.editTransaction == null &&
+          !await txProvider.hasAnyNonTransferTransaction();
 
       String type = _isIncome ? 'income' : 'expense';
       String? recurringId = widget.editTransaction?.recurringId;
 
       final trimmedMerchant = _merchant?.trim();
-      final merchant = (trimmedMerchant == null || trimmedMerchant.isEmpty) ? null : trimmedMerchant;
+      final merchant = (trimmedMerchant == null || trimmedMerchant.isEmpty)
+          ? null
+          : trimmedMerchant;
 
       // Create recurring template if new and toggled
       if (widget.editTransaction == null && _isRecurring) {
@@ -183,13 +209,19 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
         // Check budget if expense
         if (!_isIncome) {
-          final alert = budgetProvider.checkBudgetAlert(_categoryId!, amount, settings.payday);
+          final alert = budgetProvider.checkBudgetAlert(
+            _categoryId!,
+            amount,
+            settings.payday,
+          );
           if (alert != null && mounted) {
             String message = '';
             if (alert.type == BudgetAlertType.exceeded) {
               message = AppLocalizations.of(context)!.budgetExceededAlert;
             } else if (alert.type == BudgetAlertType.warning) {
-              message = AppLocalizations.of(context)!.budgetWarningAlert(alert.percentage);
+              message = AppLocalizations.of(
+                context,
+              )!.budgetWarningAlert(alert.percentage);
             }
 
             if (message.isNotEmpty) {
@@ -210,20 +242,29 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       await txProvider.loadTransactions(payday: settings.payday);
       await budgetProvider.loadBudgets(payday: settings.payday);
       if (mounted) {
-        await context.read<AnalyticsProvider>().loadForCurrentPeriod(settings.payday);
+        await context.read<AnalyticsProvider>().loadForCurrentPeriod(
+          settings.payday,
+        );
       }
       if (mounted) {
         await context.read<AccountProvider>().loadAccounts();
       }
 
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
+      final moment = await SquiMilestoneService.instance.claim(
+        eligible: wasLedgerEmpty
+            ? {SquiMoment.firstTransaction}
+            : <SquiMoment>{},
+      );
+      if (!mounted) return;
+      if (moment != null) await SquiMomentSheet.show(context, moment);
+      if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.errorFailedToSave)),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.errorFailedToSave),
+          ),
         );
         setState(() => _isSaving = false);
       }
@@ -307,7 +348,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             right: AppConstants.spacingLg,
             // The amount opens a full-screen sheet rather than the OS
             // keyboard, but the note and merchant fields still do.
-            bottom: AppConstants.spacingLg + MediaQuery.of(context).viewInsets.bottom,
+            bottom:
+                AppConstants.spacingLg +
+                MediaQuery.of(context).viewInsets.bottom,
             top: AppConstants.spacingSm,
           ),
           child: SizedBox(
@@ -317,7 +360,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 ? const Center(child: CircularProgressIndicator())
                 : ElevatedButton(
                     onPressed: _save,
-                    child: Text(isEditing ? loc.saveChanges : loc.saveTransaction),
+                    child: Text(
+                      isEditing ? loc.saveChanges : loc.saveTransaction,
+                    ),
                   ),
           ),
         ),
@@ -326,13 +371,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         onTap: () => FocusScope.of(context).unfocus(),
         child: Form(
           key: _formKey,
-          autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+          autovalidateMode: _autoValidate
+              ? AutovalidateMode.always
+              : AutovalidateMode.disabled,
           child: ListView(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             children: [
               // Type toggle
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spacingLg,
+                ),
                 child: TypeToggle(
                   isIncome: _isIncome,
                   onChanged: _toggleType,
@@ -370,7 +419,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               // for the same task. Merchant used to sit directly under the
               // amount here; it was moved down to match the sheet.
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spacingLg,
+                ),
                 child: DatePickerField(
                   selectedDate: _date,
                   onDateSelected: (date) => setState(() => _date = date),
@@ -389,7 +440,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               MerchantField(
                 initialValue: _merchant,
                 onChanged: (val) => _merchant = val,
-                onAccountDefault: (accountId) => setState(() => _accountId = accountId),
+                onAccountDefault: (accountId) =>
+                    setState(() => _accountId = accountId),
               ),
               const SizedBox(height: AppConstants.spacingXxl),
 
@@ -405,7 +457,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               const SizedBox(height: AppConstants.spacingXxl),
 
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spacingLg,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -420,7 +474,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         filled: true,
                         fillColor: theme.colorScheme.surfaceContainerHighest,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+                          borderRadius: BorderRadius.circular(
+                            AppConstants.radiusMd,
+                          ),
                           borderSide: BorderSide.none,
                         ),
                       ),
@@ -436,9 +492,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                           if (!val) _isSubscription = false;
                         }),
                         frequency: _recurringFrequency,
-                        onFrequencyChanged: (val) => setState(() => _recurringFrequency = val),
+                        onFrequencyChanged: (val) =>
+                            setState(() => _recurringFrequency = val),
                         isSubscription: _isSubscription,
-                        onSubscriptionToggle: (val) => setState(() => _isSubscription = val),
+                        onSubscriptionToggle: (val) =>
+                            setState(() => _isSubscription = val),
                       ),
                       const SizedBox(height: AppConstants.spacingXxxl),
                     ],

@@ -9,7 +9,8 @@ import '../../providers/category_provider.dart';
 import '../../providers/recurring_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/transaction_provider.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/squi/squi_state.dart';
+import '../../core/constants/squi.dart';
 import '../../widgets/section_card.dart';
 import '../../widgets/status_pill.dart';
 import '../../widgets/tinted_icon.dart';
@@ -38,7 +39,10 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
     final transactionProvider = context.watch<TransactionProvider>();
 
     final subscriptions = recurringProvider.subscriptions;
-    final monthlyTotal = subscriptions.fold(0.0, (sum, s) => sum + s.monthlyEquivalent);
+    final monthlyTotal = subscriptions.fold(
+      0.0,
+      (sum, s) => sum + s.monthlyEquivalent,
+    );
 
     final trackedMerchants = recurringProvider.activeRecurring
         .map((r) => r.merchant)
@@ -52,10 +56,10 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(loc.subscriptions)),
       body: (subscriptions.isEmpty && candidates.isEmpty)
-          ? EmptyState(
-              icon: Icons.subscriptions_outlined,
-              title: loc.noSubscriptionsTitle,
-              subtitle: loc.noSubscriptionsSubtitle,
+          ? SquiState(
+              pose: SquiPose.rest,
+              title: loc.squiQuietSubscriptions,
+              subtitle: loc.squiQuietSubscriptionsBody,
             )
           : ListView(
               padding: const EdgeInsets.fromLTRB(
@@ -82,13 +86,17 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                         for (final c in candidates) ...[
                           if (c != candidates.first) const Divider(height: 1),
                           Padding(
-                            padding: const EdgeInsets.all(AppConstants.spacingMd),
+                            padding: const EdgeInsets.all(
+                              AppConstants.spacingMd,
+                            ),
                             child: _SuggestionTile(
                               candidate: c,
                               symbol: settings.currencySymbol,
                               useDecimals: settings.currencyUseDecimals,
                               onAdd: () => _addSuggestion(context, c),
-                              onDismiss: () => setState(() => _dismissedSuggestions.add(c.merchant)),
+                              onDismiss: () => setState(
+                                () => _dismissedSuggestions.add(c.merchant),
+                              ),
                             ),
                           ),
                         ],
@@ -104,7 +112,8 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                     child: Column(
                       children: [
                         for (final s in subscriptions) ...[
-                          if (s != subscriptions.first) const Divider(height: 1),
+                          if (s != subscriptions.first)
+                            const Divider(height: 1),
                           _SubscriptionTile(
                             subscription: s,
                             categoryProvider: categoryProvider,
@@ -119,7 +128,10 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
     );
   }
 
-  Future<void> _addSuggestion(BuildContext context, SubscriptionCandidate c) async {
+  Future<void> _addSuggestion(
+    BuildContext context,
+    SubscriptionCandidate c,
+  ) async {
     final recurringProvider = context.read<RecurringProvider>();
     await recurringProvider.addRecurring(
       type: 'expense',
@@ -162,8 +174,14 @@ class _CostSummaryCard extends StatelessWidget {
                 Text(loc.perMonth, style: theme.textTheme.labelMedium),
                 const SizedBox(height: 4),
                 Text(
-                  NumberUtils.formatCurrency(monthlyTotal, symbol: symbol, useDecimals: useDecimals),
-                  style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                  NumberUtils.formatCurrency(
+                    monthlyTotal,
+                    symbol: symbol,
+                    useDecimals: useDecimals,
+                  ),
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -177,8 +195,14 @@ class _CostSummaryCard extends StatelessWidget {
                 Text(loc.perYear, style: theme.textTheme.labelMedium),
                 const SizedBox(height: 4),
                 Text(
-                  NumberUtils.formatCurrency(monthlyTotal * 12, symbol: symbol, useDecimals: useDecimals),
-                  style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                  NumberUtils.formatCurrency(
+                    monthlyTotal * 12,
+                    symbol: symbol,
+                    useDecimals: useDecimals,
+                  ),
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -218,7 +242,11 @@ class _SuggestionTile extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 loc.subscriptionSuggestionSubtitle(
-                  NumberUtils.formatCurrency(candidate.amount, symbol: symbol, useDecimals: useDecimals),
+                  NumberUtils.formatCurrency(
+                    candidate.amount,
+                    symbol: symbol,
+                    useDecimals: useDecimals,
+                  ),
                   candidate.occurrenceCount,
                 ),
                 style: theme.textTheme.bodySmall,
@@ -255,7 +283,13 @@ class _SubscriptionTile extends StatelessWidget {
     final category = categoryProvider.getCategoryById(subscription.categoryId);
     final name = subscription.merchant ?? category?.name ?? loc.unknown;
     final daysUntil = subscription.nextOccurrence
-        .difference(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day))
+        .difference(
+          DateTime(
+            DateTime.now().year,
+            DateTime.now().month,
+            DateTime.now().day,
+          ),
+        )
         .inDays;
 
     // Deliberately not a ListTile. ListTile hands `trailing` whatever width
@@ -295,8 +329,14 @@ class _SubscriptionTile extends StatelessWidget {
                   runSpacing: AppConstants.spacingXs,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Text(subscription.frequencyLabel, style: theme.textTheme.bodySmall),
-                    _StatusBadge(subscription: subscription, daysUntil: daysUntil),
+                    Text(
+                      subscription.frequencyLabel,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    _StatusBadge(
+                      subscription: subscription,
+                      daysUntil: daysUntil,
+                    ),
                   ],
                 ),
               ],
@@ -335,12 +375,14 @@ class _StatusBadge extends StatelessWidget {
     }
 
     final soon = daysUntil <= (subscription.reminderDaysBefore ?? 3);
-    final color = daysUntil < 0 || soon ? AppColors.warning : theme.colorScheme.primary;
+    final color = daysUntil < 0 || soon
+        ? AppColors.warning
+        : theme.colorScheme.primary;
     final label = daysUntil < 0
         ? loc.overdue
         : daysUntil == 0
-            ? loc.dueToday
-            : loc.dueInDays(daysUntil);
+        ? loc.dueToday
+        : loc.dueInDays(daysUntil);
     return StatusPill(label: label, color: color);
   }
 }
@@ -403,7 +445,10 @@ class _SubscriptionMenu extends StatelessWidget {
       ),
     );
     if (choice == -1 || !context.mounted) return;
-    await context.read<RecurringProvider>().setReminderDaysBefore(subscription.id, choice);
+    await context.read<RecurringProvider>().setReminderDaysBefore(
+      subscription.id,
+      choice,
+    );
   }
 
   Widget _reminderOption(BuildContext context, int? value, String label) {
@@ -412,7 +457,10 @@ class _SubscriptionMenu extends StatelessWidget {
       onPressed: () => Navigator.of(context).pop(value ?? -1),
       child: Row(
         children: [
-          if (isSelected) const Icon(Icons.check, size: 18) else const SizedBox(width: 18),
+          if (isSelected)
+            const Icon(Icons.check, size: 18)
+          else
+            const SizedBox(width: 18),
           const SizedBox(width: AppConstants.spacingSm),
           Text(label),
         ],

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/constants/squi.dart';
+import '../../../widgets/squi/squi_illustration.dart';
 
 /// Onboarding Screen 1 — Welcome page with tagline.
 class WelcomePage extends StatelessWidget {
@@ -23,18 +25,10 @@ class WelcomePage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // App icon
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(AppConstants.radiusXl),
-                  child: Image.asset(
-                    'assets/images/app_icon.png',
-                    width: 100,
-                    height: 100,
-                  ),
-                ),
+                const SquiIllustration(pose: SquiPose.wave, size: SquiSizes.lg),
                 const SizedBox(height: AppConstants.spacingXxxl),
                 Text(
-                  'Finta',
+                  'Squirio',
                   style: theme.textTheme.displayLarge?.copyWith(
                     fontSize: 40,
                     letterSpacing: -1,

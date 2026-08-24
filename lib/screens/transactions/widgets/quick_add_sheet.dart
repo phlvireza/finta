@@ -14,11 +14,14 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/formatters/currency_formatter.dart';
 import '../../../core/utils/number_utils.dart';
+import '../../../core/utils/squi_moments.dart';
+import '../../../core/services/squi_milestone_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/confirm_dialog.dart';
 import '../../../widgets/form_sheet.dart';
 import '../../../widgets/amount_input_field.dart';
 import '../../../widgets/amount_keypad.dart';
+import '../../../widgets/squi/squi_moment_sheet.dart';
 import 'category_picker.dart';
 import 'account_picker.dart';
 import 'merchant_field.dart';
@@ -74,7 +77,7 @@ class QuickAddSheet extends StatefulWidget {
     double? initialAmount,
     DateTime? initialDate,
   }) async {
-    final saved = await FormSheet.show<bool>(
+    final result = await FormSheet.show<SquiSaveResult>(
       context,
       builder: (_) => QuickAddSheet(
         initialCategoryId: initialCategoryId,
@@ -82,7 +85,10 @@ class QuickAddSheet extends StatefulWidget {
         initialDate: initialDate,
       ),
     );
-    return saved ?? false;
+    if (result?.moment != null && context.mounted) {
+      await SquiMomentSheet.show(context, result!.moment!);
+    }
+    return result?.saved ?? false;
   }
 
   @override
@@ -223,17 +229,33 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
     // A statistical-outlier nudge, not a hard block — only for expenses,
     // which is the only case with a category to check history against.
     if (!_isTransfer && !_isIncome) {
-      final check = await context.read<InsightsProvider>().checkAnomaly(_categoryId!, amount);
+      final check = await context.read<InsightsProvider>().checkAnomaly(
+        _categoryId!,
+        amount,
+      );
       if (!mounted) return;
       if (check != null && check.isAnomaly) {
-        final categoryName = context.read<CategoryProvider>().getCategoryById(_categoryId!)?.name ?? loc.unknown;
+        final categoryName =
+            context
+                .read<CategoryProvider>()
+                .getCategoryById(_categoryId!)
+                ?.name ??
+            loc.unknown;
         final settings = context.read<SettingsProvider>();
         final proceed = await confirmUnusualAmount(
           context,
           loc: loc,
           categoryName: categoryName,
-          formattedAmount: NumberUtils.formatCurrency(amount, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals),
-          formattedTypical: NumberUtils.formatCurrency(check.mean, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals),
+          formattedAmount: NumberUtils.formatCurrency(
+            amount,
+            symbol: settings.currencySymbol,
+            useDecimals: settings.currencyUseDecimals,
+          ),
+          formattedTypical: NumberUtils.formatCurrency(
+            check.mean,
+            symbol: settings.currencySymbol,
+            useDecimals: settings.currencyUseDecimals,
+          ),
         );
         if (!proceed || !mounted) return;
       }
@@ -250,6 +272,8 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
       final settings = context.read<SettingsProvider>();
       final accountProvider = context.read<AccountProvider>();
       final recurringProvider = context.read<RecurringProvider>();
+      final wasLedgerEmpty =
+          !_isTransfer && !await txProvider.hasAnyNonTransferTransaction();
 
       if (_isTransfer) {
         await txProvider.addTransfer(
@@ -260,8 +284,9 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
         );
       } else {
         final trimmedMerchant = _merchant?.trim();
-        final merchant =
-            (trimmedMerchant == null || trimmedMerchant.isEmpty) ? null : trimmedMerchant;
+        final merchant = (trimmedMerchant == null || trimmedMerchant.isEmpty)
+            ? null
+            : trimmedMerchant;
         final note = _noteController.text.trim();
         final type = _isIncome ? 'income' : 'expense';
 
@@ -301,11 +326,19 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
       await budgetProvider.loadBudgets(payday: settings.payday);
       await accountProvider.loadAccounts();
       if (mounted) {
-        await context.read<AnalyticsProvider>().loadForCurrentPeriod(settings.payday);
+        await context.read<AnalyticsProvider>().loadForCurrentPeriod(
+          settings.payday,
+        );
       }
 
-      // true == a transaction was written; see [QuickAddSheet.show].
-      if (mounted) Navigator.of(context).pop(true);
+      final moment = await SquiMilestoneService.instance.claim(
+        eligible: wasLedgerEmpty
+            ? {SquiMoment.firstTransaction}
+            : <SquiMoment>{},
+      );
+      if (mounted) {
+        Navigator.of(context).pop(SquiSaveResult(saved: true, moment: moment));
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -330,6 +363,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
       final budgetProvider = context.read<BudgetProvider>();
       final settings = context.read<SettingsProvider>();
       final accountProvider = context.read<AccountProvider>();
+      final wasLedgerEmpty = !await txProvider.hasAnyNonTransferTransaction();
 
       await txProvider.addTransaction(
         type: template.type,
@@ -345,11 +379,19 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
       await budgetProvider.loadBudgets(payday: settings.payday);
       await accountProvider.loadAccounts();
       if (mounted) {
-        await context.read<AnalyticsProvider>().loadForCurrentPeriod(settings.payday);
+        await context.read<AnalyticsProvider>().loadForCurrentPeriod(
+          settings.payday,
+        );
       }
 
-      // true == a transaction was written; see [QuickAddSheet.show].
-      if (mounted) Navigator.of(context).pop(true);
+      final moment = await SquiMilestoneService.instance.claim(
+        eligible: wasLedgerEmpty
+            ? {SquiMoment.firstTransaction}
+            : <SquiMoment>{},
+      );
+      if (mounted) {
+        Navigator.of(context).pop(SquiSaveResult(saved: true, moment: moment));
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -360,7 +402,10 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
     }
   }
 
-  Future<void> _deleteTemplate(BuildContext context, TemplateModel template) async {
+  Future<void> _deleteTemplate(
+    BuildContext context,
+    TemplateModel template,
+  ) async {
     final loc = AppLocalizations.of(context)!;
     final confirmed = await ConfirmDialog.show(
       context,
@@ -381,8 +426,12 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
     final accentColor = _isTransfer
         ? theme.colorScheme.primary
         : (_isIncome
-            ? (theme.brightness == Brightness.dark ? AppColors.darkIncome : AppColors.lightIncome)
-            : (theme.brightness == Brightness.dark ? AppColors.darkExpense : AppColors.lightExpense));
+              ? (theme.brightness == Brightness.dark
+                    ? AppColors.darkIncome
+                    : AppColors.lightIncome)
+              : (theme.brightness == Brightness.dark
+                    ? AppColors.darkExpense
+                    : AppColors.lightExpense));
 
     return FormSheet(
       title: _isTransfer ? loc.transfer : loc.addTransaction,
@@ -421,13 +470,16 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
             ),
       body: Form(
         key: _formKey,
-        autovalidateMode:
-            _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+        autovalidateMode: _autoValidate
+            ? AutovalidateMode.always
+            : AutovalidateMode.disabled,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.spacingLg,
+              ),
               child: _EntryTypeSegments(
                 entryType: _entryType,
                 onChanged: _setEntryType,
@@ -438,7 +490,10 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
             ),
             if (!_isTransfer) ...[
               const SizedBox(height: AppConstants.spacingMd),
-              _TemplateChipsRow(onSelected: _useTemplate, onDelete: _deleteTemplate),
+              _TemplateChipsRow(
+                onSelected: _useTemplate,
+                onDelete: _deleteTemplate,
+              ),
             ],
             AmountInputField(
               controller: _amountController,
@@ -459,7 +514,9 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
               },
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.spacingLg,
+              ),
               child: DatePickerField(
                 selectedDate: _date,
                 onDateSelected: (date) => setState(() => _date = date),
@@ -469,7 +526,9 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
             AccountPicker(
               label: _isTransfer ? loc.fromAccount : loc.account,
               selectedAccountId: _accountId,
-              excludeIds: _isTransfer && _toAccountId != null ? [_toAccountId!] : const [],
+              excludeIds: _isTransfer && _toAccountId != null
+                  ? [_toAccountId!]
+                  : const [],
               validator: (val) => val == null ? loc.selectAnAccount : null,
               onAccountSelected: (id) => setState(() {
                 _accountId = id;
@@ -495,13 +554,15 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
               MerchantField(
                 initialValue: _merchant,
                 onChanged: (val) => _merchant = val,
-                onAccountDefault: (accountId) => setState(() => _accountId = accountId),
+                onAccountDefault: (accountId) =>
+                    setState(() => _accountId = accountId),
               ),
               const SizedBox(height: AppConstants.spacingLg),
               CategoryPicker(
                 isIncome: _isIncome,
                 selectedCategoryId: _categoryId,
-                validator: (val) => val == null ? loc.pleaseSelectCategory : null,
+                validator: (val) =>
+                    val == null ? loc.pleaseSelectCategory : null,
                 onCategorySelected: (id) => setState(() {
                   _categoryId = id;
                   _error = null;
@@ -514,7 +575,9 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
               // options" on the full screen. Neither applies to a
               // transfer, which is why they sit in this branch.
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spacingLg,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -529,7 +592,9 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                         filled: true,
                         fillColor: theme.colorScheme.surfaceContainerHighest,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+                          borderRadius: BorderRadius.circular(
+                            AppConstants.radiusMd,
+                          ),
                           borderSide: BorderSide.none,
                         ),
                       ),
@@ -542,9 +607,11 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                         if (!val) _isSubscription = false;
                       }),
                       frequency: _recurringFrequency,
-                      onFrequencyChanged: (val) => setState(() => _recurringFrequency = val),
+                      onFrequencyChanged: (val) =>
+                          setState(() => _recurringFrequency = val),
                       isSubscription: _isSubscription,
-                      onSubscriptionToggle: (val) => setState(() => _isSubscription = val),
+                      onSubscriptionToggle: (val) =>
+                          setState(() => _isSubscription = val),
                     ),
                   ],
                 ),
@@ -553,20 +620,29 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
             if (_error != null) ...[
               const SizedBox(height: AppConstants.spacingSm),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spacingLg,
+                ),
                 child: Text(
                   _error!,
-                  style: TextStyle(color: theme.colorScheme.error, fontSize: 12),
+                  style: TextStyle(
+                    color: theme.colorScheme.error,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ] else if (_templateFeedback != null) ...[
               const SizedBox(height: AppConstants.spacingSm),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spacingLg,
+                ),
                 child: Text(
                   _templateFeedback!,
                   style: TextStyle(
-                    color: theme.brightness == Brightness.dark ? AppColors.darkIncome : AppColors.lightIncome,
+                    color: theme.brightness == Brightness.dark
+                        ? AppColors.darkIncome
+                        : AppColors.lightIncome,
                     fontSize: 12,
                   ),
                 ),
@@ -604,7 +680,8 @@ class _TemplateChipsRow extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
         itemCount: templates.length,
-        separatorBuilder: (_, _) => const SizedBox(width: AppConstants.spacingSm),
+        separatorBuilder: (_, _) =>
+            const SizedBox(width: AppConstants.spacingSm),
         itemBuilder: (context, index) {
           final template = templates[index];
           final category = categories.getCategoryById(template.categoryId);
@@ -612,7 +689,9 @@ class _TemplateChipsRow extends StatelessWidget {
             onTap: () => onSelected(template),
             onLongPress: () => onDelete(context, template),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingMd),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.spacingMd,
+              ),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(AppConstants.radiusFull),
@@ -633,8 +712,13 @@ class _TemplateChipsRow extends StatelessWidget {
                   Text(template.name, style: theme.textTheme.labelMedium),
                   const SizedBox(width: 6),
                   Text(
-                    NumberUtils.formatCompact(template.amount, symbol: settings.currencySymbol),
-                    style: theme.textTheme.labelSmall?.copyWith(color: theme.textTheme.bodySmall?.color),
+                    NumberUtils.formatCompact(
+                      template.amount,
+                      symbol: settings.currencySymbol,
+                    ),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.textTheme.bodySmall?.color,
+                    ),
                   ),
                 ],
               ),
@@ -704,7 +788,9 @@ class _EntryTypeSegments extends StatelessWidget {
             child: Text(
               label,
               style: theme.textTheme.labelLarge?.copyWith(
-                color: isSelected ? theme.colorScheme.onPrimary : theme.textTheme.bodyMedium?.color,
+                color: isSelected
+                    ? theme.colorScheme.onPrimary
+                    : theme.textTheme.bodyMedium?.color,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),

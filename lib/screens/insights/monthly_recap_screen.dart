@@ -14,6 +14,9 @@ import '../../core/utils/date_utils.dart';
 import '../../core/utils/number_utils.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/utils/export_cleanup.dart';
+import '../../core/constants/squi.dart';
+import '../../core/utils/squi_moments.dart';
+import '../../widgets/squi/squi_illustration.dart';
 
 /// A shareable "your pay cycle, summarised" card — captured from a live
 /// widget tree via [RepaintBoundary] rather than drawn with a separate
@@ -107,16 +110,24 @@ class _MonthlyRecapScreenState extends State<MonthlyRecapScreen> {
     final messenger = ScaffoldMessenger.of(context);
     setState(() => _sharing = true);
     try {
-      final boundary = _boundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      final boundary =
+          _boundaryKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
       final image = await boundary.toImage(pixelRatio: 2.5);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       final bytes = byteData!.buffer.asUint8List();
 
       final dir = await getApplicationDocumentsDirectory();
-      final name = 'finta_recap_${AppDateUtils.formatIso(_period.start)}.png';
+      final name = 'squirio_recap_${AppDateUtils.formatIso(_period.start)}.png';
       // Re-sharing the same period overwrites its own file, so keep that one
       // and clear the rest.
-      await pruneExports(dir, prefix: 'finta_recap_', extension: '.png', keep: name);
+      await pruneExports(dir, prefix: 'finta_recap_', extension: '.png');
+      await pruneExports(
+        dir,
+        prefix: 'squirio_recap_',
+        extension: '.png',
+        keep: name,
+      );
       final file = File('${dir.path}/$name');
       await file.writeAsBytes(bytes);
 
@@ -144,7 +155,8 @@ class _MonthlyRecapScreenState extends State<MonthlyRecapScreen> {
     final topCategories = [
       for (final item in expenseBreakdown.take(3))
         (
-          name: categories.getCategoryById(item.categoryId)?.name ?? loc.unknown,
+          name:
+              categories.getCategoryById(item.categoryId)?.name ?? loc.unknown,
           total: item.total,
         ),
     ];
@@ -153,7 +165,8 @@ class _MonthlyRecapScreenState extends State<MonthlyRecapScreen> {
     // income has no meaningful savings rate, and "0%" reads as if the user
     // merely spent everything they earned.
     final savingsRate = analytics.totalIncome > 0
-        ? (analytics.totalIncome - analytics.totalExpense) / analytics.totalIncome
+        ? (analytics.totalIncome - analytics.totalExpense) /
+              analytics.totalIncome
         : null;
 
     final canShare = !_sharing && !analytics.isLoading;
@@ -212,7 +225,9 @@ class _MonthlyRecapScreenState extends State<MonthlyRecapScreen> {
                         child: _RecapCard(
                           period: _period,
                           isInProgress: _isInProgress,
-                          elapsedFraction: AppDateUtils.periodElapsedFraction(_period),
+                          elapsedFraction: AppDateUtils.periodElapsedFraction(
+                            _period,
+                          ),
                           totalIncome: analytics.totalIncome,
                           totalExpense: analytics.totalExpense,
                           previousIncome: analytics.previousTotalIncome,
@@ -268,11 +283,27 @@ class _RecapCard extends StatelessWidget {
     final net = totalIncome - totalExpense;
     final isDark = theme.brightness == Brightness.dark;
     final incomeColor = isDark ? AppColors.darkIncome : AppColors.lightIncome;
-    final expenseColor = isDark ? AppColors.darkExpense : AppColors.lightExpense;
+    final expenseColor = isDark
+        ? AppColors.darkExpense
+        : AppColors.lightExpense;
     final netColor = net >= 0 ? incomeColor : expenseColor;
 
     final totalDays = period.end.difference(period.start).inDays + 1;
-    final elapsedDays = (elapsedFraction * totalDays).round().clamp(1, totalDays);
+    final elapsedDays = (elapsedFraction * totalDays).round().clamp(
+      1,
+      totalDays,
+    );
+    final currentRate = savingsRate ?? 0;
+    final previousRate = previousIncome > 0
+        ? (previousIncome - previousExpense) / previousIncome
+        : 0.0;
+    final showSqui = shouldCelebrateRecap(
+      isInProgress: isInProgress,
+      totalIncome: totalIncome,
+      previousIncome: previousIncome,
+      savingsRate: currentRate,
+      previousSavingsRate: previousRate,
+    );
 
     return ConstrainedBox(
       // Was a fixed 320px box centred in a full-height Expanded, which left
@@ -291,27 +322,45 @@ class _RecapCard extends StatelessWidget {
                 : [AppColors.lightSurface, AppColors.lightSurfaceVariant],
           ),
           borderRadius: BorderRadius.circular(AppConstants.radiusLg),
-          border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+          border: Border.all(
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Finta',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
-                letterSpacing: 1.2,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    'Squirio',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: isDark
+                          ? AppColors.darkPrimary
+                          : AppColors.lightPrimary,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ),
+                if (showSqui)
+                  const SquiIllustration(
+                    pose: SquiPose.cheer,
+                    size: SquiSizes.sm,
+                  ),
+              ],
             ),
             const SizedBox(height: AppConstants.spacingXs),
             Text(
               loc.yourPeriodRecapTitle(
                 AppDateUtils.formatPeriodRange(period.start, period.end),
               ),
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             if (isInProgress) ...[
               const SizedBox(height: AppConstants.spacingSm),
@@ -319,7 +368,10 @@ class _RecapCard extends StatelessWidget {
               // result — the original complaint, where a recap claimed
               // savings for a cycle that still had ten days to run.
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 3,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.warning.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(AppConstants.radiusFull),
@@ -336,14 +388,32 @@ class _RecapCard extends StatelessWidget {
             const SizedBox(height: AppConstants.spacingXl),
             Text(loc.netSavings, style: theme.textTheme.labelMedium),
             Text(
-              NumberUtils.formatCurrency(net, symbol: symbol, useDecimals: useDecimals),
-              style: theme.textTheme.headlineMedium
-                  ?.copyWith(color: netColor, fontWeight: FontWeight.bold),
+              NumberUtils.formatCurrency(
+                net,
+                symbol: symbol,
+                useDecimals: useDecimals,
+              ),
+              style: theme.textTheme.headlineMedium?.copyWith(
+                color: netColor,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: AppConstants.spacingLg),
-            _statLine(context, loc.totalIncome, totalIncome, previousIncome, incomeColor),
+            _statLine(
+              context,
+              loc.totalIncome,
+              totalIncome,
+              previousIncome,
+              incomeColor,
+            ),
             const SizedBox(height: AppConstants.spacingSm),
-            _statLine(context, loc.totalExpense, totalExpense, previousExpense, expenseColor),
+            _statLine(
+              context,
+              loc.totalExpense,
+              totalExpense,
+              previousExpense,
+              expenseColor,
+            ),
             const SizedBox(height: AppConstants.spacingSm),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -352,8 +422,12 @@ class _RecapCard extends StatelessWidget {
                 Text(
                   savingsRate == null
                       ? '—'
-                      : NumberUtils.formatPercentage(savingsRate!.clamp(-1.0, 1.0)),
-                  style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                      : NumberUtils.formatPercentage(
+                          savingsRate!.clamp(-1.0, 1.0),
+                        ),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -361,7 +435,9 @@ class _RecapCard extends StatelessWidget {
               const SizedBox(height: AppConstants.spacingXl),
               Text(loc.topCategories, style: theme.textTheme.labelMedium),
               const SizedBox(height: AppConstants.spacingSm),
-              ...topCategories.map((category) => _categoryRow(context, category, expenseColor)),
+              ...topCategories.map(
+                (category) => _categoryRow(context, category, expenseColor),
+              ),
             ],
           ],
         ),
@@ -394,8 +470,14 @@ class _RecapCard extends StatelessWidget {
               const SizedBox(width: AppConstants.spacingSm),
             ],
             Text(
-              NumberUtils.formatCurrency(amount, symbol: symbol, useDecimals: useDecimals),
-              style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+              NumberUtils.formatCurrency(
+                amount,
+                symbol: symbol,
+                useDecimals: useDecimals,
+              ),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -409,9 +491,15 @@ class _RecapCard extends StatelessWidget {
     return '$sign${percent.abs().toStringAsFixed(0)}%';
   }
 
-  Widget _categoryRow(BuildContext context, _TopCategory category, Color barColor) {
+  Widget _categoryRow(
+    BuildContext context,
+    _TopCategory category,
+    Color barColor,
+  ) {
     final theme = Theme.of(context);
-    final share = totalExpense > 0 ? (category.total / totalExpense).clamp(0.0, 1.0) : 0.0;
+    final share = totalExpense > 0
+        ? (category.total / totalExpense).clamp(0.0, 1.0)
+        : 0.0;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppConstants.spacingSm),
@@ -436,7 +524,9 @@ class _RecapCard extends StatelessWidget {
                   symbol: symbol,
                   useDecimals: useDecimals,
                 ),
-                style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),

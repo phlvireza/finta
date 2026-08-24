@@ -5,7 +5,8 @@ import '../../providers/settings_provider.dart';
 import '../../models/debt_model.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/number_utils.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/squi/squi_state.dart';
+import '../../core/constants/squi.dart';
 import '../../widgets/masked_amount.dart';
 import '../../widgets/section_card.dart';
 import '../../widgets/tinted_icon.dart';
@@ -46,10 +47,10 @@ class DebtsListScreen extends StatelessWidget {
       // Archived debts alone used to fall into it, hiding the very debts the
       // delete flow promised were kept.
       body: debts.isEmpty && archived.isEmpty
-          ? EmptyState(
-              icon: Icons.handshake_outlined,
-              title: loc.noDebtsYet,
-              subtitle: loc.noDebtsYetMessage,
+          ? SquiState(
+              pose: SquiPose.empty,
+              title: loc.squiEmptyDebts,
+              subtitle: loc.squiEmptyDebtsBody,
               action: ElevatedButton(
                 onPressed: () => showDebtForm(context),
                 child: Text(loc.addDebt),
@@ -138,7 +139,10 @@ class _ArchivedDebts extends StatelessWidget {
           shape: const Border(),
           collapsedShape: const Border(),
           leading: const Icon(Icons.inventory_2_outlined),
-          title: Text(loc.archivedCount(debts.length), style: theme.textTheme.titleSmall),
+          title: Text(
+            loc.archivedCount(debts.length),
+            style: theme.textTheme.titleSmall,
+          ),
           children: [
             for (final debt in debts)
               ListTile(
@@ -158,11 +162,16 @@ class _ArchivedDebts extends StatelessWidget {
                   },
                   itemBuilder: (_) => [
                     PopupMenuItem(value: 'restore', child: Text(loc.restore)),
-                    PopupMenuItem(value: 'purge', child: Text(loc.deletePermanently)),
+                    PopupMenuItem(
+                      value: 'purge',
+                      child: Text(loc.deletePermanently),
+                    ),
                   ],
                 ),
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => DebtDetailScreen(debtId: debt.id)),
+                  MaterialPageRoute(
+                    builder: (_) => DebtDetailScreen(debtId: debt.id),
+                  ),
                 ),
               ),
           ],
@@ -203,8 +212,15 @@ class _SummaryTile extends StatelessWidget {
           Text(label, style: theme.textTheme.bodySmall),
           const SizedBox(height: 4),
           Text(
-            NumberUtils.formatCurrency(amount, symbol: symbol, useDecimals: useDecimals),
-            style: theme.textTheme.titleMedium?.copyWith(color: color, fontWeight: FontWeight.bold),
+            NumberUtils.formatCurrency(
+              amount,
+              symbol: symbol,
+              useDecimals: useDecimals,
+            ),
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: color,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
@@ -217,7 +233,11 @@ class _DebtRow extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  const _DebtRow({required this.debt, required this.onEdit, required this.onDelete});
+  const _DebtRow({
+    required this.debt,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -265,12 +285,17 @@ class _DebtRow extends StatelessWidget {
                   onSelected: (value) {
                     if (value == 'edit') onEdit();
                     if (value == 'delete') onDelete();
-                    if (value == 'payoff') PayoffCalculatorDialog.show(context, debt, outstanding);
+                    if (value == 'payoff') {
+                      PayoffCalculatorDialog.show(context, debt, outstanding);
+                    }
                   },
                   itemBuilder: (_) => [
                     PopupMenuItem(value: 'edit', child: Text(loc.edit)),
                     if (debt.isBorrowed && !settled)
-                      PopupMenuItem(value: 'payoff', child: Text(loc.payoffCalculator)),
+                      PopupMenuItem(
+                        value: 'payoff',
+                        child: Text(loc.payoffCalculator),
+                      ),
                     PopupMenuItem(value: 'delete', child: Text(loc.delete)),
                   ],
                 ),

@@ -5,21 +5,46 @@ import '../core/exceptions/app_exceptions.dart';
 /// Pure data-access class for the transactions table.
 class TransactionRepository {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  static const hasAnyNonTransferQuery =
+      'SELECT EXISTS('
+      'SELECT 1 FROM transactions WHERE isTransfer = 0 LIMIT 1'
+      ') AS hasAny';
 
   Future<List<TransactionModel>> getAll() async {
     try {
       final db = await _dbHelper.database;
-      final maps = await db.query('transactions', orderBy: 'date DESC, createdAt DESC');
+      final maps = await db.query(
+        'transactions',
+        orderBy: 'date DESC, createdAt DESC',
+      );
       return maps.map((m) => TransactionModel.fromMap(m)).toList();
     } catch (e) {
       throw DatabaseException('Failed to get all transactions', cause: e);
     }
   }
 
+  /// Whether the ledger contains a real, non-transfer transaction.
+  Future<bool> hasAnyNonTransferTransaction() async {
+    try {
+      final db = await _dbHelper.database;
+      final result = await db.rawQuery(hasAnyNonTransferQuery);
+      return (result.first['hasAny'] as num) != 0;
+    } catch (e) {
+      throw DatabaseException(
+        'Failed to check transaction existence',
+        cause: e,
+      );
+    }
+  }
+
   Future<TransactionModel?> getById(String id) async {
     try {
       final db = await _dbHelper.database;
-      final maps = await db.query('transactions', where: 'id = ?', whereArgs: [id]);
+      final maps = await db.query(
+        'transactions',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
       if (maps.isEmpty) return null;
       return TransactionModel.fromMap(maps.first);
     } catch (e) {
@@ -43,7 +68,10 @@ class TransactionRepository {
       );
       return maps.map((m) => TransactionModel.fromMap(m)).toList();
     } catch (e) {
-      throw DatabaseException('Failed to get transactions by date range', cause: e);
+      throw DatabaseException(
+        'Failed to get transactions by date range',
+        cause: e,
+      );
     }
   }
 
@@ -78,7 +106,10 @@ class TransactionRepository {
       );
       return (result.first['total'] as num).toDouble();
     } catch (e) {
-      throw DatabaseException('Failed to get sum by type and date range', cause: e);
+      throw DatabaseException(
+        'Failed to get sum by type and date range',
+        cause: e,
+      );
     }
   }
 
@@ -118,7 +149,10 @@ class TransactionRepository {
       );
       return (result.first['total'] as num).toDouble();
     } catch (e) {
-      throw DatabaseException('Failed to get category sum by date range', cause: e);
+      throw DatabaseException(
+        'Failed to get category sum by date range',
+        cause: e,
+      );
     }
   }
 
@@ -142,7 +176,10 @@ class TransactionRepository {
       );
       return (result.first['total'] as num).toDouble();
     } catch (e) {
-      throw DatabaseException('Failed to get categories sum by date range', cause: e);
+      throw DatabaseException(
+        'Failed to get categories sum by date range',
+        cause: e,
+      );
     }
   }
 
@@ -164,13 +201,17 @@ class TransactionRepository {
       final placeholders = List.filled(categoryIds.length, '?').join(',');
       final maps = await db.query(
         'transactions',
-        where: 'categoryId IN ($placeholders) AND date >= ? AND date <= ? AND isTransfer = 0',
+        where:
+            'categoryId IN ($placeholders) AND date >= ? AND date <= ? AND isTransfer = 0',
         whereArgs: [...categoryIds, startStr, endStr],
         orderBy: 'date DESC, createdAt DESC',
       );
       return maps.map((m) => TransactionModel.fromMap(m)).toList();
     } catch (e) {
-      throw DatabaseException('Failed to get transactions by categories and date range', cause: e);
+      throw DatabaseException(
+        'Failed to get transactions by categories and date range',
+        cause: e,
+      );
     }
   }
 
@@ -195,7 +236,10 @@ class TransactionRepository {
       );
       return maps.map((m) => TransactionModel.fromMap(m)).toList();
     } catch (e) {
-      throw DatabaseException('Failed to get transactions by type and date range', cause: e);
+      throw DatabaseException(
+        'Failed to get transactions by type and date range',
+        cause: e,
+      );
     }
   }
 
@@ -412,7 +456,11 @@ class TransactionRepository {
   Future<void> deleteTransferPair(String transferId) async {
     try {
       final db = await _dbHelper.database;
-      await db.delete('transactions', where: 'transferId = ?', whereArgs: [transferId]);
+      await db.delete(
+        'transactions',
+        where: 'transferId = ?',
+        whereArgs: [transferId],
+      );
     } catch (e) {
       throw DatabaseException('Failed to delete transfer', cause: e);
     }
@@ -453,7 +501,10 @@ class TransactionRepository {
   /// Merchants seen before, ranked by how often they're used — powers the
   /// entry form's autocomplete. Empty [query] returns the most-used
   /// merchants overall (a reasonable "recent/frequent" default list).
-  Future<List<String>> getMerchantSuggestions(String query, {int limit = 8}) async {
+  Future<List<String>> getMerchantSuggestions(
+    String query, {
+    int limit = 8,
+  }) async {
     try {
       final db = await _dbHelper.database;
       final sanitized = query.replaceAll('%', '').replaceAll('_', '');
@@ -492,14 +543,19 @@ class TransactionRepository {
       );
       return maps.map((m) => (m['amount'] as num).toDouble()).toList();
     } catch (e) {
-      throw DatabaseException('Failed to get recent amounts for category', cause: e);
+      throw DatabaseException(
+        'Failed to get recent amounts for category',
+        cause: e,
+      );
     }
   }
 
   /// The category and account this merchant is most often paired with —
   /// used to pre-fill the rest of the form the moment a known merchant is
   /// picked, the "20 lines of SQL that feel like magic" trick.
-  Future<({String categoryId, String accountId})?> getMerchantDefaults(String merchant) async {
+  Future<({String categoryId, String accountId})?> getMerchantDefaults(
+    String merchant,
+  ) async {
     try {
       final db = await _dbHelper.database;
       final maps = await db.rawQuery(

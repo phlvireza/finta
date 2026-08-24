@@ -11,8 +11,11 @@ import '../../../models/goal_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/formatters/currency_formatter.dart';
 import '../../../core/database/seed_data.dart';
+import '../../../core/utils/squi_moments.dart';
+import '../../../core/services/squi_milestone_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/keypad_amount_field.dart';
+import '../../../widgets/squi/squi_moment_sheet.dart';
 import '../../transactions/widgets/account_picker.dart';
 import '../../transactions/widgets/category_picker.dart';
 import '../../transactions/widgets/date_picker_field.dart';
@@ -46,15 +49,20 @@ class ContributeToGoalSheet extends StatefulWidget {
     GoalModel goal, {
     double? initialAmount,
   }) async {
-    final saved = await showModalBottomSheet<bool>(
+    final result = await showModalBottomSheet<SquiSaveResult>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => ContributeToGoalSheet(
-        goal: goal,
-        initialAmount: initialAmount,
-      ),
+      builder: (_) =>
+          ContributeToGoalSheet(goal: goal, initialAmount: initialAmount),
     );
-    return saved ?? false;
+    if (result?.moment != null && context.mounted) {
+      await SquiMomentSheet.show(
+        context,
+        result!.moment!,
+        name: result.subjectName,
+      );
+    }
+    return result?.saved ?? false;
   }
 
   @override
@@ -89,7 +97,9 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final categories = context.read<CategoryProvider>().expenseCategories;
-      if (categories.any((c) => c.id == _categoryId) || categories.isEmpty) return;
+      if (categories.any((c) => c.id == _categoryId) || categories.isEmpty) {
+        return;
+      }
       setState(() => _categoryId = categories.first.id);
     });
   }
@@ -120,13 +130,17 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
     final analytics = context.read<AnalyticsProvider>();
     final settings = context.read<SettingsProvider>();
     try {
+      final beforeProgress = goalProvider.progressOf(widget.goal.id);
+      final wasLedgerEmpty = !await txProvider.hasAnyNonTransferTransaction();
       await txProvider.addTransaction(
         type: 'expense',
         amount: parseFormattedAmount(_amountController.text),
         categoryId: _categoryId,
         accountId: _accountId!,
         date: _date,
-        note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+        note: _noteController.text.trim().isEmpty
+            ? null
+            : _noteController.text.trim(),
         goalId: widget.goal.id,
       );
       await txProvider.loadTransactions(payday: settings.payday);
@@ -134,13 +148,33 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
       await accountProvider.loadAccounts();
       await analytics.loadForCurrentPeriod(settings.payday);
       await goalProvider.loadGoals();
-      // true == a contribution was written; see [ContributeToGoalSheet.show].
-      if (mounted) Navigator.of(context).pop(true);
+      final afterProgress = goalProvider.progressOf(widget.goal.id);
+      final eligible = <SquiMoment>{
+        if (wasLedgerEmpty) SquiMoment.firstTransaction,
+        if (beforeProgress < widget.goal.targetAmount &&
+            afterProgress >= widget.goal.targetAmount)
+          SquiMoment.goalReached,
+      };
+      final moment = await SquiMilestoneService.instance.claim(
+        eligible: eligible,
+        goalId: widget.goal.id,
+      );
+      if (mounted) {
+        Navigator.of(context).pop(
+          SquiSaveResult(
+            saved: true,
+            moment: moment,
+            subjectName: widget.goal.name,
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.errorFailedToSave)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(loc.errorFailedToSave)));
       }
     }
   }
@@ -155,7 +189,8 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
         left: AppConstants.spacingLg,
         right: AppConstants.spacingLg,
         top: AppConstants.spacingLg,
-        bottom: MediaQuery.of(context).viewInsets.bottom + AppConstants.spacingLg,
+        bottom:
+            MediaQuery.of(context).viewInsets.bottom + AppConstants.spacingLg,
       ),
       child: Form(
         key: _formKey,
@@ -180,7 +215,8 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
                 label: loc.fromAccount,
                 selectedAccountId: _accountId,
                 onAccountSelected: (id) => setState(() => _accountId = id),
-                validator: (_) => _accountId == null ? loc.selectAnAccount : null,
+                validator: (_) =>
+                    _accountId == null ? loc.selectAnAccount : null,
               ),
               const SizedBox(height: AppConstants.spacingLg),
               CategoryPicker(
@@ -192,7 +228,9 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
               // Padded to line up with AccountPicker and CategoryPicker,
               // which both inset themselves; DatePickerField doesn't.
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spacingLg,
+                ),
                 child: DatePickerField(
                   selectedDate: _date,
                   onDateSelected: (date) => setState(() => _date = date),

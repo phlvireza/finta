@@ -6,7 +6,8 @@ import '../../models/goal_model.dart';
 import '../../models/transaction_model.dart';
 import '../../core/constants/app_constants.dart';
 import '../../widgets/date_group_header.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/squi/squi_state.dart';
+import '../../core/constants/squi.dart';
 import '../../widgets/error_state.dart';
 import '../../widgets/skeleton_box.dart';
 import '../../widgets/section_card.dart';
@@ -86,7 +87,9 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
   Future<void> _openTransaction(TransactionModel transaction) async {
     final provider = context.read<GoalProvider>();
     await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => AddTransactionScreen(editTransaction: transaction)),
+      MaterialPageRoute(
+        builder: (_) => AddTransactionScreen(editTransaction: transaction),
+      ),
     );
     if (!mounted) return;
     await provider.loadGoals();
@@ -163,7 +166,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: () => ContributeToGoalSheet.show(context, goal),
+                      onPressed: () =>
+                          ContributeToGoalSheet.show(context, goal),
                       child: Text(loc.contribute),
                     ),
                   ),
@@ -180,7 +184,10 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
     );
   }
 
-  List<Widget> _buildContributionSection(BuildContext context, AppLocalizations loc) {
+  List<Widget> _buildContributionSection(
+    BuildContext context,
+    AppLocalizations loc,
+  ) {
     // Both branches below need an explicit height: they are children of a
     // scrolling ListView, so they are laid out unbounded, and neither a
     // ListView (the skeleton) nor a full-height Column (ErrorState) can size
@@ -209,30 +216,34 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
       return [
         Padding(
           padding: const EdgeInsets.only(top: AppConstants.spacingXl),
-          child: EmptyState(
-            icon: Icons.savings_outlined,
-            title: loc.noContributionsYet,
-            subtitle: loc.noContributionsYetMessage,
+          child: SquiState(
+            pose: SquiPose.empty,
+            title: loc.squiEmptyContributions,
+            subtitle: loc.squiEmptyContributionsBody,
           ),
         ),
       ];
     }
 
-    final grouped = context.read<TransactionProvider>().getGroupedTransactions(transactions);
+    final grouped = context.read<TransactionProvider>().getGroupedTransactions(
+      transactions,
+    );
     return grouped.entries
-        .map((entry) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DateGroupHeader(date: entry.key, transactions: entry.value),
-                ...entry.value.map(
-                  (tx) => TransactionTile(
-                    transaction: tx,
-                    dense: true,
-                    onTap: () => _openTransaction(tx),
-                  ),
+        .map(
+          (entry) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DateGroupHeader(date: entry.key, transactions: entry.value),
+              ...entry.value.map(
+                (tx) => TransactionTile(
+                  transaction: tx,
+                  dense: true,
+                  onTap: () => _openTransaction(tx),
                 ),
-              ],
-            ))
+              ),
+            ],
+          ),
+        )
         .toList();
   }
 }

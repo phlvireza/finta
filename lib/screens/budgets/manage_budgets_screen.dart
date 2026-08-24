@@ -11,7 +11,8 @@ import '../../core/utils/number_utils.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/utils/budget_display.dart';
 import '../../models/budget_model.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/squi/squi_state.dart';
+import '../../core/constants/squi.dart';
 import '../../widgets/form_sheet.dart';
 import '../../widgets/masked_amount.dart';
 import '../../widgets/section_card.dart';
@@ -58,10 +59,10 @@ class ManageBudgetsScreen extends StatelessWidget {
             : null,
       ),
       body: budgets.isEmpty && ended.isEmpty
-          ? EmptyState(
-              icon: Icons.track_changes,
-              title: loc.noBudgetsYet,
-              subtitle: loc.setMonthlyLimits,
+          ? SquiState(
+              pose: SquiPose.empty,
+              title: loc.squiEmptyBudgets,
+              subtitle: loc.squiEmptyBudgetsBody,
               action: FilledButton.icon(
                 onPressed: () => _showBudgetForm(context),
                 icon: const Icon(Icons.add),
@@ -84,22 +85,29 @@ class ManageBudgetsScreen extends StatelessWidget {
                 ],
                 if (budgets.isNotEmpty) ...[
                   SectionCard(
-                    child: _BudgetChart(budgetProvider: budgetProvider, settings: settings),
+                    child: _BudgetChart(
+                      budgetProvider: budgetProvider,
+                      settings: settings,
+                    ),
                   ),
                   const SizedBox(height: AppConstants.spacingLg),
                   SectionCard(
                     child: Column(
                       children: [
                         for (var i = 0; i < budgets.length; i++) ...[
-                          if (i > 0) const Divider(height: AppConstants.spacingXl),
+                          if (i > 0)
+                            const Divider(height: AppConstants.spacingXl),
                           _ActiveBudgetRow(
                             budget: budgets[i],
-                            status: budgetProvider.budgetStatuses[budgets[i].id],
+                            status:
+                                budgetProvider.budgetStatuses[budgets[i].id],
                             display: resolveBudgetDisplay(
                               budget: budgets[i],
                               categories: categories,
                               loc: loc,
-                              fallbackColor: Theme.of(context).colorScheme.primary,
+                              fallbackColor: Theme.of(
+                                context,
+                              ).colorScheme.primary,
                             ),
                             settings: settings,
                           ),
@@ -115,14 +123,17 @@ class ManageBudgetsScreen extends StatelessWidget {
                     child: Column(
                       children: [
                         for (var i = 0; i < ended.length; i++) ...[
-                          if (i > 0) const Divider(height: AppConstants.spacingXl),
+                          if (i > 0)
+                            const Divider(height: AppConstants.spacingXl),
                           _EndedBudgetRow(
                             budget: ended[i],
                             display: resolveBudgetDisplay(
                               budget: ended[i],
                               categories: categories,
                               loc: loc,
-                              fallbackColor: Theme.of(context).colorScheme.primary,
+                              fallbackColor: Theme.of(
+                                context,
+                              ).colorScheme.primary,
                             ),
                             settings: settings,
                             onDelete: (title) => confirmDeleteBudget(
@@ -293,10 +304,7 @@ class _BudgetChart extends StatelessWidget {
   final BudgetProvider budgetProvider;
   final SettingsProvider settings;
 
-  const _BudgetChart({
-    required this.budgetProvider,
-    required this.settings,
-  });
+  const _BudgetChart({required this.budgetProvider, required this.settings});
 
   @override
   Widget build(BuildContext context) {
@@ -321,7 +329,8 @@ class _BudgetChart extends StatelessWidget {
     // colour just because this chart is drawn separately from those.
     final spentColor = AppColors.budgetBarColor(
       isExceeded: ratio > AppConstants.budgetExceededThreshold,
-      isWarning: ratio >= AppConstants.budgetWarningThreshold &&
+      isWarning:
+          ratio >= AppConstants.budgetWarningThreshold &&
           ratio < AppConstants.budgetExceededThreshold,
       categoryColor: theme.colorScheme.primary,
       isDark: isDark,
@@ -387,7 +396,9 @@ class _BudgetChart extends StatelessWidget {
                         useDecimals: settings.currencyUseDecimals,
                       ),
                       style: AppTypography.amountStyle(
-                        color: netRemaining < 0 ? spentColor : theme.textTheme.bodyLarge!.color!,
+                        color: netRemaining < 0
+                            ? spentColor
+                            : theme.textTheme.bodyLarge!.color!,
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                       ),
@@ -401,8 +412,16 @@ class _BudgetChart extends StatelessWidget {
         const SizedBox(height: AppConstants.spacingMd),
         Text(
           loc.spentOfTotal(
-            NumberUtils.formatCurrency(totalSpent, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals),
-            NumberUtils.formatCurrency(totalBudget, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals),
+            NumberUtils.formatCurrency(
+              totalSpent,
+              symbol: settings.currencySymbol,
+              useDecimals: settings.currencyUseDecimals,
+            ),
+            NumberUtils.formatCurrency(
+              totalBudget,
+              symbol: settings.currencySymbol,
+              useDecimals: settings.currencyUseDecimals,
+            ),
           ),
           style: theme.textTheme.bodySmall,
           textAlign: TextAlign.center,

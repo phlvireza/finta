@@ -12,6 +12,8 @@ import '../../core/utils/date_utils.dart';
 import '../../core/utils/health_score.dart';
 import '../../core/utils/insight_rules.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/squi/squi_state.dart';
+import '../../core/constants/squi.dart';
 import '../../widgets/section_card.dart';
 import '../transactions/widgets/transaction_tile.dart';
 import '../../l10n/app_localizations.dart';
@@ -38,7 +40,8 @@ class _InsightsHubScreenState extends State<InsightsHubScreen> {
     final txProvider = context.read<TransactionProvider>();
     final budgetProvider = context.read<BudgetProvider>();
 
-    final period = txProvider.period ?? AppDateUtils.getCurrentPeriod(settings.payday);
+    final period =
+        txProvider.period ?? AppDateUtils.getCurrentPeriod(settings.payday);
     final previousPeriod = AppDateUtils.getPreviousPeriod(period);
 
     var totalBudgeted = 0.0;
@@ -49,14 +52,14 @@ class _InsightsHubScreenState extends State<InsightsHubScreen> {
     }
 
     await context.read<InsightsProvider>().loadAll(
-          currentPeriod: period,
-          previousPeriod: previousPeriod,
-          currentIncome: txProvider.totalIncome,
-          currentExpense: txProvider.totalExpense,
-          payday: settings.payday,
-          totalBudgeted: totalBudgeted > 0 ? totalBudgeted : null,
-          totalSpentAgainstBudgets: totalSpentAgainstBudgets,
-        );
+      currentPeriod: period,
+      previousPeriod: previousPeriod,
+      currentIncome: txProvider.totalIncome,
+      currentExpense: txProvider.totalExpense,
+      payday: settings.payday,
+      totalBudgeted: totalBudgeted > 0 ? totalBudgeted : null,
+      totalSpentAgainstBudgets: totalSpentAgainstBudgets,
+    );
   }
 
   @override
@@ -85,12 +88,23 @@ class _InsightsHubScreenState extends State<InsightsHubScreen> {
                   SectionCard(
                     title: loc.spendingInsightsTitle,
                     child: insights.spendingInsights.isEmpty
-                        ? EmptyState(icon: Icons.insights_outlined, title: loc.noInsightsYet, subtitle: '')
+                        ? EmptyState(
+                            icon: Icons.insights_outlined,
+                            title: loc.noInsightsYet,
+                            subtitle: '',
+                          )
                         : Column(
                             children: [
-                              for (var i = 0; i < insights.spendingInsights.length; i++) ...[
-                                if (i > 0) const Divider(height: AppConstants.spacingXl),
-                                _InsightCard(data: insights.spendingInsights[i]),
+                              for (
+                                var i = 0;
+                                i < insights.spendingInsights.length;
+                                i++
+                              ) ...[
+                                if (i > 0)
+                                  const Divider(height: AppConstants.spacingXl),
+                                _InsightCard(
+                                  data: insights.spendingInsights[i],
+                                ),
                               ],
                             ],
                           ),
@@ -99,12 +113,23 @@ class _InsightsHubScreenState extends State<InsightsHubScreen> {
                   SectionCard(
                     title: loc.unusualActivity,
                     child: insights.unusualTransactions.isEmpty
-                        ? EmptyState(icon: Icons.check_circle_outline, title: loc.noUnusualActivity, subtitle: '')
+                        ? SquiState(
+                            pose: SquiPose.rest,
+                            title: loc.squiQuietUnusual,
+                            subtitle: loc.squiQuietUnusualBody,
+                          )
                         : Column(
                             children: [
-                              for (var i = 0; i < insights.unusualTransactions.length; i++) ...[
+                              for (
+                                var i = 0;
+                                i < insights.unusualTransactions.length;
+                                i++
+                              ) ...[
                                 if (i > 0) const Divider(height: 1),
-                                TransactionTile(transaction: insights.unusualTransactions[i], dense: true),
+                                TransactionTile(
+                                  transaction: insights.unusualTransactions[i],
+                                  dense: true,
+                                ),
                               ],
                             ],
                           ),
@@ -124,7 +149,9 @@ class _HealthScoreCard extends StatelessWidget {
   Color _scoreColor(BuildContext context, int score) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    if (score >= 70) return isDark ? AppColors.darkIncome : AppColors.lightIncome;
+    if (score >= 70) {
+      return isDark ? AppColors.darkIncome : AppColors.lightIncome;
+    }
     if (score >= 40) return AppColors.warning;
     return isDark ? AppColors.darkExpense : AppColors.lightExpense;
   }
@@ -145,7 +172,11 @@ class _HealthScoreCard extends StatelessWidget {
             children: [
               Text(
                 '${breakdown.overall}',
-                style: AppTypography.amountStyle(color: color, fontSize: 40, fontWeight: FontWeight.w700),
+                style: AppTypography.amountStyle(
+                  color: color,
+                  fontSize: 40,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               Text(loc.outOfHundred, style: theme.textTheme.labelMedium),
             ],
@@ -179,7 +210,9 @@ class _HealthScoreCard extends StatelessWidget {
                   breakdown.stabilityScore,
                   // The blue from the chart ramp — the one hue in the
                   // palette that carries no good/bad connotation.
-                  (isDark ? AppColors.chartColorsDark : AppColors.chartColorsLight)[5],
+                  (isDark
+                      ? AppColors.chartColorsDark
+                      : AppColors.chartColorsLight)[5],
                 ),
               ],
             ),
@@ -240,7 +273,9 @@ class _InsightCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
-    final category = context.watch<CategoryProvider>().getCategoryById(data.categoryId);
+    final category = context.watch<CategoryProvider>().getCategoryById(
+      data.categoryId,
+    );
     final categoryName = category?.name ?? loc.unknown;
     final percent = data.percent.toStringAsFixed(0);
 
@@ -288,10 +323,7 @@ class _InsightCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: theme.textTheme.titleSmall,
-              ),
+              Text(title, style: theme.textTheme.titleSmall),
               Text(body, style: theme.textTheme.bodySmall),
             ],
           ),

@@ -8,7 +8,8 @@ import '../../core/constants/app_colors.dart';
 import '../../core/utils/number_utils.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/constants/app_typography.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/squi/squi_state.dart';
+import '../../core/constants/squi.dart';
 import '../../widgets/confirm_dialog.dart';
 import '../../widgets/section_card.dart';
 import '../../widgets/tinted_icon.dart';
@@ -33,14 +34,12 @@ class RecurringListScreen extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(loc.recurringTransactions),
-      ),
+      appBar: AppBar(title: Text(loc.recurringTransactions)),
       body: templates.isEmpty
-          ? EmptyState(
-              icon: Icons.repeat,
-              title: loc.noRecurringTransactions,
-              subtitle: loc.enableRecurringWhenAdding,
+          ? SquiState(
+              pose: SquiPose.rest,
+              title: loc.squiQuietRecurring,
+              subtitle: loc.squiQuietRecurringBody,
               action: FilledButton.icon(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(
@@ -65,14 +64,21 @@ class RecurringListScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       for (final template in templates) ...[
-                        if (template != templates.first) const Divider(height: 1),
+                        if (template != templates.first)
+                          const Divider(height: 1),
                         Builder(
                           builder: (context) {
-                            final category = categories.getCategoryById(template.categoryId);
+                            final category = categories.getCategoryById(
+                              template.categoryId,
+                            );
                             final isIncome = template.isIncome;
                             final amountColor = isIncome
-                                ? (isDark ? AppColors.darkIncome : AppColors.lightIncome)
-                                : (isDark ? AppColors.darkExpense : AppColors.lightExpense);
+                                ? (isDark
+                                      ? AppColors.darkIncome
+                                      : AppColors.lightIncome)
+                                : (isDark
+                                      ? AppColors.darkExpense
+                                      : AppColors.lightExpense);
 
                             return Slidable(
                               key: ValueKey(template.id),
@@ -81,7 +87,8 @@ class RecurringListScreen extends StatelessWidget {
                                 extentRatio: 0.25,
                                 children: [
                                   SlidableAction(
-                                    onPressed: (_) => _deleteTemplate(context, template.id),
+                                    onPressed: (_) =>
+                                        _deleteTemplate(context, template.id),
                                     backgroundColor: theme.colorScheme.error,
                                     foregroundColor: theme.colorScheme.onError,
                                     icon: Icons.delete,
@@ -90,23 +97,32 @@ class RecurringListScreen extends StatelessWidget {
                                 ],
                               ),
                               child: Padding(
-                                padding: const EdgeInsets.all(AppConstants.spacingMd),
+                                padding: const EdgeInsets.all(
+                                  AppConstants.spacingMd,
+                                ),
                                 child: Row(
                                   children: [
                                     TintedIcon(
-                                      icon: category?.iconData ?? Icons.category,
-                                      color: category?.colorValue ?? theme.colorScheme.primary,
+                                      icon:
+                                          category?.iconData ?? Icons.category,
+                                      color:
+                                          category?.colorValue ??
+                                          theme.colorScheme.primary,
                                     ),
-                                    const SizedBox(width: AppConstants.spacingMd),
+                                    const SizedBox(
+                                      width: AppConstants.spacingMd,
+                                    ),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             category?.name ?? loc.unknown,
                                             style: theme.textTheme.titleMedium,
                                           ),
-                                          if (template.note != null && template.note!.isNotEmpty)
+                                          if (template.note != null &&
+                                              template.note!.isNotEmpty)
                                             Text(
                                               template.note!,
                                               style: theme.textTheme.bodySmall,
@@ -116,19 +132,17 @@ class RecurringListScreen extends StatelessWidget {
                                           const SizedBox(height: 2),
                                           Text(
                                             '${template.frequencyLabel} • ${loc.next}: ${AppDateUtils.formatFull(template.nextOccurrence)}',
-                                            style: theme.textTheme.labelSmall?.copyWith(
-                                              color: theme.colorScheme.primary,
-                                            ),
+                                            style: theme.textTheme.labelSmall
+                                                ?.copyWith(
+                                                  color:
+                                                      theme.colorScheme.primary,
+                                                ),
                                           ),
                                         ],
                                       ),
                                     ),
                                     Text(
-                                      '${isIncome ? '+' : '-'} ${NumberUtils.formatCurrency(
-                                        template.amount,
-                                        symbol: settings.currencySymbol,
-                                        useDecimals: settings.currencyUseDecimals,
-                                      )}',
+                                      '${isIncome ? '+' : '-'} ${NumberUtils.formatCurrency(template.amount, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals)}',
                                       style: AppTypography.amountStyle(
                                         color: amountColor,
                                         fontSize: 15,
@@ -166,7 +180,9 @@ class RecurringListScreen extends StatelessWidget {
         messenger.showSnackBar(SnackBar(content: Text(loc.recurringStopped)));
       } catch (e) {
         messenger.hideCurrentSnackBar();
-        messenger.showSnackBar(SnackBar(content: Text(loc.errorFailedToDelete)));
+        messenger.showSnackBar(
+          SnackBar(content: Text(loc.errorFailedToDelete)),
+        );
       }
     }
   }

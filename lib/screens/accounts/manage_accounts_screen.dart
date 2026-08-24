@@ -6,7 +6,8 @@ import '../../models/account_model.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/number_utils.dart';
 import '../../widgets/confirm_dialog.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/squi/squi_state.dart';
+import '../../core/constants/squi.dart';
 import '../../widgets/section_card.dart';
 import '../../widgets/tinted_icon.dart';
 import '../../widgets/form_sheet.dart';
@@ -24,7 +25,10 @@ class ManageAccountsScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _archiveAccount(BuildContext context, AccountModel account) async {
+  Future<void> _archiveAccount(
+    BuildContext context,
+    AccountModel account,
+  ) async {
     final loc = AppLocalizations.of(context)!;
     final provider = context.read<AccountProvider>();
     final usage = await provider.countUsage(account.id);
@@ -59,10 +63,10 @@ class ManageAccountsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(loc.manageAccounts)),
       body: accounts.isEmpty
-          ? EmptyState(
-              icon: Icons.account_balance_wallet_outlined,
-              title: loc.noAccountsYet,
-              subtitle: loc.noAccountsYetMessage,
+          ? SquiState(
+              pose: SquiPose.empty,
+              title: loc.squiEmptyAccounts,
+              subtitle: loc.squiEmptyAccountsBody,
               action: ElevatedButton(
                 onPressed: () => showAccountForm(context),
                 child: Text(loc.addAccount),
@@ -92,15 +96,21 @@ class ManageAccountsScreen extends StatelessWidget {
                       for (final account in accounts) ...[
                         if (account != accounts.first) const Divider(),
                         ListTile(
-                          leading: TintedIcon(icon: account.iconData, color: account.colorValue),
+                          leading: TintedIcon(
+                            icon: account.iconData,
+                            color: account.colorValue,
+                          ),
                           title: Text(account.name),
                           subtitle: Text(
-                            account.isCreditCard && provider.balanceOf(account.id) < 0
-                                ? loc.amountOwed(NumberUtils.formatCurrency(
-                                    -provider.balanceOf(account.id),
-                                    symbol: settings.currencySymbol,
-                                    useDecimals: settings.currencyUseDecimals,
-                                  ))
+                            account.isCreditCard &&
+                                    provider.balanceOf(account.id) < 0
+                                ? loc.amountOwed(
+                                    NumberUtils.formatCurrency(
+                                      -provider.balanceOf(account.id),
+                                      symbol: settings.currencySymbol,
+                                      useDecimals: settings.currencyUseDecimals,
+                                    ),
+                                  )
                                 : NumberUtils.formatCurrency(
                                     provider.balanceOf(account.id),
                                     symbol: settings.currencySymbol,
@@ -116,8 +126,14 @@ class ManageAccountsScreen extends StatelessWidget {
                               }
                             },
                             itemBuilder: (_) => [
-                              PopupMenuItem(value: 'edit', child: Text(loc.edit)),
-                              PopupMenuItem(value: 'archive', child: Text(loc.archive)),
+                              PopupMenuItem(
+                                value: 'edit',
+                                child: Text(loc.edit),
+                              ),
+                              PopupMenuItem(
+                                value: 'archive',
+                                child: Text(loc.archive),
+                              ),
                             ],
                           ),
                         ),

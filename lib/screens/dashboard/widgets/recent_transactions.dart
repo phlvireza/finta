@@ -4,6 +4,8 @@ import '../../../providers/transaction_provider.dart';
 import '../../transactions/widgets/transaction_tile.dart';
 import '../../transactions/add_transaction_screen.dart';
 import '../../../widgets/empty_state.dart';
+import '../../../widgets/squi/squi_state.dart';
+import '../../../core/constants/squi.dart';
 import '../../../widgets/date_group_header.dart';
 import '../../../widgets/section_card.dart';
 import '../../../l10n/app_localizations.dart';
@@ -19,6 +21,23 @@ class RecentTransactions extends StatelessWidget {
     final recentList = transactions.recentTransactions;
     final loc = AppLocalizations.of(context)!;
 
+    if (recentList.isEmpty && transactions.hasAnyTransactions == false) {
+      return SquiState(
+        pose: SquiPose.empty,
+        title: loc.squiEmptyTransactions,
+        subtitle: loc.squiEmptyTransactionsBody,
+        action: FilledButton.icon(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const AddTransactionScreen(),
+              fullscreenDialog: true,
+            ),
+          ),
+          icon: const Icon(Icons.add),
+          label: Text(loc.addTransactionCta),
+        ),
+      );
+    }
     if (recentList.isEmpty) {
       return EmptyState(
         icon: Icons.receipt_long_outlined,
