@@ -916,10 +916,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get csvColumnAmount => 'Amount';
 
   @override
-  String get csvColumnType => 'Type (income/expense)';
+  String get csvColumnType => 'Type (income/expense/transfer)';
 
   @override
   String get csvColumnCategory => 'Category';
+
+  @override
+  String get csvColumnAccount => 'Account';
+
+  @override
+  String get csvColumnToAccount => 'To account (transfers)';
 
   @override
   String get csvColumnMerchant => 'Merchant';
@@ -928,7 +934,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get csvColumnNote => 'Note';
 
   @override
-  String get csvImportToAccount => 'Import into account';
+  String get csvImportToAccount => 'Account for rows without one';
 
   @override
   String get previewImport => 'Preview import';
@@ -952,6 +958,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String csvNewCategoriesNote(String names) {
     return 'New categories will be created: $names';
   }
+
+  @override
+  String csvNewAccountsNote(String names) {
+    return 'New wallets will be created: $names';
+  }
+
+  @override
+  String get csvNewAccountsCaveat =>
+      'They start at a zero opening balance. Use Backup & Restore to move balances exactly.';
 
   @override
   String get csvCategoryNew => 'New';

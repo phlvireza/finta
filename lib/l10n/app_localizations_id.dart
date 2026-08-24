@@ -917,10 +917,16 @@ class AppLocalizationsId extends AppLocalizations {
   String get csvColumnAmount => 'Jumlah';
 
   @override
-  String get csvColumnType => 'Jenis (pemasukan/pengeluaran)';
+  String get csvColumnType => 'Jenis (pemasukan/pengeluaran/transfer)';
 
   @override
   String get csvColumnCategory => 'Kategori';
+
+  @override
+  String get csvColumnAccount => 'Akun';
+
+  @override
+  String get csvColumnToAccount => 'Ke akun (transfer)';
 
   @override
   String get csvColumnMerchant => 'Pedagang';
@@ -929,7 +935,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get csvColumnNote => 'Catatan';
 
   @override
-  String get csvImportToAccount => 'Impor ke akun';
+  String get csvImportToAccount => 'Akun untuk baris tanpa akun';
 
   @override
   String get previewImport => 'Pratinjau impor';
@@ -953,6 +959,15 @@ class AppLocalizationsId extends AppLocalizations {
   String csvNewCategoriesNote(String names) {
     return 'Kategori baru akan dibuat: $names';
   }
+
+  @override
+  String csvNewAccountsNote(String names) {
+    return 'Dompet baru akan dibuat: $names';
+  }
+
+  @override
+  String get csvNewAccountsCaveat =>
+      'Saldo awalnya nol. Gunakan Cadangkan & Pulihkan untuk memindahkan saldo secara persis.';
 
   @override
   String get csvCategoryNew => 'Baru';

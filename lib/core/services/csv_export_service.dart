@@ -19,31 +19,98 @@ class CsvExportService {
   /// every locale. Translating it would silently break column auto-detection
   /// for Indonesian users re-importing their own export, and any bank or
   /// spreadsheet tool reading the file.
-  static const header = 'Date,Type,Amount,Category,Note';
+  static const header =
+      'Date,Type,Amount,Category,Account,To Account,Merchant,Note';
 
-  /// Serializes [transactions] to CSV. [categoryNameFor] resolves a category
-  /// id to its display name — passed in rather than looked up here so this
-  /// stays free of any provider or database dependency.
+  /// Serializes [transactions] to CSV. [categoryNameFor] and [accountNameFor]
+  /// resolve ids to display names — passed in rather than looked up here so
+  /// this stays free of any provider or database dependency.
+  ///
+  /// A transfer is stored as two linked rows (an expense on the source account
+  /// and an income on the destination, sharing a `transferId`). It is written
+  /// out as a **single** row of type `transfer` naming both accounts, which is
+  /// how a person reads it in a spreadsheet and — more importantly — cannot be
+  /// half-deleted by hand into an orphan leg. The importer expands it back into
+  /// the pair.
   String buildCsv(
     List<TransactionModel> transactions,
     String Function(String categoryId) categoryNameFor,
+    String Function(String accountId) accountNameFor,
   ) {
     final buffer = StringBuffer()..writeln(header);
 
+    // Legs are matched by transferId. Emitting at the position of the first leg
+    // seen keeps the file in the order the caller supplied; `written` stops the
+    // partner emitting a second row when the walk reaches it.
+    final legsByTransfer = <String, List<TransactionModel>>{};
     for (final tx in transactions) {
+      final id = tx.transferId;
+      if (id != null) (legsByTransfer[id] ??= []).add(tx);
+    }
+    final written = <String>{};
+
+    for (final tx in transactions) {
+      final transferId = tx.transferId;
+      final legs = transferId == null ? null : legsByTransfer[transferId];
+
+      // A transferId with no partner should not exist, but a corrupted
+      // database or a row predating the pairing could produce one. Fall
+      // through and write it as an ordinary row rather than dropping it.
+      if (legs != null && legs.length == 2) {
+        if (!written.add(transferId!)) continue;
+        final from = legs.firstWhere((l) => l.type == 'expense');
+        final to = legs.firstWhere((l) => l.type == 'income');
+        buffer.writeln(
+          _row(
+            date: tx.date,
+            type: 'transfer',
+            amount: tx.amount,
+            category: categoryNameFor(tx.categoryId),
+            account: accountNameFor(from.accountId),
+            toAccount: accountNameFor(to.accountId),
+            merchant: tx.merchant,
+            note: tx.note,
+          ),
+        );
+        continue;
+      }
+
       buffer.writeln(
-        [
-          tx.date.toIso8601String().substring(0, 10),
-          tx.type,
-          tx.amount,
-          categoryNameFor(tx.categoryId),
-          tx.note ?? '',
-        ].map(csvField).join(','),
+        _row(
+          date: tx.date,
+          type: tx.type,
+          amount: tx.amount,
+          category: categoryNameFor(tx.categoryId),
+          account: accountNameFor(tx.accountId),
+          toAccount: null,
+          merchant: tx.merchant,
+          note: tx.note,
+        ),
       );
     }
 
     return buffer.toString();
   }
+
+  String _row({
+    required DateTime date,
+    required String type,
+    required double amount,
+    required String category,
+    required String account,
+    required String? toAccount,
+    required String? merchant,
+    required String? note,
+  }) => [
+    date.toIso8601String().substring(0, 10),
+    type,
+    amount,
+    category,
+    account,
+    toAccount ?? '',
+    merchant ?? '',
+    note ?? '',
+  ].map(csvField).join(',');
 
   /// Quote a field only when it contains a character that would otherwise
   /// break column alignment, doubling any embedded quotes.

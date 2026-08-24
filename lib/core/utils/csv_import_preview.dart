@@ -32,6 +32,11 @@ List<String> pendingNewCategories({
   final pending = <String>[];
 
   for (final row in rows) {
+    // Transfer rows are pinned to the system Transfer category, so an import
+    // full of them creates nothing. Counting them here is what made the
+    // importer promise — and then create — a duplicate user category called
+    // "Transfer" shadowing the system one.
+    if (row.isTransfer) continue;
     final name = row.categoryName ?? fallbackName;
     final key = categoryKey(row.type, name);
     if (existingKeys.contains(key)) continue;
@@ -50,6 +55,72 @@ bool isNewCategory({
   required ParsedImportRow row,
   required Set<String> existingKeys,
   required String fallbackName,
-}) => !existingKeys.contains(
-  categoryKey(row.type, row.categoryName ?? fallbackName),
-);
+}) =>
+    !row.isTransfer &&
+    !existingKeys.contains(
+      categoryKey(row.type, row.categoryName ?? fallbackName),
+    );
+
+/// Identity of an account as the importer sees it: name only, case- and
+/// whitespace-insensitive. Unlike a category there is no type to disambiguate
+/// on — two wallets cannot share a name.
+String accountKey(String name) => name.trim().toLowerCase();
+
+/// The accounts [rows] would force the import to create, in first-seen order.
+///
+/// Covers both ends of a transfer. [fallbackName] is the account the user
+/// picked for rows that name none; it is never reported, because the user
+/// chose an account that already exists.
+List<String> pendingNewAccounts({
+  required List<ParsedImportRow> rows,
+  required Set<String> existingKeys,
+  required String fallbackName,
+}) {
+  final seen = <String>{accountKey(fallbackName)};
+  final pending = <String>[];
+
+  void consider(String? name) {
+    if (name == null) return;
+    final key = accountKey(name);
+    if (existingKeys.contains(key)) return;
+    if (seen.add(key)) pending.add(name.trim());
+  }
+
+  for (final row in rows) {
+    consider(row.accountName);
+    consider(row.toAccountName);
+  }
+
+  return pending;
+}
+
+/// Transfer rows whose two ends resolve to the same account.
+///
+/// Only reachable from a hand-edited file — the app's own export cannot
+/// produce one — but importing it would write a pair of legs that cancel out
+/// on a single account, cluttering the ledger with a move that never happened.
+/// `TransactionProvider.addTransfer` rejects the same case with an
+/// ArgumentError; here it is collected per row like every other parse failure
+/// so one bad line does not abort the import.
+List<CsvImportError> transferRowErrors({
+  required List<ParsedImportRow> rows,
+  required String fallbackName,
+}) {
+  final errors = <CsvImportError>[];
+
+  for (final row in rows) {
+    if (!row.isTransfer) continue;
+    final from = accountKey(row.accountName ?? fallbackName);
+    final to = accountKey(row.toAccountName!);
+    if (from == to) {
+      errors.add(
+        CsvImportError(
+          row.rowNumber,
+          'transfer source and destination are the same account',
+        ),
+      );
+    }
+  }
+
+  return errors;
+}

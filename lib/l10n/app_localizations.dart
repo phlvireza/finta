@@ -1775,7 +1775,7 @@ abstract class AppLocalizations {
   /// No description provided for @csvColumnType.
   ///
   /// In en, this message translates to:
-  /// **'Type (income/expense)'**
+  /// **'Type (income/expense/transfer)'**
   String get csvColumnType;
 
   /// No description provided for @csvColumnCategory.
@@ -1783,6 +1783,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Category'**
   String get csvColumnCategory;
+
+  /// No description provided for @csvColumnAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get csvColumnAccount;
+
+  /// No description provided for @csvColumnToAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'To account (transfers)'**
+  String get csvColumnToAccount;
 
   /// No description provided for @csvColumnMerchant.
   ///
@@ -1799,7 +1811,7 @@ abstract class AppLocalizations {
   /// No description provided for @csvImportToAccount.
   ///
   /// In en, this message translates to:
-  /// **'Import into account'**
+  /// **'Account for rows without one'**
   String get csvImportToAccount;
 
   /// No description provided for @previewImport.
@@ -1831,6 +1843,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New categories will be created: {names}'**
   String csvNewCategoriesNote(String names);
+
+  /// No description provided for @csvNewAccountsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'New wallets will be created: {names}'**
+  String csvNewAccountsNote(String names);
+
+  /// No description provided for @csvNewAccountsCaveat.
+  ///
+  /// In en, this message translates to:
+  /// **'They start at a zero opening balance. Use Backup & Restore to move balances exactly.'**
+  String get csvNewAccountsCaveat;
 
   /// No description provided for @csvCategoryNew.
   ///

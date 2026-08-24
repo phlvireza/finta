@@ -7,6 +7,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/exceptions/app_exceptions.dart';
 import '../../core/services/backup_service.dart';
 import '../../core/services/csv_export_service.dart';
+import '../../providers/account_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../../widgets/section_card.dart';
@@ -112,6 +113,7 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
     final loc = AppLocalizations.of(context)!;
     final transactions = context.read<TransactionProvider>();
     final categories = context.read<CategoryProvider>();
+    final accounts = context.read<AccountProvider>();
     setState(() => _busy = true);
     try {
       final all = await transactions.getAllTransactions();
@@ -121,6 +123,7 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
       final csv = _csvExportService.buildCsv(
         all,
         (id) => categories.getCategoryById(id)?.name ?? loc.unknown,
+        (id) => accounts.getAccountById(id)?.name ?? loc.unknown,
       );
       await _csvExportService.shareCsv(csv, loc.csvExportShareSubject);
     } catch (e) {

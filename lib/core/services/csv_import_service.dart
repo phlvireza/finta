@@ -10,6 +10,8 @@ class CsvColumnMapping {
   final int category;
   final int note;
   final int merchant;
+  final int account;
+  final int toAccount;
 
   const CsvColumnMapping({
     required this.date,
@@ -18,6 +20,8 @@ class CsvColumnMapping {
     this.category = -1,
     this.note = -1,
     this.merchant = -1,
+    this.account = -1,
+    this.toAccount = -1,
   });
 }
 
@@ -42,10 +46,21 @@ class ParsedImportRow {
   final int rowNumber;
   final DateTime date;
   final double amount;
+
+  /// `income`, `expense`, or `transfer`. A transfer row stands for the two
+  /// linked legs the app stores, and is the only type that uses [toAccountName].
   final String type;
   final String? categoryName;
   final String? note;
   final String? merchant;
+
+  /// Source account. Null when the file has no account column, or the cell is
+  /// blank — the caller substitutes the account the user picked.
+  final String? accountName;
+
+  /// Destination account, transfers only. Guaranteed non-null when
+  /// [isTransfer] is true: a transfer row without one is rejected in [mapRows].
+  final String? toAccountName;
 
   ParsedImportRow({
     required this.rowNumber,
@@ -55,7 +70,11 @@ class ParsedImportRow {
     this.categoryName,
     this.note,
     this.merchant,
+    this.accountName,
+    this.toAccountName,
   });
+
+  bool get isTransfer => type == 'transfer';
 }
 
 class CsvParseResult {
@@ -123,6 +142,18 @@ class CsvImportService {
             _parseType(_columnValue(row, mapping.type)) ??
             (signedAmount < 0 ? 'expense' : 'income');
 
+        final toAccountName = _nullIfEmpty(
+          _columnValue(row, mapping.toAccount),
+        );
+        // A transfer is meaningless without somewhere to transfer to, and
+        // guaranteeing it here is what lets the rest of the pipeline treat
+        // toAccountName as non-null for transfer rows.
+        if (type == 'transfer' && toAccountName == null) {
+          throw const FormatException(
+            'transfer row has no destination account',
+          );
+        }
+
         rows.add(
           ParsedImportRow(
             rowNumber: rowNumber,
@@ -132,6 +163,8 @@ class CsvImportService {
             categoryName: _nullIfEmpty(_columnValue(row, mapping.category)),
             note: _nullIfEmpty(_columnValue(row, mapping.note)),
             merchant: _nullIfEmpty(_columnValue(row, mapping.merchant)),
+            accountName: _nullIfEmpty(_columnValue(row, mapping.account)),
+            toAccountName: toAccountName,
           ),
         );
       } catch (e) {
@@ -210,6 +243,12 @@ class CsvImportService {
     }
     if (const ['expense', 'debit', 'withdrawal', 'out'].contains(s)) {
       return 'expense';
+    }
+    // Squirio's own export shape for a transfer. Deliberately not inferred
+    // from anything else: mistaking an ordinary row for a transfer would
+    // hide it from every income/expense total in the app.
+    if (const ['transfer', 'move'].contains(s)) {
+      return 'transfer';
     }
     return null;
   }

@@ -445,11 +445,13 @@
   },
   "csvColumnDate": "Date",
   "csvColumnAmount": "Amount",
-  "csvColumnType": "Type (income/expense)",
+  "csvColumnType": "Type (income/expense/transfer)",
   "csvColumnCategory": "Category",
+  "csvColumnAccount": "Account",
+  "csvColumnToAccount": "To account (transfers)",
   "csvColumnMerchant": "Merchant",
   "csvColumnNote": "Note",
-  "csvImportToAccount": "Import into account",
+  "csvImportToAccount": "Account for rows without one",
   "previewImport": "Preview import",
   "csvImportSummary": "{ready} ready to import, {skipped} skipped",
   "@csvImportSummary": {
@@ -476,6 +478,13 @@
       "names": { "type": "String" }
     }
   },
+  "csvNewAccountsNote": "New wallets will be created: {names}",
+  "@csvNewAccountsNote": {
+    "placeholders": {
+      "names": { "type": "String" }
+    }
+  },
+  "csvNewAccountsCaveat": "They start at a zero opening balance. Use Backup & Restore to move balances exactly.",
   "csvCategoryNew": "New",
   "csvRowNumber": "Row {number}",
   "@csvRowNumber": {

@@ -5,6 +5,8 @@ import 'package:finta/core/utils/csv_import_preview.dart';
 ParsedImportRow row({
   required String type,
   String? categoryName,
+  String? accountName,
+  String? toAccountName,
   int rowNumber = 1,
 }) => ParsedImportRow(
   rowNumber: rowNumber,
@@ -12,6 +14,19 @@ ParsedImportRow row({
   amount: 1000,
   type: type,
   categoryName: categoryName,
+  accountName: accountName,
+  toAccountName: toAccountName,
+);
+
+ParsedImportRow transferRow({
+  String? from,
+  String to = 'BCA',
+  int rowNumber = 1,
+}) => row(
+  type: 'transfer',
+  accountName: from,
+  toAccountName: to,
+  rowNumber: rowNumber,
 );
 
 void main() {
@@ -166,6 +181,134 @@ void main() {
 
       expect(result.rows.map((r) => r.rowNumber), [1, 3]);
       expect(result.errors.map((e) => e.rowNumber), [2]);
+    });
+  });
+
+  group('transfers and categories', () {
+    test('a transfer row asks for no category', () {
+      // Transfers are pinned to the system Transfer category. Counting them
+      // here is what made the importer create a duplicate user category
+      // called "Transfer" shadowing the system one.
+      final pending = pendingNewCategories(
+        rows: [transferRow(from: 'Cash')],
+        existingKeys: const {},
+        fallbackName: 'Imported',
+      );
+
+      expect(pending, isEmpty);
+    });
+
+    test('a transfer row never carries the new-category badge', () {
+      expect(
+        isNewCategory(
+          row: transferRow(from: 'Cash'),
+          existingKeys: const {},
+          fallbackName: 'Imported',
+        ),
+        isFalse,
+      );
+    });
+  });
+
+  group('pendingNewAccounts', () {
+    test('reports an account the user does not have', () {
+      final pending = pendingNewAccounts(
+        rows: [row(type: 'expense', accountName: 'Cash Wallet')],
+        existingKeys: {accountKey('BCA')},
+        fallbackName: 'BCA',
+      );
+
+      expect(pending, ['Cash Wallet']);
+    });
+
+    test('does not report one the user already has, whatever the casing', () {
+      final pending = pendingNewAccounts(
+        rows: [row(type: 'expense', accountName: '  bca ')],
+        existingKeys: {accountKey('BCA')},
+        fallbackName: 'BCA',
+      );
+
+      expect(pending, isEmpty);
+    });
+
+    test('covers both ends of a transfer', () {
+      final pending = pendingNewAccounts(
+        rows: [transferRow(from: 'Cash Wallet', to: 'Jago')],
+        existingKeys: const {},
+        fallbackName: 'BCA',
+      );
+
+      expect(pending, ['Cash Wallet', 'Jago']);
+    });
+
+    test(
+      'never reports the fallback — the user picked an existing account',
+      () {
+        final pending = pendingNewAccounts(
+          rows: [row(type: 'expense')],
+          existingKeys: const {},
+          fallbackName: 'BCA',
+        );
+
+        expect(pending, isEmpty);
+      },
+    );
+
+    test('reports each account once, in first-seen order', () {
+      final pending = pendingNewAccounts(
+        rows: [
+          row(type: 'expense', accountName: 'Jago', rowNumber: 1),
+          row(type: 'expense', accountName: 'Cash Wallet', rowNumber: 2),
+          row(type: 'expense', accountName: 'jago', rowNumber: 3),
+        ],
+        existingKeys: const {},
+        fallbackName: 'BCA',
+      );
+
+      expect(pending, ['Jago', 'Cash Wallet']);
+    });
+  });
+
+  group('transferRowErrors', () {
+    test('rejects a transfer whose two ends are the same account', () {
+      final errors = transferRowErrors(
+        rows: [transferRow(from: 'BCA', to: 'BCA', rowNumber: 4)],
+        fallbackName: 'Cash',
+      );
+
+      expect(errors.single.rowNumber, 4);
+    });
+
+    test('catches the same-account case via the fallback', () {
+      // Source blank, so it resolves to the picked account — which is also
+      // the destination. Only visible once the fallback is known, which is
+      // why this check cannot live in the parser.
+      final errors = transferRowErrors(
+        rows: [transferRow(from: null, to: 'BCA')],
+        fallbackName: 'BCA',
+      );
+
+      expect(errors, hasLength(1));
+    });
+
+    test('accepts a transfer between two different accounts', () {
+      expect(
+        transferRowErrors(
+          rows: [transferRow(from: 'Cash', to: 'BCA')],
+          fallbackName: 'Cash',
+        ),
+        isEmpty,
+      );
+    });
+
+    test('ignores ordinary rows', () {
+      expect(
+        transferRowErrors(
+          rows: [row(type: 'expense', accountName: 'BCA')],
+          fallbackName: 'BCA',
+        ),
+        isEmpty,
+      );
     });
   });
 }

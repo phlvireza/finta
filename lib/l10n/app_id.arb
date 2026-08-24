@@ -443,11 +443,13 @@
   },
   "csvColumnDate": "Tanggal",
   "csvColumnAmount": "Jumlah",
-  "csvColumnType": "Jenis (pemasukan/pengeluaran)",
+  "csvColumnType": "Jenis (pemasukan/pengeluaran/transfer)",
   "csvColumnCategory": "Kategori",
+  "csvColumnAccount": "Akun",
+  "csvColumnToAccount": "Ke akun (transfer)",
   "csvColumnMerchant": "Pedagang",
   "csvColumnNote": "Catatan",
-  "csvImportToAccount": "Impor ke akun",
+  "csvImportToAccount": "Akun untuk baris tanpa akun",
   "previewImport": "Pratinjau impor",
   "csvImportSummary": "{ready} siap diimpor, {skipped} dilewati",
   "@csvImportSummary": {
@@ -474,6 +476,13 @@
       "names": { "type": "String" }
     }
   },
+  "csvNewAccountsNote": "Dompet baru akan dibuat: {names}",
+  "@csvNewAccountsNote": {
+    "placeholders": {
+      "names": { "type": "String" }
+    }
+  },
+  "csvNewAccountsCaveat": "Saldo awalnya nol. Gunakan Cadangkan & Pulihkan untuk memindahkan saldo secara persis.",
   "csvCategoryNew": "Baru",
   "csvRowNumber": "Baris {number}",
   "@csvRowNumber": {

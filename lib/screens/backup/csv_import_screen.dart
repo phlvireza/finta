@@ -5,9 +5,11 @@ import 'package:uuid/uuid.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_typography.dart';
+import '../../core/database/seed_data.dart';
 import '../../core/services/csv_import_service.dart';
 import '../../core/utils/csv_import_preview.dart';
 import '../../core/utils/number_utils.dart';
+import '../../models/account_model.dart';
 import '../../models/category_model.dart';
 import '../../models/transaction_model.dart';
 import '../../providers/account_provider.dart';
@@ -69,6 +71,8 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
   int _categoryCol = -1;
   int _noteCol = -1;
   int _merchantCol = -1;
+  int _accountCol = -1;
+  int _toAccountCol = -1;
   String? _accountId;
 
   bool _previewing = false;
@@ -80,6 +84,11 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
   /// file doesn't re-derive the whole list on every frame.
   List<_PreviewEntry> _entries = const [];
   List<String> _newCategories = const [];
+  List<String> _newAccounts = const [];
+
+  /// Rows produce transactions one-to-one except transfers, which expand into
+  /// two legs — so the confirm button cannot just count rows.
+  int _transactionCount = 0;
 
   @override
   void initState() {
@@ -91,10 +100,16 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
     _categoryCol = _guessColumn(['category']);
     _noteCol = _guessColumn(['note', 'description', 'memo']);
     _merchantCol = _guessColumn(['merchant', 'payee']);
+    // Destination first, and its column excluded from the source guess:
+    // "To Account" contains "account", so guessing the source first would
+    // claim the destination column and leave every transfer without one.
+    _toAccountCol = _guessColumn(['to account', 'destination']);
+    _accountCol = _guessColumn(['account', 'wallet'], skip: _toAccountCol);
   }
 
-  int _guessColumn(List<String> candidates) {
+  int _guessColumn(List<String> candidates, {int skip = -1}) {
     for (var i = 0; i < _parsed.headers.length; i++) {
+      if (i == skip) continue;
       final h = _parsed.headers[i].toLowerCase();
       if (candidates.any(h.contains)) return i;
     }
@@ -113,6 +128,7 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
 
   void _runPreview() {
     final loc = AppLocalizations.of(context)!;
+    final accountProvider = context.read<AccountProvider>();
     final mapping = CsvColumnMapping(
       date: _dateCol,
       amount: _amountCol,
@@ -120,43 +136,73 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
       category: _categoryCol,
       note: _noteCol,
       merchant: _merchantCol,
+      account: _accountCol,
+      toAccount: _toAccountCol,
     );
     final result = _service.mapRows(_parsed.dataRows, mapping);
 
     final existingKeys = _existingCategoryKeys(
       context.read<CategoryProvider>().categories,
     );
-    final fallback = loc.importedCategoryName;
+    final fallbackCategory = loc.importedCategoryName;
+    final fallbackAccount =
+        accountProvider.getAccountById(_accountId!)?.name ?? '';
+
     final newCategories = pendingNewCategories(
       rows: result.rows,
       existingKeys: existingKeys,
-      fallbackName: fallback,
+      fallbackName: fallbackCategory,
+    );
+    final newAccounts = pendingNewAccounts(
+      rows: result.rows,
+      existingKeys: {
+        for (final a in accountProvider.accounts) accountKey(a.name),
+      },
+      fallbackName: fallbackAccount,
     );
 
+    // Two error sources: the parser's, and the ones only answerable once the
+    // fallback account is known. Rows failing the latter drop out of the ready
+    // list, and both are shown in one list ordered by position in the file.
+    final transferErrors = transferRowErrors(
+      rows: result.rows,
+      fallbackName: fallbackAccount,
+    );
+    final rejected = {for (final e in transferErrors) e.rowNumber};
+    final rows = result.rows.where((r) => !rejected.contains(r.rowNumber));
+    final errors = [...result.errors, ...transferErrors]
+      ..sort((a, b) => a.rowNumber.compareTo(b.rowNumber));
+
+    final ready = rows.toList();
+    final transactionCount =
+        ready.length + ready.where((r) => r.isTransfer).length;
+
     final entries = <_PreviewEntry>[
-      if (result.rows.isNotEmpty) ...[
-        _SectionEntry(loc.csvPreviewReadySection(result.rows.length)),
-        for (final row in result.rows)
+      if (ready.isNotEmpty) ...[
+        _SectionEntry(loc.csvPreviewReadySection(ready.length)),
+        for (final row in ready)
           _RowEntry(
             row,
             createsCategory: isNewCategory(
               row: row,
               existingKeys: existingKeys,
-              fallbackName: fallback,
+              fallbackName: fallbackCategory,
             ),
           ),
       ],
-      if (result.errors.isNotEmpty) ...[
-        _SectionEntry(loc.csvPreviewSkippedSection(result.errors.length)),
-        for (final error in result.errors) _ErrorEntry(error),
+      if (errors.isNotEmpty) ...[
+        _SectionEntry(loc.csvPreviewSkippedSection(errors.length)),
+        for (final error in errors) _ErrorEntry(error),
       ],
     ];
 
     setState(() {
-      _rows = result.rows;
-      _errors = result.errors;
+      _rows = ready;
+      _errors = errors;
       _entries = entries;
       _newCategories = newCategories;
+      _newAccounts = newAccounts;
+      _transactionCount = transactionCount;
       _previewing = true;
     });
   }
@@ -193,6 +239,10 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
       // just-created category 100 times.
       final categoryIds = <String, String>{};
       for (final row in _rows) {
+        // Transfers are pinned to the system Transfer category, which
+        // _findCategory deliberately refuses to match — resolving them here
+        // would create a duplicate user category named "Transfer".
+        if (row.isTransfer) continue;
         final name = row.categoryName ?? loc.importedCategoryName;
         final key = categoryKey(row.type, name);
         if (categoryIds.containsKey(key)) continue;
@@ -214,7 +264,69 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
         categoryIds[key] = category!.id;
       }
 
+      // Same one-pass resolution for accounts. addAccount returns the created
+      // model, so unlike categories this needs no re-find. A wallet named only
+      // by a CSV has no opening balance, type or colour to restore — the
+      // preview says so before the user confirms.
+      final accountIds = <String, String>{};
+      Future<String> accountIdFor(String? name) async {
+        if (name == null) return _accountId!;
+        final key = accountKey(name);
+        final known = accountIds[key];
+        if (known != null) return known;
+
+        AccountModel? existing;
+        for (final a in accountProvider.accounts) {
+          if (accountKey(a.name) == key) {
+            existing = a;
+            break;
+          }
+        }
+        final account =
+            existing ??
+            await accountProvider.addAccount(
+              name: name,
+              type: 'cash',
+              openingBalance: 0,
+              color: AppColors.swatchOptions.first,
+            );
+        accountIds[key] = account.id;
+        return account.id;
+      }
+
       for (final row in _rows) {
+        final accountId = await accountIdFor(row.accountName);
+
+        if (row.isTransfer) {
+          // Rebuilt as the app builds them: two legs sharing one transferId,
+          // both flagged isTransfer so every income/expense aggregate skips
+          // them, both on the system category. The shared id is what lets
+          // deleting either leg take the other with it.
+          final transferId = _uuid.v4();
+          final toAccountId = await accountIdFor(row.toAccountName);
+          for (final leg in [
+            (type: 'expense', account: accountId),
+            (type: 'income', account: toAccountId),
+          ]) {
+            toInsert.add(
+              TransactionModel(
+                id: _uuid.v4(),
+                type: leg.type,
+                amount: row.amount,
+                categoryId: SeedData.transferCategoryId,
+                accountId: leg.account,
+                transferId: transferId,
+                isTransfer: true,
+                date: row.date,
+                note: row.note,
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+          }
+          continue;
+        }
+
         final name = row.categoryName ?? loc.importedCategoryName;
         toInsert.add(
           TransactionModel(
@@ -222,7 +334,7 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
             type: row.type,
             amount: row.amount,
             categoryId: categoryIds[categoryKey(row.type, name)]!,
-            accountId: _accountId!,
+            accountId: accountId,
             merchant: row.merchant,
             date: row.date,
             note: row.note,
@@ -303,6 +415,18 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
                 _categoryCol,
                 required: false,
                 onChanged: (v) => setState(() => _categoryCol = v),
+              ),
+              _columnDropdown(
+                loc.csvColumnAccount,
+                _accountCol,
+                required: false,
+                onChanged: (v) => setState(() => _accountCol = v),
+              ),
+              _columnDropdown(
+                loc.csvColumnToAccount,
+                _toAccountCol,
+                required: false,
+                onChanged: (v) => setState(() => _toAccountCol = v),
               ),
               _columnDropdown(
                 loc.csvColumnMerchant,
@@ -392,6 +516,26 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
                   ),
                 ),
               ],
+              // A CSV carries an account's name and nothing else, so a wallet
+              // created from one cannot reproduce the balance it had on the
+              // other phone. Say it here rather than let the user discover it
+              // after the import.
+              if (_newAccounts.isNotEmpty) ...[
+                const SizedBox(height: AppConstants.spacingXs),
+                Text(
+                  loc.csvNewAccountsNote(_newAccounts.join(', ')),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppConstants.spacingXs),
+                Text(
+                  loc.csvNewAccountsCaveat,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -427,7 +571,7 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : Text(loc.confirmImportCount(_rows.length)),
+                  : Text(loc.confirmImportCount(_transactionCount)),
             ),
           ),
         ),
@@ -464,12 +608,28 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
     final settings = context.watch<SettingsProvider>();
     final isDark = theme.brightness == Brightness.dark;
     final isIncome = row.type == 'income';
-    final amountColor = isIncome
+    // A transfer is neither income nor expense — it will be excluded from
+    // both totals once imported, so it must not be coloured as either.
+    final amountColor = row.isTransfer
+        ? theme.colorScheme.onSurfaceVariant
+        : isIncome
         ? (isDark ? AppColors.darkIncome : AppColors.lightIncome)
         : (isDark ? AppColors.darkExpense : AppColors.lightExpense);
+    final sign = row.isTransfer
+        ? ''
+        : isIncome
+        ? '+ '
+        : '- ';
+
+    // For a transfer the useful thing to show is where the money goes, not a
+    // category it does not really have.
+    final title = row.isTransfer
+        ? '${row.accountName ?? _fallbackAccountName(context)} → ${row.toAccountName}'
+        : row.categoryName ?? loc.importedCategoryName;
 
     final details = [
       DateFormat.yMMMd().format(row.date),
+      if (!row.isTransfer && row.accountName != null) row.accountName!,
       if (row.merchant != null) row.merchant!,
       if (row.note != null) row.note!,
     ].join(' · ');
@@ -488,12 +648,16 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
       ),
       title: Row(
         children: [
-          Flexible(
-            child: Text(
-              row.categoryName ?? loc.importedCategoryName,
-              overflow: TextOverflow.ellipsis,
+          if (row.isTransfer)
+            Padding(
+              padding: const EdgeInsets.only(right: AppConstants.spacingSm),
+              child: Icon(
+                Icons.swap_horiz,
+                size: 16,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
-          ),
+          Flexible(child: Text(title, overflow: TextOverflow.ellipsis)),
           if (createsCategory)
             Padding(
               padding: const EdgeInsets.only(left: AppConstants.spacingSm),
@@ -507,11 +671,16 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
       subtitle: Text(details, overflow: TextOverflow.ellipsis),
       trailing: MaskedAmount(
         text:
-            '${isIncome ? '+' : '-'} ${NumberUtils.formatCurrency(row.amount, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals)}',
+            '$sign${NumberUtils.formatCurrency(row.amount, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals)}',
         style: AppTypography.amountStyle(color: amountColor, fontSize: 14),
       ),
     );
   }
+
+  /// Name of the account the user picked, shown where a transfer row leaves
+  /// its source blank and the fallback will be used.
+  String _fallbackAccountName(BuildContext context) =>
+      context.read<AccountProvider>().getAccountById(_accountId!)?.name ?? '';
 
   Widget _errorRow(
     BuildContext context,
