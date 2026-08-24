@@ -65,3 +65,8 @@ vendor/**/.gradle/
 *.md
 !/README.md
 !.claude/rules/*.md
+
+# JVM crash dumps left behind by a Gradle daemon that died
+hs_err_pid*.log
+replay_pid*.log
+*.hprof
