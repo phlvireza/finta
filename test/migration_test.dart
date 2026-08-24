@@ -144,11 +144,10 @@ void main() {
       // Same recurringId + date, different primary key — simulates
       // RecurringService re-running after a crash, before lastRunDate
       // was persisted.
-      await db.insert(
-        'transactions',
-        {...row, 'id': 'tx2'},
-        conflictAlgorithm: ConflictAlgorithm.ignore,
-      );
+      await db.insert('transactions', {
+        ...row,
+        'id': 'tx2',
+      }, conflictAlgorithm: ConflictAlgorithm.ignore);
 
       final rows = await db.query(
         'transactions',
@@ -157,81 +156,79 @@ void main() {
       expect(
         rows,
         hasLength(1),
-        reason: 'the partial unique index should reject the duplicate occurrence',
+        reason:
+            'the partial unique index should reject the duplicate occurrence',
       );
 
       await db.close();
     },
   );
 
-  test(
-    'migrating a populated v2 database to v3 adds accounts, backfills '
-    'accountId on every existing transaction, and seeds the Transfer '
-    'system category',
-    () async {
-      final db = await databaseFactoryFfi.openDatabase(
-        ':memory:',
-        options: OpenDatabaseOptions(version: 1, onCreate: _createV1Schema),
-      );
-      await db.insert('categories', {
-        'id': 'cat1',
-        'name': 'Coffee',
-        'type': 'expense',
-        'icon': 'local_cafe',
-        'color': '#C87941',
-        'isDefault': 0,
-        'sortOrder': 0,
-        'createdAt': '2026-01-01T00:00:00.000',
-      });
-      await db.insert('transactions', {
-        'id': 'tx1',
-        'type': 'expense',
-        'amount': 45000,
-        'categoryId': 'cat1',
-        'date': '2026-07-01',
-        'note': null,
-        'recurringId': null,
-        'createdAt': '2026-07-01T00:00:00.000',
-        'updatedAt': '2026-07-01T00:00:00.000',
-      });
+  test('migrating a populated v2 database to v3 adds accounts, backfills '
+      'accountId on every existing transaction, and seeds the Transfer '
+      'system category', () async {
+    final db = await databaseFactoryFfi.openDatabase(
+      ':memory:',
+      options: OpenDatabaseOptions(version: 1, onCreate: _createV1Schema),
+    );
+    await db.insert('categories', {
+      'id': 'cat1',
+      'name': 'Coffee',
+      'type': 'expense',
+      'icon': 'local_cafe',
+      'color': '#C87941',
+      'isDefault': 0,
+      'sortOrder': 0,
+      'createdAt': '2026-01-01T00:00:00.000',
+    });
+    await db.insert('transactions', {
+      'id': 'tx1',
+      'type': 'expense',
+      'amount': 45000,
+      'categoryId': 'cat1',
+      'date': '2026-07-01',
+      'note': null,
+      'recurringId': null,
+      'createdAt': '2026-07-01T00:00:00.000',
+      'updatedAt': '2026-07-01T00:00:00.000',
+    });
 
-      // Replay the real upgrade path a v1 install actually takes to reach
-      // v3 — v2 then v3, in order.
-      await Migrations.v2(db);
-      await Migrations.v3(db);
+    // Replay the real upgrade path a v1 install actually takes to reach
+    // v3 — v2 then v3, in order.
+    await Migrations.v2(db);
+    await Migrations.v3(db);
 
-      final accounts = await db.query('accounts');
-      expect(accounts, hasLength(1));
-      expect(accounts.first['id'], 'account_default');
-      expect(accounts.first['name'], 'My Wallet');
+    final accounts = await db.query('accounts');
+    expect(accounts, hasLength(1));
+    expect(accounts.first['id'], 'account_default');
+    expect(accounts.first['name'], 'My Wallet');
 
-      final transactions = await db.query('transactions');
-      expect(transactions, hasLength(1));
-      expect(
-        transactions.first['accountId'],
-        'account_default',
-        reason: 'ALTER TABLE ... DEFAULT should backfill every existing row',
-      );
-      expect(transactions.first['isTransfer'], 0);
+    final transactions = await db.query('transactions');
+    expect(transactions, hasLength(1));
+    expect(
+      transactions.first['accountId'],
+      'account_default',
+      reason: 'ALTER TABLE ... DEFAULT should backfill every existing row',
+    );
+    expect(transactions.first['isTransfer'], 0);
 
-      final transferCategory = await db.query(
-        'categories',
-        where: 'id = ?',
-        whereArgs: ['system_transfer'],
-      );
-      expect(transferCategory, hasLength(1));
-      expect(transferCategory.first['isSystem'], 1);
+    final transferCategory = await db.query(
+      'categories',
+      where: 'id = ?',
+      whereArgs: ['system_transfer'],
+    );
+    expect(transferCategory, hasLength(1));
+    expect(transferCategory.first['isSystem'], 1);
 
-      // The pre-existing category must be untouched aside from the new
-      // nullable/defaulted columns.
-      final coffee = await db.query('categories', where: "id = 'cat1'");
-      expect(coffee.first['name'], 'Coffee');
-      expect(coffee.first['isSystem'], 0);
-      expect(coffee.first['parentId'], isNull);
+    // The pre-existing category must be untouched aside from the new
+    // nullable/defaulted columns.
+    final coffee = await db.query('categories', where: "id = 'cat1'");
+    expect(coffee.first['name'], 'Coffee');
+    expect(coffee.first['isSystem'], 0);
+    expect(coffee.first['parentId'], isNull);
 
-      await db.close();
-    },
-  );
+    await db.close();
+  });
 
   test(
     'migrating a populated v3 database to v4 rebuilds budgets with the new '
@@ -276,7 +273,11 @@ void main() {
       await Migrations.v4(db);
 
       final budgets = await db.query('budgets');
-      expect(budgets, hasLength(1), reason: 'the existing budget row must survive the rebuild');
+      expect(
+        budgets,
+        hasLength(1),
+        reason: 'the existing budget row must survive the rebuild',
+      );
       expect(budgets.first['id'], 'budget1');
       expect(budgets.first['amount'], 500000);
       expect(budgets.first['isActive'], 1);
@@ -347,15 +348,24 @@ void main() {
       expect(await db.query('debts'), isEmpty);
 
       // The three seeded default categories are present with the right type.
-      final savings = await db.query('categories', where: "id = 'default_savings_goals'");
+      final savings = await db.query(
+        'categories',
+        where: "id = 'default_savings_goals'",
+      );
       expect(savings, hasLength(1));
       expect(savings.first['type'], 'expense');
 
-      final debtPayments = await db.query('categories', where: "id = 'default_debt_payments'");
+      final debtPayments = await db.query(
+        'categories',
+        where: "id = 'default_debt_payments'",
+      );
       expect(debtPayments, hasLength(1));
       expect(debtPayments.first['type'], 'expense');
 
-      final debtRepayments = await db.query('categories', where: "id = 'default_debt_repayments'");
+      final debtRepayments = await db.query(
+        'categories',
+        where: "id = 'default_debt_repayments'",
+      );
       expect(debtRepayments, hasLength(1));
       expect(debtRepayments.first['type'], 'income');
 
@@ -363,61 +373,65 @@ void main() {
     },
   );
 
-  test(
-    'migrating a populated v5 database to v6 adds the subscription columns '
-    'to recurring_transactions, defaulting existing templates to '
-    'not-a-subscription and not-paused',
-    () async {
-      final db = await databaseFactoryFfi.openDatabase(
-        ':memory:',
-        options: OpenDatabaseOptions(version: 1, onCreate: _createV1Schema),
-      );
-      await db.insert('categories', {
-        'id': 'cat1',
-        'name': 'Bills & Utilities',
-        'type': 'expense',
-        'icon': 'receipt_long',
-        'color': '#D4A05A',
-        'isDefault': 0,
-        'sortOrder': 0,
-        'createdAt': '2026-01-01T00:00:00.000',
-      });
-      // Insert directly into the original v1-shaped recurring_transactions
-      // table (the schema Migrations.v6 actually receives before it runs).
-      await db.insert('recurring_transactions', {
-        'id': 'rec1',
-        'type': 'expense',
-        'amount': 150000,
-        'categoryId': 'cat1',
-        'note': 'Internet',
-        'frequency': 'monthly',
-        'startDate': '2026-01-05',
-        'endDate': null,
-        'lastRunDate': '2026-07-05',
-        'isActive': 1,
-        'createdAt': '2026-01-05T00:00:00.000',
-      });
+  test('migrating a populated v5 database to v6 adds the subscription columns '
+      'to recurring_transactions, defaulting existing templates to '
+      'not-a-subscription and not-paused', () async {
+    final db = await databaseFactoryFfi.openDatabase(
+      ':memory:',
+      options: OpenDatabaseOptions(version: 1, onCreate: _createV1Schema),
+    );
+    await db.insert('categories', {
+      'id': 'cat1',
+      'name': 'Bills & Utilities',
+      'type': 'expense',
+      'icon': 'receipt_long',
+      'color': '#D4A05A',
+      'isDefault': 0,
+      'sortOrder': 0,
+      'createdAt': '2026-01-01T00:00:00.000',
+    });
+    // Insert directly into the original v1-shaped recurring_transactions
+    // table (the schema Migrations.v6 actually receives before it runs).
+    await db.insert('recurring_transactions', {
+      'id': 'rec1',
+      'type': 'expense',
+      'amount': 150000,
+      'categoryId': 'cat1',
+      'note': 'Internet',
+      'frequency': 'monthly',
+      'startDate': '2026-01-05',
+      'endDate': null,
+      'lastRunDate': '2026-07-05',
+      'isActive': 1,
+      'createdAt': '2026-01-05T00:00:00.000',
+    });
 
-      // Replay the real upgrade path: v2 -> v3 -> v4 -> v5 -> v6, in order.
-      await Migrations.v2(db);
-      await Migrations.v3(db);
-      await Migrations.v4(db);
-      await Migrations.v5(db);
-      await Migrations.v6(db);
+    // Replay the real upgrade path: v2 -> v3 -> v4 -> v5 -> v6, in order.
+    await Migrations.v2(db);
+    await Migrations.v3(db);
+    await Migrations.v4(db);
+    await Migrations.v5(db);
+    await Migrations.v6(db);
 
-      final recurring = await db.query('recurring_transactions', where: "id = 'rec1'");
-      expect(recurring, hasLength(1), reason: 'the existing template must survive the upgrade');
-      expect(recurring.first['note'], 'Internet');
-      expect(recurring.first['merchant'], isNull);
-      // New columns default to today's behavior — an existing recurring
-      // template isn't retroactively treated as a tracked subscription.
-      expect(recurring.first['isSubscription'], 0);
-      expect(recurring.first['isPaused'], 0);
-      expect(recurring.first['reminderDaysBefore'], isNull);
+    final recurring = await db.query(
+      'recurring_transactions',
+      where: "id = 'rec1'",
+    );
+    expect(
+      recurring,
+      hasLength(1),
+      reason: 'the existing template must survive the upgrade',
+    );
+    expect(recurring.first['note'], 'Internet');
+    expect(recurring.first['merchant'], isNull);
+    // New columns default to today's behavior — an existing recurring
+    // template isn't retroactively treated as a tracked subscription.
+    expect(recurring.first['isSubscription'], 0);
+    expect(recurring.first['isPaused'], 0);
+    expect(recurring.first['reminderDaysBefore'], isNull);
 
-      await db.close();
-    },
-  );
+    await db.close();
+  });
 
   group('v8 — the Donation category', () {
     Future<Database> upgradedToV7() async {
@@ -448,35 +462,44 @@ void main() {
       return db;
     }
 
-    test('adds Donation to an existing install without touching user rows',
-        () async {
-      final db = await upgradedToV7();
+    test(
+      'adds Donation to an existing install without touching user rows',
+      () async {
+        final db = await upgradedToV7();
 
-      expect(
-        await db.query('categories', where: "name = 'Donation'"),
-        isEmpty,
-        reason: 'nothing should have seeded it before v8 runs',
-      );
+        expect(
+          await db.query('categories', where: "name = 'Donation'"),
+          isEmpty,
+          reason: 'nothing should have seeded it before v8 runs',
+        );
 
-      await Migrations.v8(db);
+        await Migrations.v8(db);
 
-      final donation = await db.query('categories', where: "id = 'default_donation'");
-      expect(donation, hasLength(1));
-      expect(donation.first['name'], 'Donation');
-      expect(donation.first['type'], 'expense');
-      expect(donation.first['icon'], 'volunteer_activism');
-      expect(donation.first['isDefault'], 1);
-      expect(donation.first['isSystem'], 0, reason: 'it is a normal, pickable category');
-      expect(donation.first['isArchived'], 0);
-      // Right after "Other" (8) and ahead of the goal/debt categories.
-      expect(donation.first['sortOrder'], 9);
+        final donation = await db.query(
+          'categories',
+          where: "id = 'default_donation'",
+        );
+        expect(donation, hasLength(1));
+        expect(donation.first['name'], 'Donation');
+        expect(donation.first['type'], 'expense');
+        expect(donation.first['icon'], 'volunteer_activism');
+        expect(donation.first['isDefault'], 1);
+        expect(
+          donation.first['isSystem'],
+          0,
+          reason: 'it is a normal, pickable category',
+        );
+        expect(donation.first['isArchived'], 0);
+        // Right after "Other" (8) and ahead of the goal/debt categories.
+        expect(donation.first['sortOrder'], 9);
 
-      final coffee = await db.query('categories', where: "id = 'cat1'");
-      expect(coffee, hasLength(1), reason: 'the user category must survive');
-      expect(coffee.first['name'], 'Coffee');
+        final coffee = await db.query('categories', where: "id = 'cat1'");
+        expect(coffee, hasLength(1), reason: 'the user category must survive');
+        expect(coffee.first['name'], 'Coffee');
 
-      await db.close();
-    });
+        await db.close();
+      },
+    );
 
     test('replaying the migration does not duplicate the row', () async {
       // A user who upgrades, then reinstalls over the same database, must
@@ -496,15 +519,17 @@ void main() {
     test('a user edit to the category survives a replay', () async {
       final db = await upgradedToV7();
       await Migrations.v8(db);
-      await db.update(
-        'categories',
-        {'name': 'Charity', 'isArchived': 1},
-        where: "id = 'default_donation'",
-      );
+      await db.update('categories', {
+        'name': 'Charity',
+        'isArchived': 1,
+      }, where: "id = 'default_donation'");
 
       await Migrations.v8(db);
 
-      final row = await db.query('categories', where: "id = 'default_donation'");
+      final row = await db.query(
+        'categories',
+        where: "id = 'default_donation'",
+      );
       expect(row.first['name'], 'Charity');
       expect(row.first['isArchived'], 1);
 
@@ -579,45 +604,57 @@ void main() {
       await db.close();
     });
 
-    test('preserves the rest of the budget row and its category links', () async {
-      final db = await upgradedToV8();
-      await Migrations.v9(db);
+    test(
+      'preserves the rest of the budget row and its category links',
+      () async {
+        final db = await upgradedToV8();
+        await Migrations.v9(db);
 
-      final budget = (await db.query('budgets', where: "id = 'budget1'")).first;
-      expect(budget['amount'], 750000);
-      expect(budget['period'], 'monthly');
-      expect(budget['rolloverMode'], 'none');
-      expect(budget['scope'], 'category');
-      expect(budget['isActive'], 1);
-      expect(budget['createdAt'], '2026-01-01T00:00:00.000');
+        final budget = (await db.query(
+          'budgets',
+          where: "id = 'budget1'",
+        )).first;
+        expect(budget['amount'], 750000);
+        expect(budget['period'], 'monthly');
+        expect(budget['rolloverMode'], 'none');
+        expect(budget['scope'], 'category');
+        expect(budget['isActive'], 1);
+        expect(budget['createdAt'], '2026-01-01T00:00:00.000');
 
-      final links = await db.query('budget_categories', where: "budgetId = 'budget1'");
-      expect(links, hasLength(1));
-      expect(links.first['categoryId'], 'cat1');
+        final links = await db.query(
+          'budget_categories',
+          where: "budgetId = 'budget1'",
+        );
+        expect(links, hasLength(1));
+        expect(links.first['categoryId'], 'cat1');
 
-      await db.close();
-    });
+        await db.close();
+      },
+    );
 
-    test('a fresh install has the same budgets columns as an upgraded one', () async {
-      final upgraded = await upgradedToV8();
-      await Migrations.v9(upgraded);
+    test(
+      'a fresh install has the same budgets columns as an upgraded one',
+      () async {
+        final upgraded = await upgradedToV8();
+        await Migrations.v9(upgraded);
 
-      final fresh = await databaseFactoryFfi.openDatabase(
-        ':memory:',
-        options: OpenDatabaseOptions(
-          version: 1,
-          onCreate: (db, _) async {
-            await db.execute(Migrations.createBudgetsTable);
-          },
-          onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
-        ),
-      );
+        final fresh = await databaseFactoryFfi.openDatabase(
+          ':memory:',
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (db, _) async {
+              await db.execute(Migrations.createBudgetsTable);
+            },
+            onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
+          ),
+        );
 
-      expect(await budgetColumns(fresh), await budgetColumns(upgraded));
+        expect(await budgetColumns(fresh), await budgetColumns(upgraded));
 
-      await upgraded.close();
-      await fresh.close();
-    });
+        await upgraded.close();
+        await fresh.close();
+      },
+    );
 
     test('a fresh install defaults the column to 1', () async {
       // createBudgetsTable and the ALTER must agree on the default, or a
@@ -747,31 +784,45 @@ void main() {
 
       // v3 adds transactions.merchant and v6 adds it to the templates, so
       // the merchant values can only be set once those have run.
-      await db.update('recurring_transactions', {'merchant': 'Netflix'},
-          where: "id = 'rec1'");
-      await db.update('transactions', {'merchant': 'Netflix'},
-          where: "id = 'tx_first'");
-      await db.update('transactions', {'merchant': 'Warung Bu Tini'},
-          where: "id = 'tx_manual'");
+      await db.update('recurring_transactions', {
+        'merchant': 'Netflix',
+      }, where: "id = 'rec1'");
+      await db.update('transactions', {
+        'merchant': 'Netflix',
+      }, where: "id = 'tx_first'");
+      await db.update('transactions', {
+        'merchant': 'Warung Bu Tini',
+      }, where: "id = 'tx_manual'");
 
       return db;
     }
 
     Future<String?> merchantOf(Database db, String id) async {
-      final rows = await db.query('transactions', where: 'id = ?', whereArgs: [id]);
+      final rows = await db.query(
+        'transactions',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
       return rows.first['merchant'] as String?;
     }
 
     Future<String?> colorOf(Database db, String id) async {
-      final rows = await db.query('categories', where: 'id = ?', whereArgs: [id]);
+      final rows = await db.query(
+        'categories',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
       return rows.first['color'] as String?;
     }
 
     test('backfills generated occurrences from their template', () async {
       final db = await upgradedToV9();
 
-      expect(await merchantOf(db, 'tx_gen1'), isNull,
-          reason: 'this is the bug the migration repairs');
+      expect(
+        await merchantOf(db, 'tx_gen1'),
+        isNull,
+        reason: 'this is the bug the migration repairs',
+      );
 
       await Migrations.v10(db);
 
@@ -783,8 +834,9 @@ void main() {
 
     test('never overwrites a merchant already on the row', () async {
       final db = await upgradedToV9();
-      await db.update('recurring_transactions', {'merchant': 'Something Else'},
-          where: "id = 'rec1'");
+      await db.update('recurring_transactions', {
+        'merchant': 'Something Else',
+      }, where: "id = 'rec1'");
 
       await Migrations.v10(db);
 
@@ -793,14 +845,17 @@ void main() {
       await db.close();
     });
 
-    test('leaves rows alone when the template has no merchant either', () async {
-      final db = await upgradedToV9();
-      await Migrations.v10(db);
+    test(
+      'leaves rows alone when the template has no merchant either',
+      () async {
+        final db = await upgradedToV9();
+        await Migrations.v10(db);
 
-      expect(await merchantOf(db, 'tx_nomerchant'), isNull);
+        expect(await merchantOf(db, 'tx_nomerchant'), isNull);
 
-      await db.close();
-    });
+        await db.close();
+      },
+    );
 
     test('does not touch transactions with no recurringId', () async {
       final db = await upgradedToV9();
@@ -811,21 +866,26 @@ void main() {
       await db.close();
     });
 
-    test('recolours seeded categories still on their original colour', () async {
-      final db = await upgradedToV9();
-      await Migrations.v10(db);
+    test(
+      'recolours seeded categories still on their original colour',
+      () async {
+        final db = await upgradedToV9();
+        await Migrations.v10(db);
 
-      // #D4A05A was AppColors.warning exactly — the collision that motivated
-      // the change.
-      expect(await colorOf(db, 'cat_bills'), '#C1661E');
-      expect(await colorOf(db, 'cat_food'), '#3F8B4C');
+        // #D4A05A was AppColors.warning exactly — the collision that motivated
+        // the change.
+        expect(await colorOf(db, 'cat_bills'), '#C1661E');
+        expect(await colorOf(db, 'cat_food'), '#3F8B4C');
 
-      await db.close();
-    });
+        await db.close();
+      },
+    );
 
     test('a colour the user picked survives', () async {
       final db = await upgradedToV9();
-      await db.update('categories', {'color': '#12928C'}, where: "id = 'cat_food'");
+      await db.update('categories', {
+        'color': '#12928C',
+      }, where: "id = 'cat_food'");
 
       await Migrations.v10(db);
 
@@ -834,25 +894,33 @@ void main() {
       await db.close();
     });
 
-    test('leaves non-default categories alone even at a matching colour', () async {
-      final db = await upgradedToV9();
-      await Migrations.v10(db);
+    test(
+      'leaves non-default categories alone even at a matching colour',
+      () async {
+        final db = await upgradedToV9();
+        await Migrations.v10(db);
 
-      // cat_user is #C87941, the same hex Food & Drinks had, but isDefault=0.
-      expect(await colorOf(db, 'cat_user'), '#C87941');
+        // cat_user is #C87941, the same hex Food & Drinks had, but isDefault=0.
+        expect(await colorOf(db, 'cat_user'), '#C87941');
 
-      await db.close();
-    });
+        await db.close();
+      },
+    );
 
     test('replaying is a no-op', () async {
       final db = await upgradedToV9();
       await Migrations.v10(db);
-      await db.update('categories', {'color': '#8A7E74'}, where: "id = 'cat_bills'");
+      await db.update('categories', {
+        'color': '#8A7E74',
+      }, where: "id = 'cat_bills'");
 
       await Migrations.v10(db);
 
-      expect(await colorOf(db, 'cat_bills'), '#8A7E74',
-          reason: 'a post-migration edit must not be reverted by a replay');
+      expect(
+        await colorOf(db, 'cat_bills'),
+        '#8A7E74',
+        reason: 'a post-migration edit must not be reverted by a replay',
+      );
       expect(await merchantOf(db, 'tx_gen1'), 'Netflix');
 
       await db.close();
@@ -904,6 +972,16 @@ void main() {
         'sortOrder': 0,
         'createdAt': '2026-01-01T00:00:00.000',
       });
+      await db.insert('categories', {
+        'id': 'cat2',
+        'name': 'Transport',
+        'type': 'expense',
+        'icon': 'directions_car',
+        'color': '#2E5FA8',
+        'isDefault': 0,
+        'sortOrder': 1,
+        'createdAt': '2026-01-01T00:00:00.000',
+      });
       await db.insert('budgets', {
         'id': 'ended',
         'categoryId': 'cat1',
@@ -914,7 +992,7 @@ void main() {
       });
       await db.insert('budgets', {
         'id': 'live',
-        'categoryId': 'cat1',
+        'categoryId': 'cat2',
         'amount': 300000,
         'isActive': 1,
         'createdAt': '2026-02-01T00:00:00.000',
@@ -958,8 +1036,11 @@ void main() {
       // shipped never got the chance to be asked about. Leaving it NULL
       // would greet the user with a card listing their whole history.
       final ended = (await db.query('budgets', where: "id = 'ended'")).first;
-      expect(ended['leftoverResolvedAt'], '2026-02-25T08:00:00.000',
-          reason: 'stamped with updatedAt — the moment it was retired');
+      expect(
+        ended['leftoverResolvedAt'],
+        '2026-02-25T08:00:00.000',
+        reason: 'stamped with updatedAt — the moment it was retired',
+      );
 
       await db.close();
     });
@@ -982,35 +1063,44 @@ void main() {
       expect(ended['isActive'], 0);
       expect(ended['isRecurring'], 1);
       expect(ended['createdAt'], '2026-01-01T00:00:00.000');
-      expect(ended['updatedAt'], '2026-02-25T08:00:00.000',
-          reason: 'the migration must not move the date the budget ended');
+      expect(
+        ended['updatedAt'],
+        '2026-02-25T08:00:00.000',
+        reason: 'the migration must not move the date the budget ended',
+      );
 
-      final links = await db.query('budget_categories', where: "budgetId = 'ended'");
+      final links = await db.query(
+        'budget_categories',
+        where: "budgetId = 'ended'",
+      );
       expect(links, hasLength(1));
       expect(links.first['categoryId'], 'cat1');
 
       await db.close();
     });
 
-    test('a fresh install has the same budgets columns as an upgraded one', () async {
-      final upgraded = await upgradedToV11();
+    test(
+      'a fresh install has the same budgets columns as an upgraded one',
+      () async {
+        final upgraded = await upgradedToV11();
 
-      final fresh = await databaseFactoryFfi.openDatabase(
-        ':memory:',
-        options: OpenDatabaseOptions(
-          version: 1,
-          onCreate: (db, _) async {
-            await db.execute(Migrations.createBudgetsTable);
-          },
-          onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
-        ),
-      );
+        final fresh = await databaseFactoryFfi.openDatabase(
+          ':memory:',
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (db, _) async {
+              await db.execute(Migrations.createBudgetsTable);
+            },
+            onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
+          ),
+        );
 
-      expect(await budgetColumns(fresh), await budgetColumns(upgraded));
+        expect(await budgetColumns(fresh), await budgetColumns(upgraded));
 
-      await upgraded.close();
-      await fresh.close();
-    });
+        await upgraded.close();
+        await fresh.close();
+      },
+    );
 
     test('a fresh install defaults the column to null', () async {
       // createBudgetsTable and the ALTER must agree: a budget inserted

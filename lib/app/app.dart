@@ -86,7 +86,11 @@ class _FintaAppState extends State<FintaApp> {
     await accounts.loadAccounts();
     if (!mounted) return;
 
-    await Future.wait([goals.loadGoals(), debts.loadDebts(), templates.loadTemplates()]);
+    await Future.wait([
+      goals.loadGoals(),
+      debts.loadDebts(),
+      templates.loadTemplates(),
+    ]);
     if (!mounted) return;
 
     await recurring.loadRecurringTransactions();
@@ -133,9 +137,7 @@ class _FintaAppState extends State<FintaApp> {
     if (!_isInitialized) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -150,10 +152,7 @@ class _FintaAppState extends State<FintaApp> {
     final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       floatingActionButton: FloatingActionButton(
         heroTag: null,
         onPressed: _openAddTransaction,
@@ -248,7 +247,10 @@ class _NotchedTopBorderPainter extends CustomPainter {
       radius: guestRadius,
     );
 
-    final path = const CircularNotchedRectangle().getOuterPath(hostRect, guestRect);
+    final path = const CircularNotchedRectangle().getOuterPath(
+      hostRect,
+      guestRect,
+    );
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
@@ -263,7 +265,8 @@ class _NotchedTopBorderPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_NotchedTopBorderPainter oldDelegate) => oldDelegate.color != color;
+  bool shouldRepaint(_NotchedTopBorderPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 /// One destination in the notched bar. [BottomNavigationBarItem] can't be
@@ -287,8 +290,9 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color =
-        selected ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant;
+    final color = selected
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onSurfaceVariant;
 
     return Semantics(
       selected: selected,
