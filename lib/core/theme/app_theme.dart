@@ -3,7 +3,7 @@ import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
 import '../constants/app_constants.dart';
 
-/// Finta theme — warm earthy palette for light and dark modes.
+/// Squirio theme — warm earthy palette for light and dark modes.
 class AppTheme {
   AppTheme._();
 

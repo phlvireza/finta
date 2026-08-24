@@ -1,5 +1,5 @@
 name: finta
-description: "Finta — Personal Financial Tracking App"
+description: "Squirio — Personal Financial Tracking App"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -37,6 +37,7 @@ dependencies:
   intl: ^0.20.2
   uuid: ^4.5.1
   path: ^1.9.1
+  package_info_plus: ^9.0.1
   sqflite_common_ffi: ^2.4.2
   table_calendar: ^3.2.0
 

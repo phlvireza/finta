@@ -14,7 +14,7 @@ val keystoreProperties: Properties? =
     }
 
 android {
-    namespace = "com.finta.finta"
+    namespace = "com.squirro.app"
     // Pinned rather than tracking flutter.*, so a Flutter SDK upgrade cannot
     // move the API level under a release that has already been tested. Needs
     // Android platform 36 installed locally; Gradle fails loudly if it is not.
@@ -29,7 +29,7 @@ android {
 
     defaultConfig {
         // Permanent once published to Play — changing it ships a different app.
-        applicationId = "com.finta.finta"
+        applicationId = "com.squirro.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 24

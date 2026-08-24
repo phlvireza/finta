@@ -1,4 +1,4 @@
-# Finta
+# Squirio
 
 A personal finance tracker built with Flutter. Local-first: everything lives in a
 SQLite database on the device — no account, no cloud sync, no server, no telemetry.

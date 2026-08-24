@@ -12,7 +12,7 @@ import '../../providers/transaction_provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../transactions/widgets/account_picker.dart';
 
-/// Column-mapping → preview → import flow for an arbitrary CSV (Finta's
+/// Column-mapping → preview → import flow for an arbitrary CSV (Squirio's
 /// own export, or a bank/other app's). Only the date and amount columns
 /// are required; everything else degrades gracefully (missing type is
 /// inferred from the amount's sign, missing category falls back to an

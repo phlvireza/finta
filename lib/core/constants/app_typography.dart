@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-/// Finta typography — Inter font family with warm, readable sizing.
+/// Squirio typography — Inter font family with warm, readable sizing.
 ///
 /// Inter is bundled from `assets/fonts/` rather than fetched at runtime. The
 /// app previously used `google_fonts`, which downloads over HTTP on first

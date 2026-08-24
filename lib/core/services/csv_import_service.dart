@@ -57,13 +57,13 @@ class CsvParseResult {
   CsvParseResult(this.headers, this.dataRows);
 }
 
-/// Parses and maps arbitrary CSV data (Finta's own export, or a bank/other
+/// Parses and maps arbitrary CSV data (Squirio's own export, or a bank/other
 /// app's export) into transaction rows. Kept free of any database
 /// dependency so the parsing/mapping logic — the part actually worth
 /// getting right — is unit-testable without one.
 class CsvImportService {
   /// Splits raw CSV text into a header row + data rows. Every export this
-  /// needs to read (Finta's own, plus typical bank/Mint/YNAB-style exports)
+  /// needs to read (Squirio's own, plus typical bank/Mint/YNAB-style exports)
   /// has a header, so callers use it to drive the column-mapping UI.
   CsvParseResult parse(String content) {
     // Normalize line endings first: exports vary between `\r\n` (Windows,
@@ -143,7 +143,7 @@ class CsvImportService {
     final s = raw.trim();
     if (s.isEmpty) return null;
 
-    // ISO 8601 first — Finta's own export format, and most bank exports.
+    // ISO 8601 first — Squirio's own export format, and most bank exports.
     final iso = DateTime.tryParse(s);
     if (iso != null) return DateTime(iso.year, iso.month, iso.day);
 

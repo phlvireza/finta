@@ -1,4 +1,4 @@
-package com.finta.finta
+package com.squirro.app
 
 import io.flutter.embedding.android.FlutterActivity
 

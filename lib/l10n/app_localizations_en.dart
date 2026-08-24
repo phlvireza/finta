@@ -53,7 +53,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTagline => 'Built for you';
 
   @override
-  String get csvExportShareSubject => 'Finta export';
+  String get csvExportShareSubject => 'Squirio export';
 
   @override
   String get manage => 'Manage';
@@ -236,7 +236,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paused => 'Paused';
 
   @override
-  String get welcomeToFinta => 'Welcome to Finta';
+  String get welcomeToFinta => 'Welcome to Squirio';
 
   @override
   String get trackYourExpensesEasily => 'Track your expenses easily.';
@@ -410,7 +410,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get skip => 'Skip';
 
   @override
-  String get trackYourMoney => 'Track your money,\nnot your stress';
+  String get trackYourMoney => 'Track your money,\nnot your worry';
 
   @override
   String get chooseYourCurrency => 'Choose your currency';
@@ -857,10 +857,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backupIncompatible =>
-      'This backup was made with a newer version of Finta and can\'t be restored here';
+      'This backup was made with a newer version of Squirio and can\'t be restored here';
 
   @override
-  String get backupInvalidFile => 'That file isn\'t a valid Finta backup';
+  String get backupInvalidFile => 'That file isn\'t a valid Squirio backup';
 
   @override
   String get restoreBackupTitle => 'Restore this backup?';
@@ -878,7 +878,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get restoreCompleteMessage =>
-      'Please close and reopen Finta to finish loading your restored data.';
+      'Please close and reopen Squirio to finish loading your restored data.';
 
   @override
   String get csvImportSectionTitle => 'Import';
@@ -888,7 +888,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importCsvSubtitle =>
-      'Bring in transactions from Finta or another app\'s export';
+      'Bring in transactions from Squirio or another app\'s export';
 
   @override
   String get csvReadFailed => 'Failed to read that CSV file';
@@ -1496,7 +1496,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get backupShareSubject => 'Finta backup';
+  String get backupShareSubject => 'Squirio backup';
 
   @override
   String get addExpense => 'Add expense';
@@ -1536,4 +1536,98 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectAGoal => 'Select a goal...';
+
+  @override
+  String get squiEmptyTransactions => 'Nothing here yet';
+
+  @override
+  String get squiEmptyTransactionsBody =>
+      'Squi is waiting for the first transaction.';
+
+  @override
+  String get squiEmptyAccounts => 'No wallets yet';
+
+  @override
+  String get squiEmptyAccountsBody => 'Squi needs somewhere to start counting.';
+
+  @override
+  String get squiEmptyGoals => 'No goals yet';
+
+  @override
+  String get squiEmptyGoalsBody =>
+      'Squi is good at saving. Pick something worth saving for.';
+
+  @override
+  String get squiEmptyDebts => 'Nothing owed';
+
+  @override
+  String get squiEmptyDebtsBody => 'Squi has nothing to keep track of here.';
+
+  @override
+  String get squiEmptyBudgets => 'No budgets yet';
+
+  @override
+  String get squiEmptyBudgetsBody =>
+      'Set a limit and Squi will help you keep an eye on it.';
+
+  @override
+  String get squiQuietSubscriptions => 'Nothing scheduled';
+
+  @override
+  String get squiQuietSubscriptionsBody =>
+      'Nothing to track yet. Squi is napping.';
+
+  @override
+  String get squiQuietRecurring => 'Nothing repeating';
+
+  @override
+  String get squiQuietRecurringBody =>
+      'Add one and Squi will keep it on this list.';
+
+  @override
+  String get squiQuietUnusual => 'All quiet';
+
+  @override
+  String get squiQuietUnusualBody =>
+      'Squi found nothing unusual in the last 30 days.';
+
+  @override
+  String get squiEmptyContributions => 'No contributions yet';
+
+  @override
+  String get squiEmptyContributionsBody => 'Squi is ready when you are.';
+
+  @override
+  String get squiEmptyRepayments => 'No repayments yet';
+
+  @override
+  String get squiEmptyRepaymentsBody => 'Squi is ready when you are.';
+
+  @override
+  String squiGoalReachedTitle(String goal) {
+    return '$goal — done!';
+  }
+
+  @override
+  String get squiGoalReachedBody =>
+      'Squi is genuinely delighted. That is the full amount saved.';
+
+  @override
+  String squiDebtSettledTitle(String debt) {
+    return '$debt is paid off';
+  }
+
+  @override
+  String get squiDebtSettledBody =>
+      'Squi is pleased. That is the full amount, cleared.';
+
+  @override
+  String get squiFirstTransactionTitle => 'That is the first one';
+
+  @override
+  String get squiFirstTransactionBody =>
+      'Squi has somewhere to start from now.';
+
+  @override
+  String get squiMomentDismiss => 'Nice';
 }

@@ -2,6 +2,7 @@
 <resources>
     <!-- Mirrored from AppColors.lightBackground so the launch window matches the
          first Flutter frame. Without this the splash is the platform's pure
-         white and visibly jumps to Finta's warm paper. -->
+         white and visibly jumps to Squirio's warm paper. -->
     <color name="splash_background">#FAF7F2</color>
+	<color name="ic_launcher_background">#FAF7F2</color>
 </resources>

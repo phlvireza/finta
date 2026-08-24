@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.finta" "\0"
-            VALUE "FileDescription", "Finta" "\0"
+            VALUE "FileDescription", "Squirio" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "finta" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.finta. All rights reserved." "\0"
             VALUE "OriginalFilename", "finta.exe" "\0"
-            VALUE "ProductName", "Finta" "\0"
+            VALUE "ProductName", "Squirio" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

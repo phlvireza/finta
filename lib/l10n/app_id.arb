@@ -20,7 +20,7 @@
     }
   },
   "appTagline": "Dibuat untuk Anda",
-  "csvExportShareSubject": "Ekspor Finta",
+  "csvExportShareSubject": "Ekspor Squirio",
 
   "manage": "Kelola",
   "categories": "Kategori",
@@ -92,7 +92,7 @@
   "active": "Aktif",
   "paused": "Jeda",
 
-  "welcomeToFinta": "Selamat Datang di Finta",
+  "welcomeToFinta": "Selamat Datang di Squirio",
   "trackYourExpensesEasily": "Lacak pengeluaran Anda dengan mudah.",
   "getStarted": "Mulai",
   "confirmDelete": "Apakah Anda yakin ingin menghapus ini?",
@@ -175,7 +175,7 @@
   "recurringStopped": "Transaksi berulang dihentikan",
   "stop": "Hentikan",
   "skip": "Lewati",
-  "trackYourMoney": "Lacak uang Anda,\nbukan stres Anda",
+  "trackYourMoney": "Lacak uang Anda,\nbukan kekhawatiran Anda",
   "chooseYourCurrency": "Pilih mata uang Anda",
   "currencyDisplayOnly": "Ini hanya untuk tampilan — tidak ada konversi",
   "whenDoYouGetPaid": "Kapan Anda gajian?",
@@ -415,8 +415,8 @@
   "restoreFromBackupSubtitle": "Ganti data Anda saat ini dengan cadangan yang pernah disimpan",
   "restore": "Pulihkan",
   "backupFailed": "Gagal membuat cadangan",
-  "backupIncompatible": "Cadangan ini dibuat dengan versi Finta yang lebih baru dan tidak bisa dipulihkan di sini",
-  "backupInvalidFile": "File itu bukan cadangan Finta yang valid",
+  "backupIncompatible": "Cadangan ini dibuat dengan versi Squirio yang lebih baru dan tidak bisa dipulihkan di sini",
+  "backupInvalidFile": "File itu bukan cadangan Squirio yang valid",
   "restoreBackupTitle": "Pulihkan cadangan ini?",
   "restoreBackupConfirm": "Ini akan mengganti semua data saat ini dengan cadangan dari {date}. Tindakan ini tidak dapat dibatalkan.",
   "@restoreBackupConfirm": {
@@ -426,11 +426,11 @@
   },
   "restoreFailed": "Gagal memulihkan cadangan",
   "restoreCompleteTitle": "Cadangan dipulihkan",
-  "restoreCompleteMessage": "Silakan tutup dan buka kembali Finta untuk menyelesaikan pemuatan data yang dipulihkan.",
+  "restoreCompleteMessage": "Silakan tutup dan buka kembali Squirio untuk menyelesaikan pemuatan data yang dipulihkan.",
 
   "csvImportSectionTitle": "Impor",
   "importCsv": "Impor dari CSV",
-  "importCsvSubtitle": "Bawa masuk transaksi dari Finta atau ekspor aplikasi lain",
+  "importCsvSubtitle": "Bawa masuk transaksi dari Squirio atau ekspor aplikasi lain",
   "csvReadFailed": "Gagal membaca file CSV itu",
   "mapCsvColumns": "Petakan kolom",
   "reviewImport": "Tinjau impor",
@@ -839,7 +839,7 @@
       "date": { "type": "String" }
     }
   },
-  "backupShareSubject": "Cadangan Finta",
+  "backupShareSubject": "Cadangan Squirio",
   "addExpense": "Tambah pengeluaran",
   "unspentBudgets": "Anggaran tersisa",
   "budgetLeftoverSubtitle": "Tersisa {amount} saat berakhir",
@@ -858,5 +858,39 @@
   "moveLeftoverToSavingsDesc": "Alokasikan ke sebuah target",
   "markLeftoverAsSpent": "Tandai terpakai",
   "markLeftoverAsSpentDesc": "Catat pengeluaran agar tidak ada sisa",
-  "selectAGoal": "Pilih target..."
+  "selectAGoal": "Pilih target...",
+
+  "squiEmptyTransactions": "Belum ada apa-apa di sini",
+  "squiEmptyTransactionsBody": "Squi menunggu transaksi pertama.",
+  "squiEmptyAccounts": "Belum ada dompet",
+  "squiEmptyAccountsBody": "Squi butuh tempat untuk mulai mencatat.",
+  "squiEmptyGoals": "Belum ada tujuan",
+  "squiEmptyGoalsBody": "Squi jago menabung. Pilih sesuatu yang layak ditabung.",
+  "squiEmptyDebts": "Tidak ada utang",
+  "squiEmptyDebtsBody": "Tidak ada yang perlu Squi catat di sini.",
+  "squiEmptyBudgets": "Belum ada anggaran",
+  "squiEmptyBudgetsBody": "Tetapkan batas, Squi bantu mengawasi.",
+  "squiQuietSubscriptions": "Tidak ada jadwal",
+  "squiQuietSubscriptionsBody": "Belum ada yang perlu dicatat. Squi tidur dulu.",
+  "squiQuietRecurring": "Tidak ada yang berulang",
+  "squiQuietRecurringBody": "Tambahkan satu, Squi yang simpan di daftar ini.",
+  "squiQuietUnusual": "Semua aman",
+  "squiQuietUnusualBody": "Squi tidak menemukan hal aneh dalam 30 hari terakhir.",
+  "squiEmptyContributions": "Belum ada setoran",
+  "squiEmptyContributionsBody": "Squi siap kapan saja.",
+  "squiEmptyRepayments": "Belum ada pembayaran",
+  "squiEmptyRepaymentsBody": "Squi siap kapan saja.",
+  "squiGoalReachedTitle": "{goal} — tercapai!",
+  "@squiGoalReachedTitle": {
+    "placeholders": { "goal": { "type": "String" } }
+  },
+  "squiGoalReachedBody": "Squi ikut senang. Jumlahnya sudah lengkap.",
+  "squiDebtSettledTitle": "{debt} sudah lunas",
+  "@squiDebtSettledTitle": {
+    "placeholders": { "debt": { "type": "String" } }
+  },
+  "squiDebtSettledBody": "Squi ikut senang. Jumlahnya lunas semua.",
+  "squiFirstTransactionTitle": "Itu yang pertama",
+  "squiFirstTransactionBody": "Sekarang Squi punya titik awal.",
+  "squiMomentDismiss": "Oke"
 }

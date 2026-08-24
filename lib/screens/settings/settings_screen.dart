@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/transaction_provider.dart';
@@ -10,7 +11,10 @@ import 'package:share_plus/share_plus.dart';
 import 'dart:io';
 import '../../l10n/app_localizations.dart';
 import '../backup/backup_restore_screen.dart';
+import 'privacy_policy_screen.dart';
 import '../../core/utils/export_cleanup.dart';
+
+final Future<PackageInfo> _packageInfo = PackageInfo.fromPlatform();
 
 /// Settings screen — preferences, management links, and CSV export.
 class SettingsScreen extends StatelessWidget {
@@ -20,13 +24,17 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final settings = context.watch<SettingsProvider>();
+    final isDark = theme.brightness == Brightness.dark;
+    final appIconAsset = isDark
+        ? 'assets/images/app_icon_dark.png'
+        : 'assets/images/app_icon.png';
+    final appIconCacheWidth = (64 * MediaQuery.devicePixelRatioOf(context))
+        .round();
 
     final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(loc.settings),
-      ),
+      appBar: AppBar(title: Text(loc.settings)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
           AppConstants.spacingLg,
@@ -68,7 +76,9 @@ class SettingsScreen extends StatelessWidget {
                   leading: const Icon(Icons.language),
                   title: Text(loc.language),
                   trailing: Text(
-                    settings.languageCode == 'en' ? loc.languageNameEnglish : loc.languageNameIndonesian,
+                    settings.languageCode == 'en'
+                        ? loc.languageNameEnglish
+                        : loc.languageNameIndonesian,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.primary,
                     ),
@@ -93,6 +103,28 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: AppConstants.spacingLg),
 
           SectionCard(
+            padding: EdgeInsets.zero,
+            child: ListTile(
+              leading: const Icon(Icons.privacy_tip_outlined),
+              title: Text(
+                settings.languageCode == 'id'
+                    ? 'Kebijakan Privasi'
+                    : 'Privacy Policy',
+              ),
+              subtitle: Text(
+                settings.languageCode == 'id'
+                    ? 'Cara Squirio menangani data Anda'
+                    : 'How Squirio handles your data',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppConstants.spacingLg),
+
+          SectionCard(
             title: loc.data,
             padding: EdgeInsets.zero,
             child: Column(
@@ -109,7 +141,9 @@ class SettingsScreen extends StatelessWidget {
                   title: Text(loc.backupAndRestore),
                   subtitle: Text(loc.backupAndRestoreSubtitle),
                   onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const BackupRestoreScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const BackupRestoreScreen(),
+                    ),
                   ),
                 ),
               ],
@@ -121,24 +155,36 @@ class SettingsScreen extends StatelessWidget {
             child: Center(
               child: Column(
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(AppConstants.radiusLg),
-                    child: Image.asset(
-                      'assets/images/app_icon.png',
-                      width: 64,
-                      height: 64,
+                  AnimatedSwitcher(
+                    duration: AppConstants.animNormal,
+                    child: ClipRRect(
+                      key: ValueKey(appIconAsset),
+                      borderRadius: BorderRadius.circular(
+                        AppConstants.radiusLg,
+                      ),
+                      child: Image.asset(
+                        appIconAsset,
+                        width: 64,
+                        height: 64,
+                        fit: BoxFit.cover,
+                        cacheWidth: appIconCacheWidth,
+                        excludeFromSemantics: true,
+                      ),
                     ),
                   ),
                   const SizedBox(height: AppConstants.spacingMd),
-                  Text(
-                    'Finta',
-                    style: theme.textTheme.headlineSmall,
-                  ),
+                  Text('Squirio', style: theme.textTheme.headlineSmall),
                   const SizedBox(height: 4),
-                  Text(
-                    '${loc.appVersionLabel('1.0.0')}\n${loc.appTagline}',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodySmall,
+                  FutureBuilder<PackageInfo>(
+                    future: _packageInfo,
+                    builder: (context, snapshot) {
+                      final version = snapshot.data?.version ?? '—';
+                      return Text(
+                        '${loc.appVersionLabel(version)}\n${loc.appTagline}',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodySmall,
+                      );
+                    },
                   ),
                 ],
               ),
@@ -157,10 +203,16 @@ class SettingsScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: AppConstants.currencies.map((c) {
             return ListTile(
-              leading: Text(c.symbol, style: Theme.of(context).textTheme.titleMedium),
+              leading: Text(
+                c.symbol,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               title: Text(c.name),
               trailing: settings.currencyCode == c.code
-                  ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
                   : null,
               onTap: () {
                 settings.setCurrency(c.code);
@@ -188,7 +240,10 @@ class SettingsScreen extends StatelessWidget {
               // can't read the current locale can still spot their own.
               title: Text(loc.languageNameEnglish),
               trailing: settings.languageCode == 'en'
-                  ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
                   : null,
               onTap: () async {
                 // Read before popping and before the first await, so the
@@ -205,7 +260,10 @@ class SettingsScreen extends StatelessWidget {
               leading: const Text('🇮🇩', style: TextStyle(fontSize: 24)),
               title: Text(loc.languageNameIndonesian),
               trailing: settings.languageCode == 'id'
-                  ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
                   : null,
               onTap: () async {
                 // Read before popping and before the first await, so the
@@ -236,7 +294,10 @@ class SettingsScreen extends StatelessWidget {
               leading: const Icon(Icons.brightness_auto),
               title: Text(loc.systemDefault),
               trailing: settings.themeMode == ThemeMode.system
-                  ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
                   : null,
               onTap: () {
                 settings.setThemeMode(ThemeMode.system);
@@ -247,7 +308,10 @@ class SettingsScreen extends StatelessWidget {
               leading: const Icon(Icons.light_mode),
               title: Text(loc.light),
               trailing: settings.themeMode == ThemeMode.light
-                  ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
                   : null,
               onTap: () {
                 settings.setThemeMode(ThemeMode.light);
@@ -258,7 +322,10 @@ class SettingsScreen extends StatelessWidget {
               leading: const Icon(Icons.dark_mode),
               title: Text(loc.dark),
               trailing: settings.themeMode == ThemeMode.dark
-                  ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
                   : null,
               onTap: () {
                 settings.setThemeMode(ThemeMode.dark);
@@ -282,42 +349,50 @@ class SettingsScreen extends StatelessWidget {
           child: SizedBox(
             width: double.maxFinite,
             child: GridView.builder(
-            shrinkWrap: true,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-              mainAxisSpacing: 4,
-              crossAxisSpacing: 4,
-            ),
-            itemCount: 31,
-            itemBuilder: (context, index) {
-              final day = index + 1;
-              final isSelected = settings.payday == day;
-              final theme = Theme.of(context);
+              shrinkWrap: true,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7,
+                mainAxisSpacing: 4,
+                crossAxisSpacing: 4,
+              ),
+              itemCount: 31,
+              itemBuilder: (context, index) {
+                final day = index + 1;
+                final isSelected = settings.payday == day;
+                final theme = Theme.of(context);
 
-              return InkWell(
-                onTap: () {
-                  settings.setPayday(day);
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isSelected ? theme.colorScheme.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(AppConstants.radiusSm),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '$day',
-                      style: TextStyle(
-                        color: isSelected ? theme.colorScheme.onPrimary : null,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                return InkWell(
+                  onTap: () {
+                    settings.setPayday(day);
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? theme.colorScheme.primary
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(
+                        AppConstants.radiusSm,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$day',
+                        style: TextStyle(
+                          color: isSelected
+                              ? theme.colorScheme.onPrimary
+                              : null,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
         ),
       ),
     );
@@ -342,28 +417,40 @@ class SettingsScreen extends StatelessWidget {
         // categories still resolve here since getCategoryById isn't
         // filtered, only the active-category pickers are.
         final categoryName =
-            categoryProvider.getCategoryById(tx.categoryId)?.name ?? loc.unknown;
-        buffer.writeln([
-          tx.date.toIso8601String().substring(0, 10),
-          tx.type,
-          tx.amount,
-          categoryName,
-          tx.note ?? '',
-        ].map(_csvField).join(','));
+            categoryProvider.getCategoryById(tx.categoryId)?.name ??
+            loc.unknown;
+        buffer.writeln(
+          [
+            tx.date.toIso8601String().substring(0, 10),
+            tx.type,
+            tx.amount,
+            categoryName,
+            tx.note ?? '',
+          ].map(_csvField).join(','),
+        );
       }
 
       final directory = await getApplicationDocumentsDirectory();
       await pruneExports(directory, prefix: 'finta_export_', extension: '.csv');
-      final file = File('${directory.path}/finta_export_${DateTime.now().millisecondsSinceEpoch}.csv');
+      await pruneExports(
+        directory,
+        prefix: 'squirio_export_',
+        extension: '.csv',
+      );
+      final file = File(
+        '${directory.path}/squirio_export_${DateTime.now().millisecondsSinceEpoch}.csv',
+      );
       await file.writeAsString(buffer.toString());
 
-      await Share.shareXFiles([XFile(file.path)], subject: loc.csvExportShareSubject);
+      await Share.shareXFiles([
+        XFile(file.path),
+      ], subject: loc.csvExportShareSubject);
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(loc.errorFailedToExport)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(loc.errorFailedToExport)));
       }
     }
   }

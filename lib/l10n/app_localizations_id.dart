@@ -53,7 +53,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get appTagline => 'Dibuat untuk Anda';
 
   @override
-  String get csvExportShareSubject => 'Ekspor Finta';
+  String get csvExportShareSubject => 'Ekspor Squirio';
 
   @override
   String get manage => 'Kelola';
@@ -236,7 +236,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get paused => 'Dijeda';
 
   @override
-  String get welcomeToFinta => 'Selamat Datang di Finta';
+  String get welcomeToFinta => 'Selamat Datang di Squirio';
 
   @override
   String get trackYourExpensesEasily => 'Lacak pengeluaran Anda dengan mudah.';
@@ -411,7 +411,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get skip => 'Lewati';
 
   @override
-  String get trackYourMoney => 'Lacak uang Anda,\nbukan stres Anda';
+  String get trackYourMoney => 'Lacak uang Anda,\nbukan kekhawatiran Anda';
 
   @override
   String get chooseYourCurrency => 'Pilih mata uang Anda';
@@ -858,10 +858,10 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get backupIncompatible =>
-      'Cadangan ini dibuat dengan versi Finta yang lebih baru dan tidak bisa dipulihkan di sini';
+      'Cadangan ini dibuat dengan versi Squirio yang lebih baru dan tidak bisa dipulihkan di sini';
 
   @override
-  String get backupInvalidFile => 'File itu bukan cadangan Finta yang valid';
+  String get backupInvalidFile => 'File itu bukan cadangan Squirio yang valid';
 
   @override
   String get restoreBackupTitle => 'Pulihkan cadangan ini?';
@@ -879,7 +879,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get restoreCompleteMessage =>
-      'Silakan tutup dan buka kembali Finta untuk menyelesaikan pemuatan data yang dipulihkan.';
+      'Silakan tutup dan buka kembali Squirio untuk menyelesaikan pemuatan data yang dipulihkan.';
 
   @override
   String get csvImportSectionTitle => 'Impor';
@@ -889,7 +889,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get importCsvSubtitle =>
-      'Bawa masuk transaksi dari Finta atau ekspor aplikasi lain';
+      'Bawa masuk transaksi dari Squirio atau ekspor aplikasi lain';
 
   @override
   String get csvReadFailed => 'Gagal membaca file CSV itu';
@@ -1499,7 +1499,7 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String get backupShareSubject => 'Cadangan Finta';
+  String get backupShareSubject => 'Cadangan Squirio';
 
   @override
   String get addExpense => 'Tambah pengeluaran';
@@ -1539,4 +1539,94 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get selectAGoal => 'Pilih target...';
+
+  @override
+  String get squiEmptyTransactions => 'Belum ada apa-apa di sini';
+
+  @override
+  String get squiEmptyTransactionsBody => 'Squi menunggu transaksi pertama.';
+
+  @override
+  String get squiEmptyAccounts => 'Belum ada dompet';
+
+  @override
+  String get squiEmptyAccountsBody => 'Squi butuh tempat untuk mulai mencatat.';
+
+  @override
+  String get squiEmptyGoals => 'Belum ada tujuan';
+
+  @override
+  String get squiEmptyGoalsBody =>
+      'Squi jago menabung. Pilih sesuatu yang layak ditabung.';
+
+  @override
+  String get squiEmptyDebts => 'Tidak ada utang';
+
+  @override
+  String get squiEmptyDebtsBody => 'Tidak ada yang perlu Squi catat di sini.';
+
+  @override
+  String get squiEmptyBudgets => 'Belum ada anggaran';
+
+  @override
+  String get squiEmptyBudgetsBody => 'Tetapkan batas, Squi bantu mengawasi.';
+
+  @override
+  String get squiQuietSubscriptions => 'Tidak ada jadwal';
+
+  @override
+  String get squiQuietSubscriptionsBody =>
+      'Belum ada yang perlu dicatat. Squi tidur dulu.';
+
+  @override
+  String get squiQuietRecurring => 'Tidak ada yang berulang';
+
+  @override
+  String get squiQuietRecurringBody =>
+      'Tambahkan satu, Squi yang simpan di daftar ini.';
+
+  @override
+  String get squiQuietUnusual => 'Semua aman';
+
+  @override
+  String get squiQuietUnusualBody =>
+      'Squi tidak menemukan hal aneh dalam 30 hari terakhir.';
+
+  @override
+  String get squiEmptyContributions => 'Belum ada setoran';
+
+  @override
+  String get squiEmptyContributionsBody => 'Squi siap kapan saja.';
+
+  @override
+  String get squiEmptyRepayments => 'Belum ada pembayaran';
+
+  @override
+  String get squiEmptyRepaymentsBody => 'Squi siap kapan saja.';
+
+  @override
+  String squiGoalReachedTitle(String goal) {
+    return '$goal — tercapai!';
+  }
+
+  @override
+  String get squiGoalReachedBody =>
+      'Squi ikut senang. Jumlahnya sudah lengkap.';
+
+  @override
+  String squiDebtSettledTitle(String debt) {
+    return '$debt sudah lunas';
+  }
+
+  @override
+  String get squiDebtSettledBody => 'Squi ikut senang. Jumlahnya lunas semua.';
+
+  @override
+  String get squiFirstTransactionTitle => 'Itu yang pertama';
+
+  @override
+  String get squiFirstTransactionBody => 'Sekarang Squi punya titik awal.';
+
+  @override
+  String get squiMomentDismiss => 'Oke';
 }

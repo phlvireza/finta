@@ -185,7 +185,7 @@ abstract class AppLocalizations {
   /// No description provided for @csvExportShareSubject.
   ///
   /// In en, this message translates to:
-  /// **'Finta export'**
+  /// **'Squirio export'**
   String get csvExportShareSubject;
 
   /// No description provided for @manage.
@@ -551,7 +551,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcomeToFinta.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to Finta'**
+  /// **'Welcome to Squirio'**
   String get welcomeToFinta;
 
   /// No description provided for @trackYourExpensesEasily.
@@ -875,7 +875,7 @@ abstract class AppLocalizations {
   /// No description provided for @trackYourMoney.
   ///
   /// In en, this message translates to:
-  /// **'Track your money,\nnot your stress'**
+  /// **'Track your money,\nnot your worry'**
   String get trackYourMoney;
 
   /// No description provided for @chooseYourCurrency.
@@ -1673,13 +1673,13 @@ abstract class AppLocalizations {
   /// No description provided for @backupIncompatible.
   ///
   /// In en, this message translates to:
-  /// **'This backup was made with a newer version of Finta and can\'t be restored here'**
+  /// **'This backup was made with a newer version of Squirio and can\'t be restored here'**
   String get backupIncompatible;
 
   /// No description provided for @backupInvalidFile.
   ///
   /// In en, this message translates to:
-  /// **'That file isn\'t a valid Finta backup'**
+  /// **'That file isn\'t a valid Squirio backup'**
   String get backupInvalidFile;
 
   /// No description provided for @restoreBackupTitle.
@@ -1709,7 +1709,7 @@ abstract class AppLocalizations {
   /// No description provided for @restoreCompleteMessage.
   ///
   /// In en, this message translates to:
-  /// **'Please close and reopen Finta to finish loading your restored data.'**
+  /// **'Please close and reopen Squirio to finish loading your restored data.'**
   String get restoreCompleteMessage;
 
   /// No description provided for @csvImportSectionTitle.
@@ -1727,7 +1727,7 @@ abstract class AppLocalizations {
   /// No description provided for @importCsvSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Bring in transactions from Finta or another app\'s export'**
+  /// **'Bring in transactions from Squirio or another app\'s export'**
   String get importCsvSubtitle;
 
   /// No description provided for @csvReadFailed.
@@ -2693,7 +2693,7 @@ abstract class AppLocalizations {
   /// No description provided for @backupShareSubject.
   ///
   /// In en, this message translates to:
-  /// **'Finta backup'**
+  /// **'Squirio backup'**
   String get backupShareSubject;
 
   /// No description provided for @addExpense.
@@ -2767,6 +2767,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select a goal...'**
   String get selectAGoal;
+
+  /// No description provided for @squiEmptyTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet'**
+  String get squiEmptyTransactions;
+
+  /// No description provided for @squiEmptyTransactionsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Squi is waiting for the first transaction.'**
+  String get squiEmptyTransactionsBody;
+
+  /// No description provided for @squiEmptyAccounts.
+  ///
+  /// In en, this message translates to:
+  /// **'No wallets yet'**
+  String get squiEmptyAccounts;
+
+  /// No description provided for @squiEmptyAccountsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Squi needs somewhere to start counting.'**
+  String get squiEmptyAccountsBody;
+
+  /// No description provided for @squiEmptyGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'No goals yet'**
+  String get squiEmptyGoals;
+
+  /// No description provided for @squiEmptyGoalsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Squi is good at saving. Pick something worth saving for.'**
+  String get squiEmptyGoalsBody;
+
+  /// No description provided for @squiEmptyDebts.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing owed'**
+  String get squiEmptyDebts;
+
+  /// No description provided for @squiEmptyDebtsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Squi has nothing to keep track of here.'**
+  String get squiEmptyDebtsBody;
+
+  /// No description provided for @squiEmptyBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'No budgets yet'**
+  String get squiEmptyBudgets;
+
+  /// No description provided for @squiEmptyBudgetsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a limit and Squi will help you keep an eye on it.'**
+  String get squiEmptyBudgetsBody;
+
+  /// No description provided for @squiQuietSubscriptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing scheduled'**
+  String get squiQuietSubscriptions;
+
+  /// No description provided for @squiQuietSubscriptionsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to track yet. Squi is napping.'**
+  String get squiQuietSubscriptionsBody;
+
+  /// No description provided for @squiQuietRecurring.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing repeating'**
+  String get squiQuietRecurring;
+
+  /// No description provided for @squiQuietRecurringBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add one and Squi will keep it on this list.'**
+  String get squiQuietRecurringBody;
+
+  /// No description provided for @squiQuietUnusual.
+  ///
+  /// In en, this message translates to:
+  /// **'All quiet'**
+  String get squiQuietUnusual;
+
+  /// No description provided for @squiQuietUnusualBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Squi found nothing unusual in the last 30 days.'**
+  String get squiQuietUnusualBody;
+
+  /// No description provided for @squiEmptyContributions.
+  ///
+  /// In en, this message translates to:
+  /// **'No contributions yet'**
+  String get squiEmptyContributions;
+
+  /// No description provided for @squiEmptyContributionsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Squi is ready when you are.'**
+  String get squiEmptyContributionsBody;
+
+  /// No description provided for @squiEmptyRepayments.
+  ///
+  /// In en, this message translates to:
+  /// **'No repayments yet'**
+  String get squiEmptyRepayments;
+
+  /// No description provided for @squiEmptyRepaymentsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Squi is ready when you are.'**
+  String get squiEmptyRepaymentsBody;
+
+  /// No description provided for @squiGoalReachedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{goal} — done!'**
+  String squiGoalReachedTitle(String goal);
+
+  /// No description provided for @squiGoalReachedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Squi is genuinely delighted. That is the full amount saved.'**
+  String get squiGoalReachedBody;
+
+  /// No description provided for @squiDebtSettledTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{debt} is paid off'**
+  String squiDebtSettledTitle(String debt);
+
+  /// No description provided for @squiDebtSettledBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Squi is pleased. That is the full amount, cleared.'**
+  String get squiDebtSettledBody;
+
+  /// No description provided for @squiFirstTransactionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'That is the first one'**
+  String get squiFirstTransactionTitle;
+
+  /// No description provided for @squiFirstTransactionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Squi has somewhere to start from now.'**
+  String get squiFirstTransactionBody;
+
+  /// No description provided for @squiMomentDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Nice'**
+  String get squiMomentDismiss;
 }
 
 class _AppLocalizationsDelegate

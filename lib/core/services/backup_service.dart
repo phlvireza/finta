@@ -31,7 +31,7 @@ class BackupService {
   static const _metaFileName = 'meta.json';
   static const _dbFileName = 'finta.db';
 
-  /// Builds a `finta_backup_<timestamp>.zip` in the app documents directory
+  /// Builds a `squirio_backup_<timestamp>.zip` in the app documents directory
   /// containing the live database file plus a manifest recording the
   /// schema version it was written at, and opens the OS share sheet for it.
   /// [loc] is passed in rather than resolved here: this class has no
@@ -39,10 +39,9 @@ class BackupService {
   /// subject the same way (see settings_screen.dart).
   Future<void> shareBackup(AppLocalizations loc) async {
     final archiveFile = await _createBackupArchive();
-    await Share.shareXFiles(
-      [XFile(archiveFile.path)],
-      subject: loc.backupShareSubject,
-    );
+    await Share.shareXFiles([
+      XFile(archiveFile.path),
+    ], subject: loc.backupShareSubject);
   }
 
   Future<File> _createBackupArchive() async {
@@ -74,8 +73,12 @@ class BackupService {
       // Drop earlier backups first: each one is a full copy of the database,
       // so keeping every generation is the most expensive of the three exports.
       await pruneExports(dir, prefix: 'finta_backup_', extension: '.zip');
+      await pruneExports(dir, prefix: 'squirio_backup_', extension: '.zip');
       final outFile = File(
-        p.join(dir.path, 'finta_backup_${DateTime.now().millisecondsSinceEpoch}.zip'),
+        p.join(
+          dir.path,
+          'squirio_backup_${DateTime.now().millisecondsSinceEpoch}.zip',
+        ),
       );
       await outFile.writeAsBytes(zipBytes, flush: true);
       return outFile;
@@ -99,11 +102,14 @@ class BackupService {
         (f) => f.name == _dbFileName,
         orElse: () => throw const FormatException('missing finta.db'),
       );
-      if (dbEntry.content is! List<int> || (dbEntry.content as List<int>).isEmpty) {
+      if (dbEntry.content is! List<int> ||
+          (dbEntry.content as List<int>).isEmpty) {
         throw const FormatException('empty finta.db in archive');
       }
 
-      final meta = jsonDecode(utf8.decode(metaEntry.content as List<int>)) as Map<String, dynamic>;
+      final meta =
+          jsonDecode(utf8.decode(metaEntry.content as List<int>))
+              as Map<String, dynamic>;
       final schemaVersion = meta['schemaVersion'] as int;
       return BackupValidation(
         // A backup from a *newer* app version may contain columns this
@@ -115,7 +121,7 @@ class BackupService {
         exportedAt: DateTime.parse(meta['exportedAt'] as String),
       );
     } catch (e) {
-      throw ValidationException('Not a valid Finta backup file', cause: e);
+      throw ValidationException('Not a valid Squirio backup file', cause: e);
     }
   }
 

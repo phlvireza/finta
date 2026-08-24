@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Finta color palette — warm & earthy tones.
+/// Squirio color palette — warm & earthy tones.
 /// See PRD Section 3 for the full color table.
 class AppColors {
   AppColors._();

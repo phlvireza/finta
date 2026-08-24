@@ -14,7 +14,7 @@ import 'restart_required_screen.dart';
 /// Hub for the three data-portability flows: full-database backup/restore
 /// (a zip of the live sqlite file — the safest round trip, since it's
 /// exactly what the app has, not a hand-written re-serialization), and CSV
-/// import from Finta's own export or another app's.
+/// import from Squirio's own export or another app's.
 class BackupRestoreScreen extends StatefulWidget {
   const BackupRestoreScreen({super.key});
 

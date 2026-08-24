@@ -20,7 +20,7 @@
     }
   },
   "appTagline": "Built for you",
-  "csvExportShareSubject": "Finta export",
+  "csvExportShareSubject": "Squirio export",
 
   "manage": "Manage",
   "categories": "Categories",
@@ -92,7 +92,7 @@
   "active": "Active",
   "paused": "Paused",
 
-  "welcomeToFinta": "Welcome to Finta",
+  "welcomeToFinta": "Welcome to Squirio",
   "trackYourExpensesEasily": "Track your expenses easily.",
   "getStarted": "Get Started",
   "confirmDelete": "Are you sure you want to delete this?",
@@ -177,7 +177,7 @@
   "recurringStopped": "Recurring transaction stopped",
   "stop": "Stop",
   "skip": "Skip",
-  "trackYourMoney": "Track your money,\nnot your stress",
+  "trackYourMoney": "Track your money,\nnot your worry",
   "chooseYourCurrency": "Choose your currency",
   "currencyDisplayOnly": "This is just for display — no conversion",
   "whenDoYouGetPaid": "When do you get paid?",
@@ -417,8 +417,8 @@
   "restoreFromBackupSubtitle": "Replace your data with a previously saved backup",
   "restore": "Restore",
   "backupFailed": "Failed to create backup",
-  "backupIncompatible": "This backup was made with a newer version of Finta and can't be restored here",
-  "backupInvalidFile": "That file isn't a valid Finta backup",
+  "backupIncompatible": "This backup was made with a newer version of Squirio and can't be restored here",
+  "backupInvalidFile": "That file isn't a valid Squirio backup",
   "restoreBackupTitle": "Restore this backup?",
   "restoreBackupConfirm": "This will replace all current data with the backup from {date}. This can't be undone.",
   "@restoreBackupConfirm": {
@@ -428,11 +428,11 @@
   },
   "restoreFailed": "Failed to restore backup",
   "restoreCompleteTitle": "Backup restored",
-  "restoreCompleteMessage": "Please close and reopen Finta to finish loading your restored data.",
+  "restoreCompleteMessage": "Please close and reopen Squirio to finish loading your restored data.",
 
   "csvImportSectionTitle": "Import",
   "importCsv": "Import from CSV",
-  "importCsvSubtitle": "Bring in transactions from Finta or another app's export",
+  "importCsvSubtitle": "Bring in transactions from Squirio or another app's export",
   "csvReadFailed": "Failed to read that CSV file",
   "mapCsvColumns": "Map columns",
   "reviewImport": "Review import",
@@ -841,7 +841,7 @@
       "date": { "type": "String" }
     }
   },
-  "backupShareSubject": "Finta backup",
+  "backupShareSubject": "Squirio backup",
   "addExpense": "Add expense",
   "unspentBudgets": "Unspent budgets",
   "budgetLeftoverSubtitle": "{amount} left when this ended",
@@ -860,5 +860,39 @@
   "moveLeftoverToSavingsDesc": "Put it toward a goal",
   "markLeftoverAsSpent": "Mark as spent",
   "markLeftoverAsSpentDesc": "Log an expense so nothing is left",
-  "selectAGoal": "Select a goal..."
+  "selectAGoal": "Select a goal...",
+
+  "squiEmptyTransactions": "Nothing here yet",
+  "squiEmptyTransactionsBody": "Squi is waiting for the first transaction.",
+  "squiEmptyAccounts": "No wallets yet",
+  "squiEmptyAccountsBody": "Squi needs somewhere to start counting.",
+  "squiEmptyGoals": "No goals yet",
+  "squiEmptyGoalsBody": "Squi is good at saving. Pick something worth saving for.",
+  "squiEmptyDebts": "Nothing owed",
+  "squiEmptyDebtsBody": "Squi has nothing to keep track of here.",
+  "squiEmptyBudgets": "No budgets yet",
+  "squiEmptyBudgetsBody": "Set a limit and Squi will help you keep an eye on it.",
+  "squiQuietSubscriptions": "Nothing scheduled",
+  "squiQuietSubscriptionsBody": "Nothing to track yet. Squi is napping.",
+  "squiQuietRecurring": "Nothing repeating",
+  "squiQuietRecurringBody": "Add one and Squi will keep it on this list.",
+  "squiQuietUnusual": "All quiet",
+  "squiQuietUnusualBody": "Squi found nothing unusual in the last 30 days.",
+  "squiEmptyContributions": "No contributions yet",
+  "squiEmptyContributionsBody": "Squi is ready when you are.",
+  "squiEmptyRepayments": "No repayments yet",
+  "squiEmptyRepaymentsBody": "Squi is ready when you are.",
+  "squiGoalReachedTitle": "{goal} — done!",
+  "@squiGoalReachedTitle": {
+    "placeholders": { "goal": { "type": "String" } }
+  },
+  "squiGoalReachedBody": "Squi is genuinely delighted. That is the full amount saved.",
+  "squiDebtSettledTitle": "{debt} is paid off",
+  "@squiDebtSettledTitle": {
+    "placeholders": { "debt": { "type": "String" } }
+  },
+  "squiDebtSettledBody": "Squi is pleased. That is the full amount, cleared.",
+  "squiFirstTransactionTitle": "That is the first one",
+  "squiFirstTransactionBody": "Squi has somewhere to start from now.",
+  "squiMomentDismiss": "Nice"
 }
