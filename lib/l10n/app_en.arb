@@ -19,7 +19,6 @@
       "version": { "type": "String" }
     }
   },
-  "appTagline": "Built for you",
   "csvExportShareSubject": "Squirio export",
 
   "manage": "Manage",

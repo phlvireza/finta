@@ -19,7 +19,6 @@
       "version": { "type": "String" }
     }
   },
-  "appTagline": "Dibuat untuk Anda",
   "csvExportShareSubject": "Ekspor Squirio",
 
   "manage": "Kelola",
@@ -175,7 +174,7 @@
   "recurringStopped": "Transaksi berulang dihentikan",
   "stop": "Hentikan",
   "skip": "Lewati",
-  "trackYourMoney": "Lacak uang Anda,\nbukan kekhawatiran Anda",
+  "trackYourMoney": "Catat uang Anda,\nbukan kekhawatiran Anda",
   "chooseYourCurrency": "Pilih mata uang Anda",
   "currencyDisplayOnly": "Ini hanya untuk tampilan — tidak ada konversi",
   "whenDoYouGetPaid": "Kapan Anda gajian?",

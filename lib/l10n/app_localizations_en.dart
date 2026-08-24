@@ -50,9 +50,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get appTagline => 'Built for you';
-
-  @override
   String get csvExportShareSubject => 'Squirio export';
 
   @override

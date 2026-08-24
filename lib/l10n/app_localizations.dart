@@ -176,12 +176,6 @@ abstract class AppLocalizations {
   /// **'Version {version}'**
   String appVersionLabel(String version);
 
-  /// No description provided for @appTagline.
-  ///
-  /// In en, this message translates to:
-  /// **'Built for you'**
-  String get appTagline;
-
   /// No description provided for @csvExportShareSubject.
   ///
   /// In en, this message translates to:

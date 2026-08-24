@@ -173,8 +173,13 @@ class SettingsScreen extends StatelessWidget {
                     future: _packageInfo,
                     builder: (context, snapshot) {
                       final version = snapshot.data?.version ?? '—';
+                      // The one official slogan, shared with the onboarding
+                      // welcome page and the marketing site. This card used
+                      // to carry a second, unofficial tagline ("Built for
+                      // you") that appeared nowhere else — two taglines for
+                      // one product is none.
                       return Text(
-                        '${loc.appVersionLabel(version)}\n${loc.appTagline}',
+                        '${loc.appVersionLabel(version)}\n${loc.trackYourMoney}',
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodySmall,
                       );

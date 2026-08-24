@@ -50,9 +50,6 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String get appTagline => 'Dibuat untuk Anda';
-
-  @override
   String get csvExportShareSubject => 'Ekspor Squirio';
 
   @override
@@ -411,7 +408,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get skip => 'Lewati';
 
   @override
-  String get trackYourMoney => 'Lacak uang Anda,\nbukan kekhawatiran Anda';
+  String get trackYourMoney => 'Catat uang Anda,\nbukan kekhawatiran Anda';
 
   @override
   String get chooseYourCurrency => 'Pilih mata uang Anda';
