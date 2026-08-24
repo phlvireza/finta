@@ -54,6 +54,10 @@ app.*.map.json
 /android/app/release
 /android/build/
 
+# Android upload-signing credentials. Keep both files private and backed up.
+/android/key.properties
+/android/app/upload-keystore.jks
+
 # Gradle caches under the vendored file_picker fork. These were tracked by
 # mistake: they are daemon-owned lock and hash files that change on every
 # build, and Windows keeps them open, so git cannot even hash them while a
@@ -64,9 +68,19 @@ vendor/**/.gradle/
 # are the deliberate exceptions.
 *.md
 !/README.md
+/release_checklist.md
 !.claude/rules/*.md
 
 # JVM crash dumps left behind by a Gradle daemon that died
 hs_err_pid*.log
 replay_pid*.log
 *.hprof
+
+# Playwright MCP scratch output (console logs, page snapshots). Local tooling
+# artifacts, same category as .agents/ — not project source.
+.playwright-mcp/
+
+# Store-listing exports: ~60 MB of screenshots and mascot previews, and fully
+# regenerable from tool/build_app_store_previews.ps1. Kept out of history so a
+# clone stays small; back them up outside the repo before a submission.
+store-assets/
