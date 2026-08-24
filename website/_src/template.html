@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- The title leads with the category, not the tagline: "Finta" is an unknown
+<!-- The title leads with the category, not the tagline: "Squirio" is an unknown
      brand pre-launch, so the brand name alone matches nothing anyone searches
      for. The tagline still carries the page as the closing H2. -->
 <title>{{__title}}</title>
@@ -60,7 +60,7 @@
   // Applied before first paint so an explicitly chosen theme never flashes.
   document.documentElement.classList.remove('no-js');
   try {
-    var t = localStorage.getItem('finta-theme');
+    var t = localStorage.getItem('squirio-theme');
     if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
   } catch (e) {}
 </script>
@@ -88,7 +88,7 @@
 
      Deliberately absent from SoftwareApplication: offers.price and
      aggregateRating/review. Google needs both for the Software App rich
-     result, but Finta has no settled price and no ratings because it has not
+     result, but Squirio has no settled price and no ratings because it has not
      shipped. Inventing either violates Google's structured data policy — add
      them only when a real store listing exists. "screenshot" is absent for the
      same reason: the phone mockups are HTML/CSS, not image files, and
@@ -98,8 +98,8 @@
      exists yet. Add the Play Store and App Store URLs there on launch day —
      it is how Google ties this brand to a known entity.
 
-     Note app_icon.png is actually a JPEG despite the extension, hence
-     encodingFormat "image/jpeg" on the logo. -->
+     The current app icon is a real PNG; keep encodingFormat aligned with the
+     served bytes so structured-data validators do not see a type mismatch. -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -107,10 +107,10 @@
     {
       "@type": "Organization",
       "@id": "https://HOST/#organization",
-      "name": "Finta",
+      "name": "Squirio",
       "url": "https://HOST/",
-      "description": "Maker of Finta, a local-first personal finance tracker that keeps every transaction on the user's own device.",
-      "slogan": "Track your money, not your stress.",
+      "description": "Maker of Squirio, a local-first personal finance tracker that keeps every transaction on the user's own device.",
+      "slogan": "Track your money, not your worry.",
       "logo": {
         "@type": "ImageObject",
         "@id": "https://HOST/#logo",
@@ -118,8 +118,8 @@
         "contentUrl": "https://HOST/assets/app_icon.png",
         "width": 1024,
         "height": 1024,
-        "encodingFormat": "image/jpeg",
-        "caption": "Finta"
+        "encodingFormat": "image/png",
+        "caption": "Squirio"
       },
       "image": {
         "@id": "https://HOST/#logo"
@@ -129,7 +129,7 @@
       "@type": "WebSite",
       "@id": "https://HOST/#website",
       "url": "https://HOST/",
-      "name": "Finta",
+      "name": "Squirio",
       "description": "A personal finance tracker that runs entirely on your phone. No account, no cloud, no tracking — with budgets that reset on payday instead of the 1st.",
       "publisher": {
         "@id": "https://HOST/#organization"
@@ -166,7 +166,7 @@
           "name": "Does it connect to my bank?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No — and that is deliberate. Bank connections require handing your credentials to a third-party aggregator that then holds your full transaction history. Finta doesn't have a server, so it couldn't do that even if it wanted to. You enter transactions yourself, or import a CSV your bank already gives you."
+            "text": "No — and that is deliberate. Bank connections require handing your credentials to a third-party aggregator that then holds your full transaction history. Squirio doesn't have a server, so it couldn't do that even if it wanted to. You enter transactions yourself, or import a CSV your bank already gives you."
           }
         },
         {
@@ -182,7 +182,7 @@
           "name": "What happens if I lose my phone?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "This is the honest trade-off of a local-first app: if the only copy is on the phone and the phone is gone, the data is gone. Finta gives you a one-tap backup that produces a zip file you can put in your own cloud drive, email to yourself, or keep anywhere you like. Do it occasionally and you are covered — on your terms, in a file you control."
+            "text": "This is the honest trade-off of a local-first app: if the only copy is on the phone and the phone is gone, the data is gone. Squirio gives you a one-tap backup that produces a zip file you can put in your own cloud drive, email to yourself, or keep anywhere you like. Do it occasionally and you are covered — on your terms, in a file you control."
           }
         },
         {
@@ -227,7 +227,7 @@
       "width": 1200,
       "height": 630,
       "encodingFormat": "image/png",
-      "caption": "Finta — your money stays on your phone. No account, no cloud, no tracking."
+      "caption": "Squirio — your money stays on your phone. No account, no cloud, no tracking."
     },
     {
       "@type": "BreadcrumbList",
@@ -244,7 +244,7 @@
     {
       "@type": "SoftwareApplication",
       "@id": "https://HOST/#app",
-      "name": "Finta",
+      "name": "Squirio",
       "url": "https://HOST/",
       "applicationCategory": "FinanceApplication",
       "applicationSubCategory": "Personal Finance",
@@ -290,8 +290,12 @@
 <header class="nav">
   <div class="wrap nav__inner">
     <a class="brand" href="#top">
-      <img class="brand__mark" src="{{__root}}assets/app_icon.png" alt="" width="32" height="32">
-      <span class="brand__name">{{finta}}</span>
+      <!-- decoding only, deliberately no loading="lazy": this one is in the
+           header, above the fold, and lazy-loading it would delay the first
+           thing painted. The footer copy of the same mark is lazy. -->
+      <img class="brand__mark" src="{{__root}}assets/app_icon.png" alt="" width="32" height="32"
+           decoding="async">
+      <span class="brand__name">{{squirio}}</span>
     </a>
 
     <nav class="nav__links" aria-label="{{sections}}">
@@ -341,7 +345,7 @@
     <div>
       <p class="eyebrow">{{coming_soon_to_android}}</p>
       <h1 class="display" style="margin-top:var(--s-md)">{{the_budget_tracker_that}}</h1>
-      <p class="lede" style="margin-top:var(--s-lg);max-width:52ch">{{finta_is_a_personal}}</p>
+      <p class="lede" style="margin-top:var(--s-lg);max-width:52ch">{{squirio_is_a_personal}}</p>
 
       <!-- onsubmit is a last-resort guard, not the real handler: if main.js
            throws before it binds, this still stops the browser doing a native
@@ -363,7 +367,7 @@
     <!-- ---------- Mockup A: dashboard ---------- -->
     <div class="split__visual reveal">
       <div class="phone phone--tall" role="img"
-           aria-label="{{finta_dashboard_showing_the}}">
+           aria-label="{{squirio_dashboard_showing_the}}">
         <div class="phone__screen">
 
           <div class="ph-status">
@@ -578,7 +582,7 @@
      visually without it. -->
 <section class="section--tight section--alt" aria-labelledby="trust-heading">
   <div class="wrap">
-    <h2 class="visually-hidden" id="trust-heading">{{what_finta_does_not}}</h2>
+    <h2 class="visually-hidden" id="trust-heading">{{what_squirio_does_not}}</h2>
     <ul class="trust">
       <li class="trust__item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--income)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-inline:auto" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
@@ -601,6 +605,26 @@
         <div class="trust__note">{{backup_csv_any_time}}</div>
       </li>
     </ul>
+  </div>
+</section>
+
+<!-- ===================== SQUI ============================================ -->
+<section class="section squi-intro" aria-labelledby="squi-heading">
+  <div class="wrap squi-intro__grid">
+    <div class="squi-intro__art" aria-hidden="true">
+      <!-- Decorative, so alt="" and the wrapper is aria-hidden: the copy beside
+           it already says "squirrel", which is everything a non-visual reader
+           needs. Lazy because this is the largest raster on the page (the phone
+           mockups are all markup) and it sits well below the fold. -->
+      <img src="{{__root}}assets/squi_wave_cutout.png" alt="" width="320" height="320"
+           loading="lazy" decoding="async">
+    </div>
+    <div>
+      <p class="eyebrow">{{meet_squi}}</p>
+      <h2 class="h2" id="squi-heading">{{squi_heading}}</h2>
+      <p class="lede">{{squi_intro}}</p>
+      <p class="body-2 squi-intro__rule">{{squi_rule}}</p>
+    </div>
   </div>
 </section>
 
@@ -632,7 +656,7 @@
             </div>
 
             <div style="border-top:1px solid var(--border);padding-top:var(--s-xl)">
-              <div class="cycle__label" style="color:var(--primary)">{{a_finta_pay_period}}</div>
+              <div class="cycle__label" style="color:var(--primary)">{{a_squirio_pay_period}}</div>
               <div style="position:relative;height:20px">
                 <span class="cycle__salary" style="--at:39.3%;top:2px">{{salary_lands_2}}</span>
               </div>
@@ -712,7 +736,7 @@
     <div>
       <p class="eyebrow">{{on_device_intelligence}}</p>
       <h2 class="h2">{{it_notices_things_you}}</h2>
-      <p class="lede" style="margin-top:var(--s-lg)">{{finta_reads_your_own}}</p>
+      <p class="lede" style="margin-top:var(--s-lg)">{{squirio_reads_your_own}}</p>
       <ul class="points">
         <li><span><strong>{{finds_subscriptions_by_itself}}</strong>{{when_the_same_merchant}}</span></li>
         <li><span><strong>{{flags_an_unusual_amount}}</strong>{{if_a_coffee_costs}}</span></li>
@@ -724,7 +748,7 @@
     <!-- ---------- Mockup C: insights hub ---------- -->
     <div class="split__visual reveal">
       <div class="phone phone--short" role="img"
-           aria-label="{{finta_insights_screen_showing}}">
+           aria-label="{{squirio_insights_screen_showing}}">
         <div class="phone__screen">
           <div class="ph-status">
             <span class="tnum">{{9_41_2}}</span>
@@ -829,7 +853,7 @@
 
         <!-- D1: the quick add form sheet -->
         <div class="phone phone--short phone--pair" role="img"
-             aria-label="{{finta_quick_add_sheet}}">
+             aria-label="{{squirio_quick_add_sheet}}">
           <div class="phone__screen">
             <div class="ph-status">
               <span class="tnum">{{9_41_3}}</span>
@@ -930,7 +954,7 @@
 
         <!-- D2: the amount keypad, a separate sheet opened from the amount -->
         <div class="phone phone--short phone--pair" role="img"
-             aria-label="{{finta_amount_keypad_a}}">
+             aria-label="{{squirio_amount_keypad_a}}">
           <div class="phone__screen">
             <div class="ph-status">
               <span class="tnum">{{9_41_4}}</span>
@@ -996,7 +1020,7 @@
     <!-- ---------- Mockup B: budgets ---------- -->
     <div class="split__visual reveal">
       <div class="phone phone--short" role="img"
-           aria-label="{{finta_budgets_screen_with}}">
+           aria-label="{{squirio_budgets_screen_with}}">
         <div class="phone__screen">
           <div class="ph-status">
             <span class="tnum">{{9_41_5}}</span>
@@ -1268,7 +1292,12 @@
 <section class="section">
   <div class="wrap center" style="max-width:640px">
     <h2 class="h2">{{track_your_money_not}}</h2>
-    <p class="lede" style="margin-top:var(--s-lg)">{{coming_to_android_and}}<a href="#waitlist">{{join_the_waiting_list}}</a>{{and_you_ll_get}}</p>
+    <!-- The spaces around the link are load-bearing and belong here, not as
+         leading/trailing whitespace inside the three strings: a translator
+         editing en.json/id.json cannot see them, and any JSON tidy pass would
+         strip them. HTML collapses runs of whitespace, so a literal space is
+         safe. -->
+    <p class="lede" style="margin-top:var(--s-lg)">{{coming_to_android_and}} <a href="#waitlist">{{join_the_waiting_list}}</a> {{and_you_ll_get}}</p>
   </div>
 </section>
 
@@ -1280,8 +1309,9 @@
     <div class="footer__inner">
       <div>
         <a class="brand" href="#top">
-          <img class="brand__mark" src="{{__root}}assets/app_icon.png" alt="" width="32" height="32">
-          <span class="brand__name">{{finta_2}}</span>
+          <img class="brand__mark" src="{{__root}}assets/app_icon.png" alt="" width="32" height="32"
+               loading="lazy" decoding="async">
+          <span class="brand__name">{{squirio_2}}</span>
         </a>
       </div>
       <div class="footer__meta">

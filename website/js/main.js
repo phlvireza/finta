@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Finta site behaviour: theme toggle, scroll reveal, waitlist form.
+   Squirio site behaviour: theme toggle, scroll reveal, waitlist form.
    No dependencies, no build step.
    ========================================================================== */
 (function () {
@@ -26,7 +26,7 @@
     toggle.addEventListener('click', function () {
       var next = currentTheme() === 'dark' ? 'light' : 'dark';
       root.setAttribute('data-theme', next);
-      try { localStorage.setItem('finta-theme', next); } catch (e) {}
+      try { localStorage.setItem('squirio-theme', next); } catch (e) {}
     });
   }
 

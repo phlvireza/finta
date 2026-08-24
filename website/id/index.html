@@ -6,10 +6,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- The title leads with the category, not the tagline: "Finta" is an unknown
+<!-- The title leads with the category, not the tagline: "Squirio" is an unknown
      brand pre-launch, so the brand name alone matches nothing anyone searches
      for. The tagline still carries the page as the closing H2. -->
-<title>Finta — Pencatat Anggaran & Pengeluaran Offline, Tanpa Akun</title>
+<title>Squirio — Pencatat Anggaran & Pengeluaran Offline, Tanpa Akun</title>
 <meta name="description" content="Pencatat keuangan pribadi yang berjalan sepenuhnya di ponsel Anda. Tanpa akun, tanpa cloud, tanpa pelacakan — dengan anggaran yang berganti saat gajian, bukan tanggal 1.">
 
 <!-- Both pages carry the identical reciprocal set. hreflang is declared
@@ -21,7 +21,7 @@
 
 <meta property="og:type" content="website">
 <meta property="og:locale" content="id_ID">
-<meta property="og:title" content="Finta — Pencatat Anggaran & Pengeluaran Offline, Tanpa Akun">
+<meta property="og:title" content="Squirio — Pencatat Anggaran & Pengeluaran Offline, Tanpa Akun">
 <!-- Kept identical to meta[name=description]. This used to drop the payday
      clause, which meant every shared link lost the one differentiator. -->
 <meta property="og:description" content="Pencatat keuangan pribadi yang berjalan sepenuhnya di ponsel Anda. Tanpa akun, tanpa cloud, tanpa pelacakan — dengan anggaran yang berganti saat gajian, bukan tanggal 1.">
@@ -39,7 +39,7 @@
 <meta property="og:image" content="../assets/og-card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Finta — uang Anda tetap di ponsel Anda. Tanpa akun, tanpa cloud, tanpa pelacakan.">
+<meta property="og:image:alt" content="Squirio — uang Anda tetap di ponsel Anda. Tanpa akun, tanpa cloud, tanpa pelacakan.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#FAF7F2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1A1816" media="(prefers-color-scheme: dark)">
@@ -63,7 +63,7 @@
   // Applied before first paint so an explicitly chosen theme never flashes.
   document.documentElement.classList.remove('no-js');
   try {
-    var t = localStorage.getItem('finta-theme');
+    var t = localStorage.getItem('squirio-theme');
     if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
   } catch (e) {}
 </script>
@@ -91,7 +91,7 @@
 
      Deliberately absent from SoftwareApplication: offers.price and
      aggregateRating/review. Google needs both for the Software App rich
-     result, but Finta has no settled price and no ratings because it has not
+     result, but Squirio has no settled price and no ratings because it has not
      shipped. Inventing either violates Google's structured data policy — add
      them only when a real store listing exists. "screenshot" is absent for the
      same reason: the phone mockups are HTML/CSS, not image files, and
@@ -101,8 +101,8 @@
      exists yet. Add the Play Store and App Store URLs there on launch day —
      it is how Google ties this brand to a known entity.
 
-     Note app_icon.png is actually a JPEG despite the extension, hence
-     encodingFormat "image/jpeg" on the logo. -->
+     The current app icon is a real PNG; keep encodingFormat aligned with the
+     served bytes so structured-data validators do not see a type mismatch. -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -110,10 +110,10 @@
     {
       "@type": "Organization",
       "@id": "https://HOST/#organization",
-      "name": "Finta",
+      "name": "Squirio",
       "url": "https://HOST/",
-      "description": "Maker of Finta, a local-first personal finance tracker that keeps every transaction on the user's own device.",
-      "slogan": "Track your money, not your stress.",
+      "description": "Maker of Squirio, a local-first personal finance tracker that keeps every transaction on the user's own device.",
+      "slogan": "Track your money, not your worry.",
       "logo": {
         "@type": "ImageObject",
         "@id": "https://HOST/#logo",
@@ -121,8 +121,8 @@
         "contentUrl": "https://HOST/assets/app_icon.png",
         "width": 1024,
         "height": 1024,
-        "encodingFormat": "image/jpeg",
-        "caption": "Finta"
+        "encodingFormat": "image/png",
+        "caption": "Squirio"
       },
       "image": {
         "@id": "https://HOST/#logo"
@@ -132,7 +132,7 @@
       "@type": "WebSite",
       "@id": "https://HOST/#website",
       "url": "https://HOST/",
-      "name": "Finta",
+      "name": "Squirio",
       "description": "A personal finance tracker that runs entirely on your phone. No account, no cloud, no tracking — with budgets that reset on payday instead of the 1st.",
       "publisher": {
         "@id": "https://HOST/#organization"
@@ -146,7 +146,7 @@
       ],
       "@id": "https://HOST/id/#webpage",
       "url": "https://HOST/id/",
-      "name": "Finta — Pencatat Anggaran & Pengeluaran Offline, Tanpa Akun",
+      "name": "Squirio — Pencatat Anggaran & Pengeluaran Offline, Tanpa Akun",
       "description": "A personal finance tracker that runs entirely on your phone. No account, no cloud, no tracking — with budgets that reset on payday instead of the 1st.",
       "isPartOf": {
         "@id": "https://HOST/#website"
@@ -169,7 +169,7 @@
           "name": "Does it connect to my bank?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No — and that is deliberate. Bank connections require handing your credentials to a third-party aggregator that then holds your full transaction history. Finta doesn't have a server, so it couldn't do that even if it wanted to. You enter transactions yourself, or import a CSV your bank already gives you."
+            "text": "No — and that is deliberate. Bank connections require handing your credentials to a third-party aggregator that then holds your full transaction history. Squirio doesn't have a server, so it couldn't do that even if it wanted to. You enter transactions yourself, or import a CSV your bank already gives you."
           }
         },
         {
@@ -185,7 +185,7 @@
           "name": "What happens if I lose my phone?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "This is the honest trade-off of a local-first app: if the only copy is on the phone and the phone is gone, the data is gone. Finta gives you a one-tap backup that produces a zip file you can put in your own cloud drive, email to yourself, or keep anywhere you like. Do it occasionally and you are covered — on your terms, in a file you control."
+            "text": "This is the honest trade-off of a local-first app: if the only copy is on the phone and the phone is gone, the data is gone. Squirio gives you a one-tap backup that produces a zip file you can put in your own cloud drive, email to yourself, or keep anywhere you like. Do it occasionally and you are covered — on your terms, in a file you control."
           }
         },
         {
@@ -230,7 +230,7 @@
       "width": 1200,
       "height": 630,
       "encodingFormat": "image/png",
-      "caption": "Finta — your money stays on your phone. No account, no cloud, no tracking."
+      "caption": "Squirio — your money stays on your phone. No account, no cloud, no tracking."
     },
     {
       "@type": "BreadcrumbList",
@@ -247,7 +247,7 @@
     {
       "@type": "SoftwareApplication",
       "@id": "https://HOST/#app",
-      "name": "Finta",
+      "name": "Squirio",
       "url": "https://HOST/",
       "applicationCategory": "FinanceApplication",
       "applicationSubCategory": "Personal Finance",
@@ -293,8 +293,12 @@
 <header class="nav">
   <div class="wrap nav__inner">
     <a class="brand" href="#top">
-      <img class="brand__mark" src="../assets/app_icon.png" alt="" width="32" height="32">
-      <span class="brand__name">FINTA</span>
+      <!-- decoding only, deliberately no loading="lazy": this one is in the
+           header, above the fold, and lazy-loading it would delay the first
+           thing painted. The footer copy of the same mark is lazy. -->
+      <img class="brand__mark" src="../assets/app_icon.png" alt="" width="32" height="32"
+           decoding="async">
+      <span class="brand__name">SQUIRIO</span>
     </a>
 
     <nav class="nav__links" aria-label="Bagian">
@@ -344,7 +348,7 @@
     <div>
       <p class="eyebrow">Segera hadir di Android &amp; iOS</p>
       <h1 class="display" style="margin-top:var(--s-md)">Pencatat anggaran yang tetap di ponsel Anda.</h1>
-      <p class="lede" style="margin-top:var(--s-lg);max-width:52ch">Finta adalah pencatat keuangan pribadi tanpa akun yang perlu dibuat, tanpa cloud untuk disinkronkan, dan tanpa perusahaan yang berdiri di antara Anda dan angka Anda sendiri. Semuanya tersimpan dalam satu berkas di perangkat Anda — dan menganggarkan mengikuti gajian Anda, bukan tanggal 1.</p>
+      <p class="lede" style="margin-top:var(--s-lg);max-width:52ch">Squirio adalah pencatat keuangan pribadi tanpa akun yang perlu dibuat, tanpa cloud untuk disinkronkan, dan tanpa perusahaan yang berdiri di antara Anda dan angka Anda sendiri. Semuanya tersimpan dalam satu berkas di perangkat Anda — dan menganggarkan mengikuti gajian Anda, bukan tanggal 1.</p>
 
       <!-- onsubmit is a last-resort guard, not the real handler: if main.js
            throws before it binds, this still stops the browser doing a native
@@ -366,7 +370,7 @@
     <!-- ---------- Mockup A: dashboard ---------- -->
     <div class="split__visual reveal">
       <div class="phone phone--tall" role="img"
-           aria-label="Dasbor Finta menampilkan periode gajian 25 Juli sampai 24 Agustus, saldo 4.182.500 rupiah, aman dibelanjakan per hari, peta panas pengeluaran untuk periode itu, dan transaksi terbaru.">
+           aria-label="Dasbor Squirio menampilkan periode gajian 25 Juli sampai 24 Agustus, saldo 4.182.500 rupiah, aman dibelanjakan per hari, peta panas pengeluaran untuk periode itu, dan transaksi terbaru.">
         <div class="phone__screen">
 
           <div class="ph-status">
@@ -581,7 +585,7 @@
      visually without it. -->
 <section class="section--tight section--alt" aria-labelledby="trust-heading">
   <div class="wrap">
-    <h2 class="visually-hidden" id="trust-heading">Yang tidak dilakukan Finta</h2>
+    <h2 class="visually-hidden" id="trust-heading">Yang tidak dilakukan Squirio</h2>
     <ul class="trust">
       <li class="trust__item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--income)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-inline:auto" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
@@ -607,6 +611,26 @@
   </div>
 </section>
 
+<!-- ===================== SQUI ============================================ -->
+<section class="section squi-intro" aria-labelledby="squi-heading">
+  <div class="wrap squi-intro__grid">
+    <div class="squi-intro__art" aria-hidden="true">
+      <!-- Decorative, so alt="" and the wrapper is aria-hidden: the copy beside
+           it already says "squirrel", which is everything a non-visual reader
+           needs. Lazy because this is the largest raster on the page (the phone
+           mockups are all markup) and it sits well below the fold. -->
+      <img src="../assets/squi_wave_cutout.png" alt="" width="320" height="320"
+           loading="lazy" decoding="async">
+    </div>
+    <div>
+      <p class="eyebrow">Kenalan dengan Squi</p>
+      <h2 class="h2" id="squi-heading">Sedikit kehangatan, hanya saat membantu.</h2>
+      <p class="lede">Squi adalah tupai yang tinggal di Squirio. Squi muncul di dua tempat saja: saat sebuah layar masih kosong, dan saat ada pencapaian yang layak dirayakan.</p>
+      <p class="body-2 squi-intro__rule">Squi tidak pernah menarasikan saldo, anggaran, atau wawasan keuangan — semuanya tetap angka apa adanya. Kehangatannya hanya untuk momen yang memang tidak ada angkanya.</p>
+    </div>
+  </div>
+</section>
+
 <!-- ===================== PAYDAY ========================================== -->
 <section class="section" id="payday">
   <div class="wrap">
@@ -622,7 +646,7 @@
           <!-- Both windows share one Jul 1 - Aug 31 axis, so the offset between
                them is the thing you actually see. -->
           <div class="cycle" role="img"
-               aria-label="Garis waktu dari 1 Juli sampai 31 Agustus. Bulan kalender Agustus dimulai seminggu setelah gaji masuk pada 25 Juli, memisahkan gaji itu dari pengeluaran yang dibiayainya. Periode gajian Finta justru berjalan dari 25 Juli sampai 24 Agustus, sehingga keduanya tetap menyatu.">
+               aria-label="Garis waktu dari 1 Juli sampai 31 Agustus. Bulan kalender Agustus dimulai seminggu setelah gaji masuk pada 25 Juli, memisahkan gaji itu dari pengeluaran yang dibiayainya. Periode gajian Squirio justru berjalan dari 25 Juli sampai 24 Agustus, sehingga keduanya tetap menyatu.">
             <div>
               <div class="cycle__label">Sebulan kalender</div>
               <div style="position:relative;height:20px">
@@ -635,7 +659,7 @@
             </div>
 
             <div style="border-top:1px solid var(--border);padding-top:var(--s-xl)">
-              <div class="cycle__label" style="color:var(--primary)">Periode gajian Finta</div>
+              <div class="cycle__label" style="color:var(--primary)">Periode gajian Squirio</div>
               <div style="position:relative;height:20px">
                 <span class="cycle__salary" style="--at:39.3%;top:2px">Gaji masuk</span>
               </div>
@@ -673,7 +697,7 @@
     <div class="section-head">
       <p class="eyebrow">Privasi sejak rancangan</p>
       <h2 class="h2">Tidak ada server yang perlu dipercaya.</h2>
-      <p class="lede">Kebanyakan aplikasi keuangan meminta Anda menyerahkan riwayat pengeluaran lalu berjanji menjaganya. Finta menghapus langkah di mana Anda harus percaya siapa pun. Data Anda tidak pernah pergi ke mana-mana, karena aplikasinya tidak punya tempat untuk mengirimnya.</p>
+      <p class="lede">Kebanyakan aplikasi keuangan meminta Anda menyerahkan riwayat pengeluaran lalu berjanji menjaganya. Squirio menghapus langkah di mana Anda harus percaya siapa pun. Data Anda tidak pernah pergi ke mana-mana, karena aplikasinya tidak punya tempat untuk mengirimnya.</p>
     </div>
 
     <div class="grid grid--3">
@@ -704,7 +728,7 @@
 
     <div class="card" style="margin-top:var(--s-lg)">
       <h3 class="h3">Cara Anda memeriksanya</h3>
-      <p class="body-2" style="margin-top:var(--s-sm);max-width:70ch">"Tanpa pelacakan" mudah diklaim, jadi ini versi yang bisa Anda periksa sendiri: nyalakan mode pesawat dan pakai Finta seharian. Semuanya tetap berjalan, karena memang tidak pernah ada yang dikirim ke mana pun. Aplikasi ini dibangun tanpa bagian yang memungkinkan sebuah aplikasi bicara ke internet sama sekali — jadi tidak ada yang diam-diam melaporkan apa yang Anda ketuk, dan tidak ada yang menghubungi pusat ketika terjadi masalah. Tidak ada pula tempat untuk mengambil iklan: menayangkan satu iklan berarti permintaan jaringan, dan justru kemampuan itulah yang sengaja tidak dimiliki aplikasi ini. Wawasan, peringatan pengeluaran tak biasa dan skor kesehatan adalah penjumlahan dan rata-rata yang dihitung di ponsel Anda. Satu-satunya saat data Anda berpindah adalah ketika Anda menekan bagikan pada cadangan atau ekspor — dan saat itu data pergi persis ke tempat yang Anda tuju.</p>
+      <p class="body-2" style="margin-top:var(--s-sm);max-width:70ch">"Tanpa pelacakan" mudah diklaim, jadi ini versi yang bisa Anda periksa sendiri: nyalakan mode pesawat dan pakai Squirio seharian. Semuanya tetap berjalan, karena memang tidak pernah ada yang dikirim ke mana pun. Aplikasi ini dibangun tanpa bagian yang memungkinkan sebuah aplikasi bicara ke internet sama sekali — jadi tidak ada yang diam-diam melaporkan apa yang Anda ketuk, dan tidak ada yang menghubungi pusat ketika terjadi masalah. Tidak ada pula tempat untuk mengambil iklan: menayangkan satu iklan berarti permintaan jaringan, dan justru kemampuan itulah yang sengaja tidak dimiliki aplikasi ini. Wawasan, peringatan pengeluaran tak biasa dan skor kesehatan adalah penjumlahan dan rata-rata yang dihitung di ponsel Anda. Satu-satunya saat data Anda berpindah adalah ketika Anda menekan bagikan pada cadangan atau ekspor — dan saat itu data pergi persis ke tempat yang Anda tuju.</p>
     </div>
   </div>
 </section>
@@ -715,9 +739,9 @@
     <div>
       <p class="eyebrow">Kecerdasan di perangkat</p>
       <h2 class="h2">Ia menyadari hal yang tak pernah Anda beri tahu.</h2>
-      <p class="lede" style="margin-top:var(--s-lg)">Finta membaca riwayat Anda sendiri dan menunjukkan apa yang berubah — tanpa satu pun keluar dari ponsel.</p>
+      <p class="lede" style="margin-top:var(--s-lg)">Squirio membaca riwayat Anda sendiri dan menunjukkan apa yang berubah — tanpa satu pun keluar dari ponsel.</p>
       <ul class="points">
-        <li><span><strong>Menemukan langganan dengan sendirinya.</strong>Ketika merchant yang sama menagih Anda kira-kira jumlah yang sama kira-kira setiap bulan, Finta mengenalinya dan menawarkan untuk mulai melacaknya dalam satu ketukan.</span></li>
+        <li><span><strong>Menemukan langganan dengan sendirinya.</strong>Ketika merchant yang sama menagih Anda kira-kira jumlah yang sama kira-kira setiap bulan, Squirio mengenalinya dan menawarkan untuk mulai melacaknya dalam satu ketukan.</span></li>
         <li><span><strong>Menandai jumlah tak biasa saat Anda mengetiknya.</strong>Kalau segelas kopi berharga sepuluh kali lipat dari kopi Anda biasanya, ia bertanya sebelum menyimpan — dan memberi tahu seperti apa yang wajar. Sebuah dorongan, bukan penghalang.</span></li>
         <li><span><strong>Menilai kesehatan keuangan Anda dari 100</strong>dari rasio tabungan Anda, seberapa ketat Anda menjaga anggaran, dan seberapa stabil pemasukan Anda — dengan ketiga sub-skor ditampilkan, bukan satu angka misterius.</span></li>
         <li><span><strong>Menyebut kategori Anda yang tumbuh paling cepat</strong>sebelum ia menjadi kejutan di akhir siklus.</span></li>
@@ -727,7 +751,7 @@
     <!-- ---------- Mockup C: insights hub ---------- -->
     <div class="split__visual reveal">
       <div class="phone phone--short" role="img"
-           aria-label="Layar wawasan Finta menampilkan skor kesehatan keuangan 78 dari 100, sub-skor untuk tabungan, anggaran dan kestabilan, serta kartu wawasan pengeluaran.">
+           aria-label="Layar wawasan Squirio menampilkan skor kesehatan keuangan 78 dari 100, sub-skor untuk tabungan, anggaran dan kestabilan, serta kartu wawasan pengeluaran.">
         <div class="phone__screen">
           <div class="ph-status">
             <span class="tnum">9:41</span>
@@ -815,7 +839,7 @@
     <div>
       <p class="eyebrow">Dibuat untuk angka sungguhan</p>
       <h2 class="h2">Mencatat transaksi cukup tiga ketukan.</h2>
-      <p class="lede" style="margin-top:var(--s-lg)">Orang meninggalkan pencatat keuangan karena memasukkan datanya merepotkan. Jadi bagian itulah yang paling keras digarap Finta.</p>
+      <p class="lede" style="margin-top:var(--s-lg)">Orang meninggalkan pencatat keuangan karena memasukkan datanya merepotkan. Jadi bagian itulah yang paling keras digarap Squirio.</p>
       <ul class="points">
         <li><span><strong>Papan angka yang dibuat untuk bilangan enam digit,</strong>dengan tombol<strong>000</strong>— karena mengetik 1.250.000 di papan ketik ponsel adalah cara sebuah kebiasaan mati.</span></li>
         <li><span><strong>Berhitung langsung di kolom jumlah.</strong>Ketik<span class="tnum">12000+3500</span>atau<span class="tnum">45000/3</span>dan semuanya langsung jalan. Membagi tagihan tidak perlu aplikasi kalkulator.</span></li>
@@ -832,7 +856,7 @@
 
         <!-- D1: the quick add form sheet -->
         <div class="phone phone--short phone--pair" role="img"
-             aria-label="Lembar tambah cepat Finta: segmen pengeluaran, pemasukan dan transfer, pintasan favorit untuk kopi, Grab dan makan siang, jumlah pengeluaran 1.250.000 rupiah, tanggal 12 Agustus 2026, akun BCA, kolom merchant yang menyarankan Ace Hardware, dan tombol Simpan Transaksi.">
+             aria-label="Lembar tambah cepat Squirio: segmen pengeluaran, pemasukan dan transfer, pintasan favorit untuk kopi, Grab dan makan siang, jumlah pengeluaran 1.250.000 rupiah, tanggal 12 Agustus 2026, akun BCA, kolom merchant yang menyarankan Ace Hardware, dan tombol Simpan Transaksi.">
           <div class="phone__screen">
             <div class="ph-status">
               <span class="tnum">9:41</span>
@@ -933,7 +957,7 @@
 
         <!-- D2: the amount keypad, a separate sheet opened from the amount -->
         <div class="phone phone--short phone--pair" role="img"
-             aria-label="Papan angka Finta: lembar setinggi layar menampilkan ekspresi langsung 12.000 tambah 3.500 dalam rupiah, kisi tombol empat kali empat dengan tombol tiga nol serta bagi, kali, kurang dan tambah, dan baris bawah berisi hapus, bersihkan, sama dengan dan Selesai.">
+             aria-label="Papan angka Squirio: lembar setinggi layar menampilkan ekspresi langsung 12.000 tambah 3.500 dalam rupiah, kisi tombol empat kali empat dengan tombol tiga nol serta bagi, kali, kurang dan tambah, dan baris bawah berisi hapus, bersihkan, sama dengan dan Selesai.">
           <div class="phone__screen">
             <div class="ph-status">
               <span class="tnum">9:41</span>
@@ -988,7 +1012,7 @@
     <div>
       <p class="eyebrow">Anggaran yang berkata jujur</p>
       <h2 class="h2">"85% terpakai" tidak berarti apa-apa tanpa tanggal.</h2>
-      <p class="lede" style="margin-top:var(--s-lg)">Berada di 85% anggaran makan Anda menakutkan pada hari ke-3 dan sama sekali wajar pada hari ke-27. Setiap batang anggaran Finta membawa penanda laju yang menunjukkan sudah sejauh mana Anda benar-benar berjalan dalam periode itu, sehingga angkanya punya konteks.</p>
+      <p class="lede" style="margin-top:var(--s-lg)">Berada di 85% anggaran makan Anda menakutkan pada hari ke-3 dan sama sekali wajar pada hari ke-27. Setiap batang anggaran Squirio membawa penanda laju yang menunjukkan sudah sejauh mana Anda benar-benar berjalan dalam periode itu, sehingga angkanya punya konteks.</p>
       <ul class="points">
         <li><span><strong>Anggaran bisa memperbarui dirinya.</strong>Nyalakan "Ulangi setiap periode" dan batas yang sama kembali setiap siklus — yang bulanan mengikuti gajian Anda, bukan tanggal 1. Biarkan mati dan ia hanya mencakup periode tempat Anda membuatnya.</span></li>
         <li><span><strong>Lalu sisa uang terbawa ke periode berikutnya.</strong>Pilih apakah bulan yang sepi menambah jatah bulan berikutnya, atau apakah pemborosan juga menggerogotinya.</span></li>
@@ -999,7 +1023,7 @@
     <!-- ---------- Mockup B: budgets ---------- -->
     <div class="split__visual reveal">
       <div class="phone phone--short" role="img"
-           aria-label="Layar anggaran Finta dengan donat yang menampilkan sisa periode ini dan empat batang anggaran, masing-masing dengan penanda laju.">
+           aria-label="Layar anggaran Squirio dengan donat yang menampilkan sisa periode ini dan empat batang anggaran, masing-masing dengan penanda laju.">
         <div class="phone__screen">
           <div class="ph-status">
             <span class="tnum">9:41</span>
@@ -1228,7 +1252,7 @@
     <div class="faq">
       <details class="faq__item">
         <summary><h3 class="faq__question">Apakah ini terhubung ke bank saya?</h3></summary>
-        <p class="faq__answer">Tidak — dan itu disengaja. Koneksi bank mengharuskan Anda menyerahkan kredensial kepada agregator pihak ketiga yang kemudian menyimpan seluruh riwayat transaksi Anda. Finta tidak punya server, jadi ia tidak bisa melakukan itu sekalipun mau. Anda memasukkan transaksi sendiri, atau mengimpor CSV yang memang sudah diberikan bank Anda.</p>
+        <p class="faq__answer">Tidak — dan itu disengaja. Koneksi bank mengharuskan Anda menyerahkan kredensial kepada agregator pihak ketiga yang kemudian menyimpan seluruh riwayat transaksi Anda. Squirio tidak punya server, jadi ia tidak bisa melakukan itu sekalipun mau. Anda memasukkan transaksi sendiri, atau mengimpor CSV yang memang sudah diberikan bank Anda.</p>
       </details>
 
       <details class="faq__item">
@@ -1238,7 +1262,7 @@
 
       <details class="faq__item">
         <summary><h3 class="faq__question">Bagaimana kalau ponsel saya hilang?</h3></summary>
-        <p class="faq__answer">Ini konsekuensi jujur dari aplikasi yang mengutamakan penyimpanan lokal: kalau satu-satunya salinan ada di ponsel dan ponselnya hilang, datanya ikut hilang. Finta memberi Anda pencadangan satu ketukan yang menghasilkan berkas zip yang bisa Anda taruh di cloud drive Anda sendiri, kirim ke email Anda, atau simpan di mana pun Anda suka. Lakukan sesekali dan Anda aman — dengan syarat Anda, dalam berkas yang Anda kendalikan.</p>
+        <p class="faq__answer">Ini konsekuensi jujur dari aplikasi yang mengutamakan penyimpanan lokal: kalau satu-satunya salinan ada di ponsel dan ponselnya hilang, datanya ikut hilang. Squirio memberi Anda pencadangan satu ketukan yang menghasilkan berkas zip yang bisa Anda taruh di cloud drive Anda sendiri, kirim ke email Anda, atau simpan di mana pun Anda suka. Lakukan sesekali dan Anda aman — dengan syarat Anda, dalam berkas yang Anda kendalikan.</p>
       </details>
 
       <details class="faq__item">
@@ -1270,8 +1294,13 @@
      a plain text link back up to it. -->
 <section class="section">
   <div class="wrap center" style="max-width:640px">
-    <h2 class="h2">Catat uang Anda, bukan stres Anda.</h2>
-    <p class="lede" style="margin-top:var(--s-lg)">Segera di Android dan iOS.<a href="#waitlist">Bergabung ke daftar tunggu</a>dan Anda akan menerima satu pesan pada hari ia hadir.</p>
+    <h2 class="h2">Catat uang Anda, bukan kekhawatiran Anda.</h2>
+    <!-- The spaces around the link are load-bearing and belong here, not as
+         leading/trailing whitespace inside the three strings: a translator
+         editing en.json/id.json cannot see them, and any JSON tidy pass would
+         strip them. HTML collapses runs of whitespace, so a literal space is
+         safe. -->
+    <p class="lede" style="margin-top:var(--s-lg)">Segera di Android dan iOS. <a href="#waitlist">Bergabung ke daftar tunggu</a> dan Anda akan menerima satu pesan pada hari ia hadir.</p>
   </div>
 </section>
 
@@ -1283,8 +1312,9 @@
     <div class="footer__inner">
       <div>
         <a class="brand" href="#top">
-          <img class="brand__mark" src="../assets/app_icon.png" alt="" width="32" height="32">
-          <span class="brand__name">FINTA</span>
+          <img class="brand__mark" src="../assets/app_icon.png" alt="" width="32" height="32"
+               loading="lazy" decoding="async">
+          <span class="brand__name">SQUIRIO</span>
         </a>
       </div>
       <div class="footer__meta">

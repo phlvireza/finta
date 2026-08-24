@@ -6,10 +6,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- The title leads with the category, not the tagline: "Finta" is an unknown
+<!-- The title leads with the category, not the tagline: "Squirio" is an unknown
      brand pre-launch, so the brand name alone matches nothing anyone searches
      for. The tagline still carries the page as the closing H2. -->
-<title>Finta — Offline Budget & Expense Tracker, No Account</title>
+<title>Squirio — Offline Budget & Expense Tracker, No Account</title>
 <meta name="description" content="A personal finance tracker that runs entirely on your phone. No account, no cloud, no tracking — with budgets that reset on payday instead of the 1st.">
 
 <!-- Both pages carry the identical reciprocal set. hreflang is declared
@@ -21,7 +21,7 @@
 
 <meta property="og:type" content="website">
 <meta property="og:locale" content="en_US">
-<meta property="og:title" content="Finta — Offline Budget & Expense Tracker, No Account">
+<meta property="og:title" content="Squirio — Offline Budget & Expense Tracker, No Account">
 <!-- Kept identical to meta[name=description]. This used to drop the payday
      clause, which meant every shared link lost the one differentiator. -->
 <meta property="og:description" content="A personal finance tracker that runs entirely on your phone. No account, no cloud, no tracking — with budgets that reset on payday instead of the 1st.">
@@ -39,7 +39,7 @@
 <meta property="og:image" content="assets/og-card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Finta — your money stays on your phone. No account, no cloud, no tracking.">
+<meta property="og:image:alt" content="Squirio — your money stays on your phone. No account, no cloud, no tracking.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#FAF7F2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1A1816" media="(prefers-color-scheme: dark)">
@@ -63,7 +63,7 @@
   // Applied before first paint so an explicitly chosen theme never flashes.
   document.documentElement.classList.remove('no-js');
   try {
-    var t = localStorage.getItem('finta-theme');
+    var t = localStorage.getItem('squirio-theme');
     if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
   } catch (e) {}
 </script>
@@ -91,7 +91,7 @@
 
      Deliberately absent from SoftwareApplication: offers.price and
      aggregateRating/review. Google needs both for the Software App rich
-     result, but Finta has no settled price and no ratings because it has not
+     result, but Squirio has no settled price and no ratings because it has not
      shipped. Inventing either violates Google's structured data policy — add
      them only when a real store listing exists. "screenshot" is absent for the
      same reason: the phone mockups are HTML/CSS, not image files, and
@@ -101,8 +101,8 @@
      exists yet. Add the Play Store and App Store URLs there on launch day —
      it is how Google ties this brand to a known entity.
 
-     Note app_icon.png is actually a JPEG despite the extension, hence
-     encodingFormat "image/jpeg" on the logo. -->
+     The current app icon is a real PNG; keep encodingFormat aligned with the
+     served bytes so structured-data validators do not see a type mismatch. -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -110,10 +110,10 @@
     {
       "@type": "Organization",
       "@id": "https://HOST/#organization",
-      "name": "Finta",
+      "name": "Squirio",
       "url": "https://HOST/",
-      "description": "Maker of Finta, a local-first personal finance tracker that keeps every transaction on the user's own device.",
-      "slogan": "Track your money, not your stress.",
+      "description": "Maker of Squirio, a local-first personal finance tracker that keeps every transaction on the user's own device.",
+      "slogan": "Track your money, not your worry.",
       "logo": {
         "@type": "ImageObject",
         "@id": "https://HOST/#logo",
@@ -121,8 +121,8 @@
         "contentUrl": "https://HOST/assets/app_icon.png",
         "width": 1024,
         "height": 1024,
-        "encodingFormat": "image/jpeg",
-        "caption": "Finta"
+        "encodingFormat": "image/png",
+        "caption": "Squirio"
       },
       "image": {
         "@id": "https://HOST/#logo"
@@ -132,7 +132,7 @@
       "@type": "WebSite",
       "@id": "https://HOST/#website",
       "url": "https://HOST/",
-      "name": "Finta",
+      "name": "Squirio",
       "description": "A personal finance tracker that runs entirely on your phone. No account, no cloud, no tracking — with budgets that reset on payday instead of the 1st.",
       "publisher": {
         "@id": "https://HOST/#organization"
@@ -146,7 +146,7 @@
       ],
       "@id": "https://HOST/#webpage",
       "url": "https://HOST/",
-      "name": "Finta — Offline Budget & Expense Tracker, No Account",
+      "name": "Squirio — Offline Budget & Expense Tracker, No Account",
       "description": "A personal finance tracker that runs entirely on your phone. No account, no cloud, no tracking — with budgets that reset on payday instead of the 1st.",
       "isPartOf": {
         "@id": "https://HOST/#website"
@@ -169,7 +169,7 @@
           "name": "Does it connect to my bank?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No — and that is deliberate. Bank connections require handing your credentials to a third-party aggregator that then holds your full transaction history. Finta doesn't have a server, so it couldn't do that even if it wanted to. You enter transactions yourself, or import a CSV your bank already gives you."
+            "text": "No — and that is deliberate. Bank connections require handing your credentials to a third-party aggregator that then holds your full transaction history. Squirio doesn't have a server, so it couldn't do that even if it wanted to. You enter transactions yourself, or import a CSV your bank already gives you."
           }
         },
         {
@@ -185,7 +185,7 @@
           "name": "What happens if I lose my phone?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "This is the honest trade-off of a local-first app: if the only copy is on the phone and the phone is gone, the data is gone. Finta gives you a one-tap backup that produces a zip file you can put in your own cloud drive, email to yourself, or keep anywhere you like. Do it occasionally and you are covered — on your terms, in a file you control."
+            "text": "This is the honest trade-off of a local-first app: if the only copy is on the phone and the phone is gone, the data is gone. Squirio gives you a one-tap backup that produces a zip file you can put in your own cloud drive, email to yourself, or keep anywhere you like. Do it occasionally and you are covered — on your terms, in a file you control."
           }
         },
         {
@@ -230,7 +230,7 @@
       "width": 1200,
       "height": 630,
       "encodingFormat": "image/png",
-      "caption": "Finta — your money stays on your phone. No account, no cloud, no tracking."
+      "caption": "Squirio — your money stays on your phone. No account, no cloud, no tracking."
     },
     {
       "@type": "BreadcrumbList",
@@ -247,7 +247,7 @@
     {
       "@type": "SoftwareApplication",
       "@id": "https://HOST/#app",
-      "name": "Finta",
+      "name": "Squirio",
       "url": "https://HOST/",
       "applicationCategory": "FinanceApplication",
       "applicationSubCategory": "Personal Finance",
@@ -293,8 +293,12 @@
 <header class="nav">
   <div class="wrap nav__inner">
     <a class="brand" href="#top">
-      <img class="brand__mark" src="assets/app_icon.png" alt="" width="32" height="32">
-      <span class="brand__name">FINTA</span>
+      <!-- decoding only, deliberately no loading="lazy": this one is in the
+           header, above the fold, and lazy-loading it would delay the first
+           thing painted. The footer copy of the same mark is lazy. -->
+      <img class="brand__mark" src="assets/app_icon.png" alt="" width="32" height="32"
+           decoding="async">
+      <span class="brand__name">SQUIRIO</span>
     </a>
 
     <nav class="nav__links" aria-label="Sections">
@@ -344,7 +348,7 @@
     <div>
       <p class="eyebrow">Coming soon to Android &amp; iOS</p>
       <h1 class="display" style="margin-top:var(--s-md)">The budget tracker that stays on your phone.</h1>
-      <p class="lede" style="margin-top:var(--s-lg);max-width:52ch">Finta is a personal finance tracker with no account to create, no cloud to sync to, and no company sitting between you and your own numbers. Everything lives in a single file on your device — and it budgets around your payday, not the 1st of the month.</p>
+      <p class="lede" style="margin-top:var(--s-lg);max-width:52ch">Squirio is a personal finance tracker with no account to create, no cloud to sync to, and no company sitting between you and your own numbers. Everything lives in a single file on your device — and it budgets around your payday, not the 1st of the month.</p>
 
       <!-- onsubmit is a last-resort guard, not the real handler: if main.js
            throws before it binds, this still stops the browser doing a native
@@ -366,7 +370,7 @@
     <!-- ---------- Mockup A: dashboard ---------- -->
     <div class="split__visual reveal">
       <div class="phone phone--tall" role="img"
-           aria-label="Finta dashboard showing the pay period 25 July to 24 August, a balance of 4,182,500 rupiah, safe-to-spend per day, a spending heatmap for the period and recent transactions.">
+           aria-label="Squirio dashboard showing the pay period 25 July to 24 August, a balance of 4,182,500 rupiah, safe-to-spend per day, a spending heatmap for the period and recent transactions.">
         <div class="phone__screen">
 
           <div class="ph-status">
@@ -581,7 +585,7 @@
      visually without it. -->
 <section class="section--tight section--alt" aria-labelledby="trust-heading">
   <div class="wrap">
-    <h2 class="visually-hidden" id="trust-heading">What Finta does not do</h2>
+    <h2 class="visually-hidden" id="trust-heading">What Squirio does not do</h2>
     <ul class="trust">
       <li class="trust__item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--income)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-inline:auto" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
@@ -607,6 +611,26 @@
   </div>
 </section>
 
+<!-- ===================== SQUI ============================================ -->
+<section class="section squi-intro" aria-labelledby="squi-heading">
+  <div class="wrap squi-intro__grid">
+    <div class="squi-intro__art" aria-hidden="true">
+      <!-- Decorative, so alt="" and the wrapper is aria-hidden: the copy beside
+           it already says "squirrel", which is everything a non-visual reader
+           needs. Lazy because this is the largest raster on the page (the phone
+           mockups are all markup) and it sits well below the fold. -->
+      <img src="assets/squi_wave_cutout.png" alt="" width="320" height="320"
+           loading="lazy" decoding="async">
+    </div>
+    <div>
+      <p class="eyebrow">Meet Squi</p>
+      <h2 class="h2" id="squi-heading">A little warmth, only where it helps.</h2>
+      <p class="lede">Squi is the squirrel who lives in Squirio, and turns up in exactly two places: when a screen has nothing on it yet, and when you reach something worth celebrating.</p>
+      <p class="body-2 squi-intro__rule">Squi never narrates your balances, budgets, or insights — those stay plain numbers. The warmth is saved for the moments where there was nothing to read anyway.</p>
+    </div>
+  </div>
+</section>
+
 <!-- ===================== PAYDAY ========================================== -->
 <section class="section" id="payday">
   <div class="wrap">
@@ -622,7 +646,7 @@
           <!-- Both windows share one Jul 1 - Aug 31 axis, so the offset between
                them is the thing you actually see. -->
           <div class="cycle" role="img"
-               aria-label="A timeline from 1 July to 31 August. The calendar month of August starts a week after the salary arrives on 25 July, splitting that paycheque from the spending it funds. A Finta pay period instead runs from 25 July to 24 August, keeping them together.">
+               aria-label="A timeline from 1 July to 31 August. The calendar month of August starts a week after the salary arrives on 25 July, splitting that paycheque from the spending it funds. A Squirio pay period instead runs from 25 July to 24 August, keeping them together.">
             <div>
               <div class="cycle__label">A calendar month</div>
               <div style="position:relative;height:20px">
@@ -635,7 +659,7 @@
             </div>
 
             <div style="border-top:1px solid var(--border);padding-top:var(--s-xl)">
-              <div class="cycle__label" style="color:var(--primary)">A Finta pay period</div>
+              <div class="cycle__label" style="color:var(--primary)">A Squirio pay period</div>
               <div style="position:relative;height:20px">
                 <span class="cycle__salary" style="--at:39.3%;top:2px">Salary lands</span>
               </div>
@@ -673,7 +697,7 @@
     <div class="section-head">
       <p class="eyebrow">Privacy by construction</p>
       <h2 class="h2">There is no server to trust.</h2>
-      <p class="lede">Most finance apps ask you to hand over your spending history and then promise to look after it. Finta removes the step where you have to believe anyone. Your data never goes anywhere, because the app has nowhere to send it.</p>
+      <p class="lede">Most finance apps ask you to hand over your spending history and then promise to look after it. Squirio removes the step where you have to believe anyone. Your data never goes anywhere, because the app has nowhere to send it.</p>
     </div>
 
     <div class="grid grid--3">
@@ -704,7 +728,7 @@
 
     <div class="card" style="margin-top:var(--s-lg)">
       <h3 class="h3">How you can check</h3>
-      <p class="body-2" style="margin-top:var(--s-sm);max-width:70ch">"No tracking" is easy to claim, so here is the version you can check yourself: turn on airplane mode and use Finta all day. Everything still works, because nothing was ever being sent anywhere. The app was built without the part that lets an app talk to the internet at all — so there is nothing quietly reporting what you tap, and nothing calling home when something goes wrong. There is also nothing to fetch an ad from: serving one means a network request, and that is the exact capability the app was built without. The insights, the unusual-spending warnings and the health score are sums and averages worked out on your phone. The only time your data moves is when you tap share on a backup or an export — and then it goes exactly where you send it.</p>
+      <p class="body-2" style="margin-top:var(--s-sm);max-width:70ch">"No tracking" is easy to claim, so here is the version you can check yourself: turn on airplane mode and use Squirio all day. Everything still works, because nothing was ever being sent anywhere. The app was built without the part that lets an app talk to the internet at all — so there is nothing quietly reporting what you tap, and nothing calling home when something goes wrong. There is also nothing to fetch an ad from: serving one means a network request, and that is the exact capability the app was built without. The insights, the unusual-spending warnings and the health score are sums and averages worked out on your phone. The only time your data moves is when you tap share on a backup or an export — and then it goes exactly where you send it.</p>
     </div>
   </div>
 </section>
@@ -715,9 +739,9 @@
     <div>
       <p class="eyebrow">On-device intelligence</p>
       <h2 class="h2">It notices things you never told it.</h2>
-      <p class="lede" style="margin-top:var(--s-lg)">Finta reads your own history and points out what changed — without any of it leaving the phone.</p>
+      <p class="lede" style="margin-top:var(--s-lg)">Squirio reads your own history and points out what changed — without any of it leaving the phone.</p>
       <ul class="points">
-        <li><span><strong>Finds subscriptions by itself.</strong>When the same merchant charges you roughly the same amount roughly every month, Finta spots it and offers to start tracking it in one tap.</span></li>
+        <li><span><strong>Finds subscriptions by itself.</strong>When the same merchant charges you roughly the same amount roughly every month, Squirio spots it and offers to start tracking it in one tap.</span></li>
         <li><span><strong>Flags an unusual amount as you type it.</strong>If a coffee costs ten times what your coffees normally cost, it asks before saving — and tells you what typical looks like. A nudge, never a block.</span></li>
         <li><span><strong>Scores your financial health out of 100</strong>from your savings rate, how closely you hold your budgets, and how steady your income is — with all three sub-scores shown, not one mystery number.</span></li>
         <li><span><strong>Names your fastest-growing category</strong>before it becomes a surprise at the end of the cycle.</span></li>
@@ -727,7 +751,7 @@
     <!-- ---------- Mockup C: insights hub ---------- -->
     <div class="split__visual reveal">
       <div class="phone phone--short" role="img"
-           aria-label="Finta insights screen showing a financial health score of 78 out of 100, sub-scores for savings, budget and stability, and spending insight cards.">
+           aria-label="Squirio insights screen showing a financial health score of 78 out of 100, sub-scores for savings, budget and stability, and spending insight cards.">
         <div class="phone__screen">
           <div class="ph-status">
             <span class="tnum">9:41</span>
@@ -815,7 +839,7 @@
     <div>
       <p class="eyebrow">Built for real amounts</p>
       <h2 class="h2">Logging a transaction takes three taps.</h2>
-      <p class="lede" style="margin-top:var(--s-lg)">People abandon finance trackers because entry is tedious. So entry is the part Finta works hardest on.</p>
+      <p class="lede" style="margin-top:var(--s-lg)">People abandon finance trackers because entry is tedious. So entry is the part Squirio works hardest on.</p>
       <ul class="points">
         <li><span><strong>A keypad built for six-digit numbers,</strong>with a<strong>000</strong>key — because typing 1.250.000 on a phone keyboard is how a habit dies.</span></li>
         <li><span><strong>Do maths in the amount field.</strong>Type<span class="tnum">12000+3500</span>or<span class="tnum">45000/3</span>and it just works. Splitting a bill needs no calculator app.</span></li>
@@ -832,7 +856,7 @@
 
         <!-- D1: the quick add form sheet -->
         <div class="phone phone--short phone--pair" role="img"
-             aria-label="Finta quick add sheet: expense, income and transfer segments, favourite shortcuts for coffee, Grab and lunch, an expense amount of 1,250,000 rupiah, a date of 12 August 2026, the BCA account, a merchant field suggesting Ace Hardware, and a Save Transaction button.">
+             aria-label="Squirio quick add sheet: expense, income and transfer segments, favourite shortcuts for coffee, Grab and lunch, an expense amount of 1,250,000 rupiah, a date of 12 August 2026, the BCA account, a merchant field suggesting Ace Hardware, and a Save Transaction button.">
           <div class="phone__screen">
             <div class="ph-status">
               <span class="tnum">9:41</span>
@@ -933,7 +957,7 @@
 
         <!-- D2: the amount keypad, a separate sheet opened from the amount -->
         <div class="phone phone--short phone--pair" role="img"
-             aria-label="Finta amount keypad: a full-height sheet showing the live expression 12,000 plus 3,500 in rupiah, a four by four key grid with a triple-zero key and divide, multiply, minus and plus, and a bottom row of backspace, clear, equals and Done.">
+             aria-label="Squirio amount keypad: a full-height sheet showing the live expression 12,000 plus 3,500 in rupiah, a four by four key grid with a triple-zero key and divide, multiply, minus and plus, and a bottom row of backspace, clear, equals and Done.">
           <div class="phone__screen">
             <div class="ph-status">
               <span class="tnum">9:41</span>
@@ -988,7 +1012,7 @@
     <div>
       <p class="eyebrow">Budgets that tell the truth</p>
       <h2 class="h2">"85% used" means nothing without a date.</h2>
-      <p class="lede" style="margin-top:var(--s-lg)">Being 85% through your food budget is alarming on day 3 and completely fine on day 27. Every Finta budget bar carries a pace marker showing how far through the period you actually are, so the number has context.</p>
+      <p class="lede" style="margin-top:var(--s-lg)">Being 85% through your food budget is alarming on day 3 and completely fine on day 27. Every Squirio budget bar carries a pace marker showing how far through the period you actually are, so the number has context.</p>
       <ul class="points">
         <li><span><strong>A budget can renew itself.</strong>Switch on "Repeat every period" and the same limit comes back each cycle — monthly ones on your payday, not the 1st. Leave it off and it covers only the period you set it in.</span></li>
         <li><span><strong>Then unspent money carries over.</strong>Pick whether a quiet month tops up the next one, or whether overspending eats into it too.</span></li>
@@ -999,7 +1023,7 @@
     <!-- ---------- Mockup B: budgets ---------- -->
     <div class="split__visual reveal">
       <div class="phone phone--short" role="img"
-           aria-label="Finta budgets screen with a donut showing the amount left this period and four budget bars, each with a pace marker.">
+           aria-label="Squirio budgets screen with a donut showing the amount left this period and four budget bars, each with a pace marker.">
         <div class="phone__screen">
           <div class="ph-status">
             <span class="tnum">9:41</span>
@@ -1228,7 +1252,7 @@
     <div class="faq">
       <details class="faq__item">
         <summary><h3 class="faq__question">Does it connect to my bank?</h3></summary>
-        <p class="faq__answer">No — and that is deliberate. Bank connections require handing your credentials to a third-party aggregator that then holds your full transaction history. Finta doesn't have a server, so it couldn't do that even if it wanted to. You enter transactions yourself, or import a CSV your bank already gives you.</p>
+        <p class="faq__answer">No — and that is deliberate. Bank connections require handing your credentials to a third-party aggregator that then holds your full transaction history. Squirio doesn't have a server, so it couldn't do that even if it wanted to. You enter transactions yourself, or import a CSV your bank already gives you.</p>
       </details>
 
       <details class="faq__item">
@@ -1238,7 +1262,7 @@
 
       <details class="faq__item">
         <summary><h3 class="faq__question">What happens if I lose my phone?</h3></summary>
-        <p class="faq__answer">This is the honest trade-off of a local-first app: if the only copy is on the phone and the phone is gone, the data is gone. Finta gives you a one-tap backup that produces a zip file you can put in your own cloud drive, email to yourself, or keep anywhere you like. Do it occasionally and you are covered — on your terms, in a file you control.</p>
+        <p class="faq__answer">This is the honest trade-off of a local-first app: if the only copy is on the phone and the phone is gone, the data is gone. Squirio gives you a one-tap backup that produces a zip file you can put in your own cloud drive, email to yourself, or keep anywhere you like. Do it occasionally and you are covered — on your terms, in a file you control.</p>
       </details>
 
       <details class="faq__item">
@@ -1270,8 +1294,13 @@
      a plain text link back up to it. -->
 <section class="section">
   <div class="wrap center" style="max-width:640px">
-    <h2 class="h2">Track your money, not your stress.</h2>
-    <p class="lede" style="margin-top:var(--s-lg)">Coming to Android and iOS.<a href="#waitlist">Join the waiting list</a>and you'll get a single message the day it lands.</p>
+    <h2 class="h2">Track your money, not your worry.</h2>
+    <!-- The spaces around the link are load-bearing and belong here, not as
+         leading/trailing whitespace inside the three strings: a translator
+         editing en.json/id.json cannot see them, and any JSON tidy pass would
+         strip them. HTML collapses runs of whitespace, so a literal space is
+         safe. -->
+    <p class="lede" style="margin-top:var(--s-lg)">Coming to Android and iOS. <a href="#waitlist">Join the waiting list</a> and you'll get a single message the day it lands.</p>
   </div>
 </section>
 
@@ -1283,8 +1312,9 @@
     <div class="footer__inner">
       <div>
         <a class="brand" href="#top">
-          <img class="brand__mark" src="assets/app_icon.png" alt="" width="32" height="32">
-          <span class="brand__name">FINTA</span>
+          <img class="brand__mark" src="assets/app_icon.png" alt="" width="32" height="32"
+               loading="lazy" decoding="async">
+          <span class="brand__name">SQUIRIO</span>
         </a>
       </div>
       <div class="footer__meta">

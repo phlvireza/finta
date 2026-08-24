@@ -2,7 +2,7 @@
    Inter, self-hosted.
 
    This used to be three tags pointing at fonts.googleapis.com. The app itself
-   talks to no server at all, and this site's headline is that Finta collects
+   talks to no server at all, and this site's headline is that Squirio collects
    nothing -- but a Google Fonts link hands every visitor's IP and User-Agent
    to Google before they have read a word of it. Self-hosting closes that gap
    and removes a render-blocking cross-origin round trip on the way.

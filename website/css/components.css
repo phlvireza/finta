@@ -40,11 +40,52 @@
   border: 1px solid var(--border);
 }
 
-/* The in-app wordmark is 'Finta' at weight 700 with letter-spacing 1.2. */
+/* The in-app wordmark is 'Squirio' at weight 700 with letter-spacing 1.2. */
 .brand__name {
   font-weight: 700;
   font-size: 1.0625rem;
   letter-spacing: 0.075em;
+}
+
+/* --------------------------------------------------------------------------
+   Squi introduction
+   The mascot supports the product story without competing with proof points.
+   -------------------------------------------------------------------------- */
+.squi-intro { border-bottom: 1px solid var(--border); }
+
+.squi-intro__grid {
+  display: grid;
+  gap: var(--s-2xl);
+  align-items: center;
+}
+
+.squi-intro__art {
+  display: grid;
+  place-items: center;
+  min-height: 240px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+}
+
+.squi-intro__art img {
+  display: block;
+  width: min(72vw, 320px);
+  height: auto;
+}
+
+.squi-intro__rule {
+  margin-top: var(--s-lg);
+  max-width: 62ch;
+  color: var(--text-2-strong);
+}
+
+@media (min-width: 760px) {
+  .squi-intro__grid {
+    grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.2fr);
+    gap: var(--s-3xl);
+  }
 }
 
 .nav__links {
@@ -364,7 +405,7 @@ html:not(.no-js) .nav__panel.is-open { display: block; }
 /* There is no form endpoint -- the submit handler in main.js is the only thing
    that does anything with the address. Without JS the browser would fall back
    to a native GET, putting the email in the URL, in history, and in the Referer
-   header of the next request. On a page whose entire claim is that Finta
+   header of the next request. On a page whose entire claim is that Squirio
    collects nothing, showing a form that can only fail that way is worse than
    showing no form, so hide it. (main.js also carries an inline onsubmit guard
    for the case where JS runs but this file's handler never binds.) */
@@ -458,4 +499,3 @@ html.no-js .waitlist { display: none; }
   align-items: center;
   min-height: 24px;
 }
-
