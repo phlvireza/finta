@@ -102,7 +102,7 @@ class PaydayPage extends StatelessWidget {
                 const SizedBox(height: AppConstants.spacingXxl),
                 SizedBox(
                   width: double.infinity,
-                  height: 52,
+                  height: AppConstants.buttonHeight,
                   child: ElevatedButton(
                     onPressed: onComplete,
                     child: Text(loc.startTracking),

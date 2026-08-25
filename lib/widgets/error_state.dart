@@ -64,12 +64,6 @@ class ErrorState extends StatelessWidget {
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
                 label: Text(loc.retry),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppConstants.spacingXl,
-                    vertical: AppConstants.spacingMd,
-                  ),
-                ),
               ),
             ],
           ],

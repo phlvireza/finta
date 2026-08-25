@@ -55,7 +55,15 @@ class EmptyState extends StatelessWidget {
             ],
             if (action != null) ...[
               const SizedBox(height: AppConstants.spacingXl),
-              action!,
+              // Full width on the same measure onboarding uses, so an empty
+              // state's call to action is the size of "Get started" rather
+              // than the width of whatever its own label happens to be.
+              ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: AppConstants.maxContentWidth,
+                ),
+                child: SizedBox(width: double.infinity, child: action!),
+              ),
             ],
           ],
         ),

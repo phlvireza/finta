@@ -67,9 +67,10 @@ class ManageAccountsScreen extends StatelessWidget {
               pose: SquiPose.empty,
               title: loc.squiEmptyAccounts,
               subtitle: loc.squiEmptyAccountsBody,
-              action: ElevatedButton(
+              action: FilledButton.icon(
                 onPressed: () => showAccountForm(context),
-                child: Text(loc.addAccount),
+                icon: const Icon(Icons.add),
+                label: Text(loc.addAccount),
               ),
             )
           : ListView(
