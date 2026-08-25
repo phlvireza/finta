@@ -5,12 +5,14 @@ version: 1.0.0+1
 
 environment:
   sdk: ^3.12.2
-  # Upper bound is load-bearing, not caution: android/gradle.properties sets
-  # android.builtInKotlin=false because builtInKotlin=true requires Flutter
-  # >=3.47, and the vendored file_picker fork exists for the same reason.
-  # Upgrading past 3.47 means undoing both together — pub refuses the upgrade
-  # until someone does.
-  flutter: ">=3.44.0 <3.47.0"
+  # No upper cap, and android/gradle.properties keeps android.builtInKotlin=false
+  # on purpose. Built-in Kotlin is only viable once no plugin in the graph applies
+  # the legacy kotlin-android plugin itself, and three still do at the versions
+  # pinned below: flutter_timezone 3.0.1, share_plus 10.1.4, package_info_plus
+  # 9.0.1. Under AGP 9 + builtInKotlin=true they fail at configuration time. The
+  # previous <3.47.0 cap was there to force that migration; it can't be done from
+  # this repo, so the cap only blocked SDK upgrades that are otherwise fine.
+  flutter: ">=3.44.0"
 
 dependencies:
   flutter:
@@ -63,13 +65,13 @@ dev_dependencies:
 
 # file_picker 11.0.3's Android build skips applying the legacy
 # kotlin-android plugin under AGP 9, trusting AGP's built-in Kotlin
-# compiler instead — but android.builtInKotlin=true isn't safe on this
-# project's Flutter SDK (<3.47; see android/gradle.properties). Points at
-# a local copy with that AGP9 skip removed, so it applies kotlin-android
-# unconditionally like every other plugin here. Only
+# compiler instead — but this project runs android.builtInKotlin=false
+# (see android/gradle.properties), so nothing would compile its Kotlin.
+# Points at a local copy with that AGP9 skip removed, so it applies
+# kotlin-android unconditionally like every other plugin here. Only
 # vendor/file_picker_agp9/android/build.gradle differs from the published
-# 11.0.3 package. Drop this override once the Flutter SDK is upgraded to
-# >=3.47 and android.builtInKotlin=true is turned back on project-wide.
+# 11.0.3 package. Drop this override only as part of moving the whole
+# plugin graph onto built-in Kotlin.
 dependency_overrides:
   file_picker:
     path: vendor/file_picker_agp9
