@@ -34,10 +34,14 @@ class _FintaAppState extends State<FintaApp> {
   bool _isInitialized = false;
   int _currentIndex = 0;
 
+  /// Index of [ManageBudgetsScreen] in [_screens] — the one tab where the
+  /// docked FAB creates something other than a transaction.
+  static const _budgetsTabIndex = 2;
+
   /// Budgets sits in the bar because it is what the app is *for*; Analytics
   /// moved into [MoreScreen] to make room. The shell already owns a FAB, so
-  /// the budgets screen is embedded — it puts its own add action in the app
-  /// bar rather than raising a second, colliding FAB.
+  /// the budgets screen is embedded — it raises no FAB of its own and lets
+  /// the shell's, which creates a budget on this tab, be the only one.
   final _screens = const [
     DashboardScreen(),
     TransactionHistoryScreen(),
@@ -128,9 +132,21 @@ class _FintaAppState extends State<FintaApp> {
     setState(() => _currentIndex = index);
   }
 
-  void _openAddTransaction() {
-    QuickAddSheet.show(context);
+  /// The docked "+" is the biggest target in the app, so people reach for it
+  /// wherever they are — including on Budgets, where they meant to create a
+  /// budget. Rather than teach them otherwise, it performs whatever the
+  /// current tab's primary create action is.
+  void _onCreatePressed() {
+    if (_currentIndex == _budgetsTabIndex) {
+      ManageBudgetsScreen.showBudgetForm(context);
+    } else {
+      QuickAddSheet.show(context);
+    }
   }
+
+  /// Label for the FAB, which changes with the tab it acts on.
+  String _createTooltip(AppLocalizations loc) =>
+      _currentIndex == _budgetsTabIndex ? loc.newBudget : loc.addTransaction;
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +171,8 @@ class _FintaAppState extends State<FintaApp> {
       body: IndexedStack(index: _currentIndex, children: _screens),
       floatingActionButton: FloatingActionButton(
         heroTag: null,
-        onPressed: _openAddTransaction,
+        tooltip: _createTooltip(loc),
+        onPressed: _onCreatePressed,
         child: const Icon(Icons.add, size: 28),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
