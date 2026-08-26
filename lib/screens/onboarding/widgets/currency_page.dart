@@ -114,7 +114,7 @@ class CurrencyPage extends StatelessWidget {
                 const SizedBox(height: AppConstants.spacingXxl),
                 SizedBox(
                   width: double.infinity,
-                  height: 52,
+                  height: AppConstants.buttonHeight,
                   child: ElevatedButton(
                     onPressed: onNext,
                     child: Text(loc.continueLabel),

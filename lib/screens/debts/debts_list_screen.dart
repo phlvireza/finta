@@ -51,9 +51,10 @@ class DebtsListScreen extends StatelessWidget {
               pose: SquiPose.empty,
               title: loc.squiEmptyDebts,
               subtitle: loc.squiEmptyDebtsBody,
-              action: ElevatedButton(
+              action: FilledButton.icon(
                 onPressed: () => showDebtForm(context),
-                child: Text(loc.addDebt),
+                icon: const Icon(Icons.add),
+                label: Text(loc.addDebt),
               ),
             )
           : ListView(

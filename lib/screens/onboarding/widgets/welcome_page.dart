@@ -46,7 +46,7 @@ class WelcomePage extends StatelessWidget {
                 const SizedBox(height: AppConstants.spacingXxxl * 2),
                 SizedBox(
                   width: double.infinity,
-                  height: 52,
+                  height: AppConstants.buttonHeight,
                   child: ElevatedButton(
                     onPressed: onNext,
                     child: Text(AppLocalizations.of(context)!.getStarted),

@@ -46,9 +46,10 @@ class GoalsListScreen extends StatelessWidget {
               pose: SquiPose.empty,
               title: loc.squiEmptyGoals,
               subtitle: loc.squiEmptyGoalsBody,
-              action: ElevatedButton(
+              action: FilledButton.icon(
                 onPressed: () => showGoalForm(context),
-                child: Text(loc.addGoal),
+                icon: const Icon(Icons.add),
+                label: Text(loc.addGoal),
               ),
             )
           : ListView(

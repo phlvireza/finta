@@ -237,7 +237,7 @@ class _DebtFormState extends State<DebtForm> {
               const SizedBox(height: AppConstants.spacingLg),
               SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: AppConstants.buttonHeight,
                 child: _isSaving
                     ? const Center(child: CircularProgressIndicator())
                     : ElevatedButton(onPressed: _save, child: Text(loc.save)),

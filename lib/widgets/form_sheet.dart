@@ -71,7 +71,7 @@ class FormSheet extends StatelessWidget {
             ),
             child: SizedBox(
               width: double.infinity,
-              height: 52,
+              height: AppConstants.buttonHeight,
               child: action,
             ),
           ),

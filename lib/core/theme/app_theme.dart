@@ -130,11 +130,39 @@ class AppTheme {
       ),
 
       // Elevated buttons
+      //
+      // The zero-width minimum keeps a button shrink-wrapped to its label
+      // while pinning its height, so an inline action and a full-width form
+      // footer are the same size without every call site saying so.
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
           foregroundColor: onPrimary,
           elevation: 0,
+          minimumSize: const Size(0, AppConstants.buttonHeight),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppConstants.spacingXxl,
+            vertical: AppConstants.spacingMd,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+          ),
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+
+      // Filled buttons — deliberately identical to elevated. Both are used
+      // for the same primary role across the app; left unthemed, FilledButton
+      // fell back to the Material 3 pill and rendered visibly smaller than an
+      // ElevatedButton sitting one screen away.
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: primary,
+          foregroundColor: onPrimary,
+          elevation: 0,
+          minimumSize: const Size(0, AppConstants.buttonHeight),
           padding: const EdgeInsets.symmetric(
             horizontal: AppConstants.spacingXxl,
             vertical: AppConstants.spacingMd,
@@ -163,6 +191,7 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: textPrimary,
           side: BorderSide(color: border),
+          minimumSize: const Size(0, AppConstants.buttonHeight),
           padding: const EdgeInsets.symmetric(
             horizontal: AppConstants.spacingXxl,
             vertical: AppConstants.spacingMd,

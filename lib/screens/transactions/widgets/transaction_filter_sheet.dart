@@ -374,7 +374,7 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
 
               SizedBox(
                 width: double.infinity,
-                height: 48,
+                height: AppConstants.buttonHeight,
                 child: ElevatedButton(
                   onPressed: _apply,
                   child: Text(loc.applyFilters),

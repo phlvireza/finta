@@ -47,6 +47,11 @@ class AppConstants {
   /// tablet or a landscape window.
   static const double maxContentWidth = 400.0;
 
+  /// Height of a primary or secondary button anywhere in the app. Enforced in
+  /// the theme via `minimumSize`, so a bare `ElevatedButton` matches a
+  /// full-width one in a form footer.
+  static const double buttonHeight = 52.0;
+
   // ── Budget Thresholds ─────────────────────────────────────
   static const double budgetWarningThreshold = 0.75;
   static const double budgetExceededThreshold = 1.0;
