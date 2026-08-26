@@ -100,6 +100,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     setState(() {
       _isIncome = isIncome;
       _categoryId = null; // Reset category selection
+      // Income hides the merchant field, so anything typed there would be
+      // saved invisibly — drop it rather than pretending it still applies.
+      if (isIncome) _merchant = null;
     });
   }
 
@@ -441,13 +444,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ),
               const SizedBox(height: AppConstants.spacingXxl),
 
-              MerchantField(
-                initialValue: _merchant,
-                onChanged: (val) => _merchant = val,
-                onAccountDefault: (accountId) =>
-                    setState(() => _accountId = accountId),
-              ),
-              const SizedBox(height: AppConstants.spacingXxl),
+              // Expense-only: a merchant is who you paid. Income has a
+              // payer, not a merchant, and asking "Where did you spend?" on a
+              // salary entry only invites a nonsense answer.
+              if (!_isIncome) ...[
+                MerchantField(
+                  initialValue: _merchant,
+                  onChanged: (val) => _merchant = val,
+                  onAccountDefault: (accountId) =>
+                      setState(() => _accountId = accountId),
+                ),
+                const SizedBox(height: AppConstants.spacingXxl),
+              ],
 
               CategoryPicker(
                 isIncome: _isIncome,
