@@ -59,6 +59,14 @@ class RecurringProvider extends ChangeNotifier {
     }
   }
 
+  /// Creates a template. Pass [lastRunDate] when the caller has *already*
+  /// posted the occurrence for that date — entering an expense and ticking
+  /// "recurring" does exactly that. Without it the template's first due date
+  /// is [startDate] itself, so a charge that was just paid reads "Due today"
+  /// on every surface until the next app launch runs the catch-up pass.
+  ///
+  /// Left null by the detected-subscription flow, which points [startDate] at
+  /// a predicted *future* charge and posts nothing inline.
   Future<RecurringTransactionModel> addRecurring({
     required String type,
     required double amount,
@@ -69,6 +77,7 @@ class RecurringProvider extends ChangeNotifier {
     required String frequency,
     required DateTime startDate,
     DateTime? endDate,
+    DateTime? lastRunDate,
     bool isSubscription = false,
   }) async {
     final recurring = RecurringTransactionModel(
@@ -80,8 +89,13 @@ class RecurringProvider extends ChangeNotifier {
       merchant: merchant,
       note: note,
       frequency: frequency,
-      startDate: startDate,
-      endDate: endDate,
+      // Both dates are stored date-only, but callers hand us a DateTime.now()
+      // that still carries a time. Truncating here keeps the in-memory copy
+      // identical to what a reload returns, so day-count labels like
+      // "Due in N days" don't shift for the rest of the session.
+      startDate: _dateOnly(startDate),
+      endDate: endDate == null ? null : _dateOnly(endDate),
+      lastRunDate: lastRunDate == null ? null : _dateOnly(lastRunDate),
       isActive: true,
       isSubscription: isSubscription,
       createdAt: DateTime.now(),
@@ -92,6 +106,8 @@ class RecurringProvider extends ChangeNotifier {
     notifyListeners();
     return recurring;
   }
+
+  static DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
   Future<void> updateRecurring(RecurringTransactionModel recurring) async {
     await _repository.update(recurring);

@@ -27,9 +27,10 @@ import '../../l10n/app_localizations.dart';
 /// Screen to list, create, and manage budgets.
 class ManageBudgetsScreen extends StatelessWidget {
   /// True when hosted as a tab in the app shell rather than pushed from
-  /// [MoreScreen]. The shell already docks a FAB over the nav bar, so an
-  /// embedded instance moves its add action into the app bar instead of
-  /// raising a second FAB on top of it.
+  /// [MoreScreen]. The shell already docks a FAB over the nav bar — and on
+  /// this tab that FAB creates a budget — so an embedded instance raises no
+  /// FAB and offers no add action of its own. Pushed from [MoreScreen] there
+  /// is no shell FAB, so it raises its own.
   final bool embedded;
 
   const ManageBudgetsScreen({super.key, this.embedded = false});
@@ -46,25 +47,14 @@ class ManageBudgetsScreen extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(loc.manageBudgets),
-        actions: embedded
-            ? [
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  tooltip: loc.newBudget,
-                  onPressed: () => _showBudgetForm(context),
-                ),
-              ]
-            : null,
-      ),
+      appBar: AppBar(title: Text(loc.manageBudgets)),
       body: budgets.isEmpty && ended.isEmpty
           ? SquiState(
               pose: SquiPose.empty,
               title: loc.squiEmptyBudgets,
               subtitle: loc.squiEmptyBudgetsBody,
               action: FilledButton.icon(
-                onPressed: () => _showBudgetForm(context),
+                onPressed: () => showBudgetForm(context),
                 icon: const Icon(Icons.add),
                 label: Text(loc.createFirstBudget),
               ),
@@ -149,19 +139,21 @@ class ManageBudgetsScreen extends StatelessWidget {
                 ],
               ],
             ),
-      // Embedded, the shell's docked FAB owns this corner — the add action
-      // lives in the app bar instead.
+      // Embedded, the shell's docked FAB owns this corner and already opens
+      // this same form — a second button here would just be a duplicate.
       floatingActionButton: embedded
           ? null
           : FloatingActionButton(
               heroTag: null,
-              onPressed: () => _showBudgetForm(context),
+              onPressed: () => showBudgetForm(context),
               child: const Icon(Icons.add),
             ),
     );
   }
 
-  void _showBudgetForm(BuildContext context, {String? budgetId}) {
+  /// Opens the budget form. Public and static because the app shell's docked
+  /// FAB drives it directly when the Budgets tab is showing.
+  static void showBudgetForm(BuildContext context, {String? budgetId}) {
     // No keyboard padding here — [FormSheet] inside [BudgetForm] owns it.
     // This used to add its own on top, which both doubled the inset and
     // froze it at whatever it was when the sheet opened, since this

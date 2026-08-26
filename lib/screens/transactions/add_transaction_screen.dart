@@ -100,6 +100,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     setState(() {
       _isIncome = isIncome;
       _categoryId = null; // Reset category selection
+      // Income hides the merchant field, so anything typed there would be
+      // saved invisibly — drop it rather than pretending it still applies.
+      if (isIncome) _merchant = null;
     });
   }
 
@@ -166,7 +169,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           ? null
           : trimmedMerchant;
 
-      // Create recurring template if new and toggled
+      // Create recurring template if new and toggled. The occurrence for
+      // [_date] is posted below, so the template is marked as already run for
+      // that date — otherwise its next due date would be [_date] itself and
+      // the charge just entered would read "Due today".
       if (widget.editTransaction == null && _isRecurring) {
         final recTx = await recurringProvider.addRecurring(
           type: type,
@@ -177,6 +183,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           note: _noteController.text.trim(),
           frequency: _recurringFrequency,
           startDate: _date,
+          lastRunDate: _date,
           isSubscription: _isSubscription,
         );
         recurringId = recTx.id;
@@ -437,13 +444,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ),
               const SizedBox(height: AppConstants.spacingXxl),
 
-              MerchantField(
-                initialValue: _merchant,
-                onChanged: (val) => _merchant = val,
-                onAccountDefault: (accountId) =>
-                    setState(() => _accountId = accountId),
-              ),
-              const SizedBox(height: AppConstants.spacingXxl),
+              // Expense-only: a merchant is who you paid. Income has a
+              // payer, not a merchant, and asking "Where did you spend?" on a
+              // salary entry only invites a nonsense answer.
+              if (!_isIncome) ...[
+                MerchantField(
+                  initialValue: _merchant,
+                  onChanged: (val) => _merchant = val,
+                  onAccountDefault: (accountId) =>
+                      setState(() => _accountId = accountId),
+                ),
+                const SizedBox(height: AppConstants.spacingXxl),
+              ],
 
               CategoryPicker(
                 isIncome: _isIncome,

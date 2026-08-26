@@ -162,6 +162,9 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
       _templateFeedback = null;
       if (type != _EntryType.transfer) {
         _categoryId = null;
+        // Income hides the merchant field; see the transfer branch below for
+        // the same reasoning about fields that no longer apply.
+        if (type == _EntryType.income) _merchant = null;
       } else {
         // A transfer carries neither a note nor a recurrence, so anything
         // typed into those before switching would silently be dropped on
@@ -293,7 +296,9 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
         // Same order as AddTransactionScreen: create the template first,
         // then post this occurrence carrying its recurringId, so the
         // partial unique index on (recurringId, date) already covers today
-        // and the catch-up pass can't post it a second time.
+        // and the catch-up pass can't post it a second time. lastRunDate
+        // records that same occurrence, so the next due date lands one
+        // period out instead of on the charge that was just entered.
         String? recurringId;
         if (_isRecurring) {
           final template = await recurringProvider.addRecurring(
@@ -305,6 +310,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
             note: note.isEmpty ? null : note,
             frequency: _recurringFrequency,
             startDate: _date,
+            lastRunDate: _date,
             isSubscription: _isSubscription,
           );
           recurringId = template.id;
@@ -550,13 +556,17 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                 }),
               ),
             ] else ...[
-              const SizedBox(height: AppConstants.spacingLg),
-              MerchantField(
-                initialValue: _merchant,
-                onChanged: (val) => _merchant = val,
-                onAccountDefault: (accountId) =>
-                    setState(() => _accountId = accountId),
-              ),
+              // Expense-only, same as the full screen: income has a payer,
+              // not a merchant.
+              if (!_isIncome) ...[
+                const SizedBox(height: AppConstants.spacingLg),
+                MerchantField(
+                  initialValue: _merchant,
+                  onChanged: (val) => _merchant = val,
+                  onAccountDefault: (accountId) =>
+                      setState(() => _accountId = accountId),
+                ),
+              ],
               const SizedBox(height: AppConstants.spacingLg),
               CategoryPicker(
                 isIncome: _isIncome,
