@@ -293,7 +293,9 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
         // Same order as AddTransactionScreen: create the template first,
         // then post this occurrence carrying its recurringId, so the
         // partial unique index on (recurringId, date) already covers today
-        // and the catch-up pass can't post it a second time.
+        // and the catch-up pass can't post it a second time. lastRunDate
+        // records that same occurrence, so the next due date lands one
+        // period out instead of on the charge that was just entered.
         String? recurringId;
         if (_isRecurring) {
           final template = await recurringProvider.addRecurring(
@@ -305,6 +307,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
             note: note.isEmpty ? null : note,
             frequency: _recurringFrequency,
             startDate: _date,
+            lastRunDate: _date,
             isSubscription: _isSubscription,
           );
           recurringId = template.id;

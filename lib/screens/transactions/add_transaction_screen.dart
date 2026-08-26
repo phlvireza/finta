@@ -166,7 +166,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           ? null
           : trimmedMerchant;
 
-      // Create recurring template if new and toggled
+      // Create recurring template if new and toggled. The occurrence for
+      // [_date] is posted below, so the template is marked as already run for
+      // that date — otherwise its next due date would be [_date] itself and
+      // the charge just entered would read "Due today".
       if (widget.editTransaction == null && _isRecurring) {
         final recTx = await recurringProvider.addRecurring(
           type: type,
@@ -177,6 +180,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           note: _noteController.text.trim(),
           frequency: _recurringFrequency,
           startDate: _date,
+          lastRunDate: _date,
           isSubscription: _isSubscription,
         );
         recurringId = recTx.id;
