@@ -11,7 +11,7 @@ class BudgetRepository {
     try {
       final db = await _dbHelper.database;
       final maps = await db.query('budgets', orderBy: 'createdAt ASC');
-      return _attachCategories(maps.map((m) => BudgetModel.fromMap(m)).toList());
+      return await _attachCategories(maps.map((m) => BudgetModel.fromMap(m)).toList());
     } catch (e) {
       throw DatabaseException('Failed to get all budgets', cause: e);
     }
@@ -25,7 +25,7 @@ class BudgetRepository {
         where: 'isActive = 1',
         orderBy: 'createdAt ASC',
       );
-      return _attachCategories(maps.map((m) => BudgetModel.fromMap(m)).toList());
+      return await _attachCategories(maps.map((m) => BudgetModel.fromMap(m)).toList());
     } catch (e) {
       throw DatabaseException('Failed to get active budgets', cause: e);
     }
@@ -54,7 +54,7 @@ class BudgetRepository {
         'WHERE bc.categoryId = ? AND b.isActive = 1',
         [categoryId],
       );
-      return _attachCategories(rows.map((m) => BudgetModel.fromMap(m)).toList());
+      return await _attachCategories(rows.map((m) => BudgetModel.fromMap(m)).toList());
     } catch (e) {
       throw DatabaseException('Failed to get budgets for category', cause: e);
     }

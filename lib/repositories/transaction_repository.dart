@@ -122,7 +122,7 @@ class TransactionRepository {
       final db = await _dbHelper.database;
       final startStr = start.toIso8601String().substring(0, 10);
       final endStr = end.toIso8601String().substring(0, 10);
-      return db.rawQuery(
+      return await db.rawQuery(
         'SELECT categoryId, SUM(amount) as total FROM transactions '
         'WHERE type = ? AND date >= ? AND date <= ? AND isTransfer = 0 '
         'GROUP BY categoryId ORDER BY total DESC',
@@ -290,7 +290,7 @@ class TransactionRepository {
       final db = await _dbHelper.database;
       final startStr = '$year-01-01';
       final endStr = '$year-12-31';
-      return db.rawQuery(
+      return await db.rawQuery(
         "SELECT strftime('%m', date) as month, type, SUM(amount) as total "
         'FROM transactions WHERE date >= ? AND date <= ? AND isTransfer = 0 '
         "GROUP BY strftime('%m', date), type ORDER BY month",
@@ -313,7 +313,7 @@ class TransactionRepository {
       final db = await _dbHelper.database;
       final startStr = start.toIso8601String().substring(0, 10);
       final endStr = end.toIso8601String().substring(0, 10);
-      return db.rawQuery(
+      return await db.rawQuery(
         "SELECT strftime('%Y-%m', date) as ym, type, SUM(amount) as total "
         'FROM transactions WHERE date >= ? AND date <= ? AND isTransfer = 0 '
         "GROUP BY strftime('%Y-%m', date), type ORDER BY ym",
@@ -335,7 +335,7 @@ class TransactionRepository {
       final db = await _dbHelper.database;
       final startStr = start.toIso8601String().substring(0, 10);
       final endStr = end.toIso8601String().substring(0, 10);
-      return db.rawQuery(
+      return await db.rawQuery(
         "SELECT strftime('%Y-%m', date) as ym, SUM(amount) as total FROM transactions "
         'WHERE categoryId = ? AND date >= ? AND date <= ? AND isTransfer = 0 '
         "GROUP BY strftime('%Y-%m', date) ORDER BY ym",
@@ -356,7 +356,7 @@ class TransactionRepository {
       final db = await _dbHelper.database;
       final startStr = start.toIso8601String().substring(0, 10);
       final endStr = end.toIso8601String().substring(0, 10);
-      return db.rawQuery(
+      return await db.rawQuery(
         'SELECT date, SUM(amount) as total FROM transactions '
         "WHERE type = 'expense' AND isTransfer = 0 AND date >= ? AND date <= ? "
         'GROUP BY date',
@@ -389,7 +389,7 @@ class TransactionRepository {
       final db = await _dbHelper.database;
       final startStr = start.toIso8601String().substring(0, 10);
       final endStr = end.toIso8601String().substring(0, 10);
-      return db.rawQuery(
+      return await db.rawQuery(
         'SELECT merchant, SUM(amount) as total, COUNT(*) as cnt FROM transactions '
         "WHERE type = ? AND isTransfer = 0 AND merchant IS NOT NULL AND TRIM(merchant) != '' "
         'AND date >= ? AND date <= ? '
