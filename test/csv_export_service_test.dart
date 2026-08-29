@@ -360,7 +360,7 @@ void main() {
       // file gets 28 rows, and the difference is exactly the two pairs.
       final ledger = [
         for (var i = 0; i < 26; i++)
-          tx(type: 'expense', amount: 1000 + i, date: DateTime(2026, 2, 12)),
+          tx(type: 'expense', amount: 1000.0 + i, date: DateTime(2026, 2, 12)),
         ...transferLegs(
           from: 'acc1',
           to: 'acc2',
