@@ -82,24 +82,61 @@ class RecurringRepository {
     }
   }
 
+  /// Stop a template: deactivate it *and* cut the link from every occurrence
+  /// it already posted.
+  ///
+  /// The posted transactions themselves are deliberately kept — the money was
+  /// really spent, and unlike a goal or a debt there is nothing to give back.
+  /// Only `recurringId` goes, because it is what makes a row render the repeat
+  /// badge (`TransactionModel.isRecurring` is just `recurringId != null`).
+  /// Left in place it points at a template that every screen filters out on
+  /// `isActive`, so the badge would claim a schedule the user can no longer
+  /// see, pause or resume.
+  ///
+  /// Both statements run in one transaction because `transactions.recurringId`
+  /// has no foreign key, so nothing at the schema level would catch a
+  /// half-applied stop.
+  ///
+  /// Callers must reload `TransactionProvider` afterwards — its in-memory
+  /// lists still hold the pre-unlink copies. Nothing else needs reloading; no
+  /// amount, date or account changed.
   Future<void> delete(String id) async {
     try {
       final db = await _dbHelper.database;
-      await db.update(
-        'recurring_transactions',
-        {'isActive': 0},
-        where: 'id = ?',
-        whereArgs: [id],
-      );
+      await db.transaction((txn) async {
+        await txn.update(
+          'transactions',
+          {'recurringId': null},
+          where: 'recurringId = ?',
+          whereArgs: [id],
+        );
+        await txn.update(
+          'recurring_transactions',
+          {'isActive': 0},
+          where: 'id = ?',
+          whereArgs: [id],
+        );
+      });
     } catch (e) {
       throw DatabaseException('Failed to soft delete recurring transaction', cause: e);
     }
   }
 
+  /// Erase the template row outright. Unlinks first for the same reason
+  /// [delete] does — more urgently here, since the id would otherwise resolve
+  /// to no row at all.
   Future<void> hardDelete(String id) async {
     try {
       final db = await _dbHelper.database;
-      await db.delete('recurring_transactions', where: 'id = ?', whereArgs: [id]);
+      await db.transaction((txn) async {
+        await txn.update(
+          'transactions',
+          {'recurringId': null},
+          where: 'recurringId = ?',
+          whereArgs: [id],
+        );
+        await txn.delete('recurring_transactions', where: 'id = ?', whereArgs: [id]);
+      });
     } catch (e) {
       throw DatabaseException('Failed to hard delete recurring transaction', cause: e);
     }

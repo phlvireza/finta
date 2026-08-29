@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/recurring_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/settings_provider.dart';
+import '../../providers/transaction_provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/number_utils.dart';
@@ -174,8 +175,17 @@ class RecurringListScreen extends StatelessWidget {
 
     if (confirmed && context.mounted) {
       final messenger = ScaffoldMessenger.of(context);
+      final recurring = context.read<RecurringProvider>();
+      final transactions = context.read<TransactionProvider>();
+      final settings = context.read<SettingsProvider>();
       try {
-        await context.read<RecurringProvider>().deleteRecurring(id);
+        await recurring.deleteRecurring(id);
+        // Stopping a template unlinks the occurrences it already posted, so
+        // they stop drawing the repeat badge. Both lists are in-memory
+        // snapshots holding the pre-unlink copies — the dashboard reads the
+        // period list, the history screen reads the full one.
+        await transactions.loadTransactions(payday: settings.payday);
+        await transactions.loadAllTransactions();
         messenger.hideCurrentSnackBar();
         messenger.showSnackBar(SnackBar(content: Text(loc.recurringStopped)));
       } catch (e) {

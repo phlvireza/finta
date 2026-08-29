@@ -13,6 +13,12 @@ class _FakeRecurringRepository extends RecurringRepository {
   final List<String> deleted = [];
   final List<RecurringTransactionModel> inserted = [];
 
+  /// Stands in for `transactions.recurringId`: transaction id → the template
+  /// it was posted by. The real statements that clear this are pinned against
+  /// SQLite in recurring_delete_test.dart; here it only shows that the
+  /// provider's delete is the call that triggers the unlink.
+  final Map<String, String?> links = {};
+
   _FakeRecurringRepository(this.rows);
 
   @override
@@ -28,6 +34,9 @@ class _FakeRecurringRepository extends RecurringRepository {
   Future<void> delete(String id) async {
     if (shouldFailDelete) throw Exception('database is gone');
     deleted.add(id);
+    for (final entry in links.entries.toList()) {
+      if (entry.value == id) links[entry.key] = null;
+    }
     final index = rows.indexWhere((r) => r.id == id);
     if (index != -1) rows[index] = rows[index].copyWith(isActive: false);
   }
@@ -95,6 +104,28 @@ void main() {
         provider.recurringTransactions.firstWhere((r) => r.id == 'r1').isActive,
         isFalse,
       );
+    });
+
+    // The reported bug: an expense entered with "recurring" ticked kept its
+    // repeat icon after the template was stopped, because stopping never
+    // touched the occurrences it had posted.
+    test('cuts its occurrences loose from the stopped template', () async {
+      repository.links.addAll({'tx-1': 'r1', 'tx-2': 'r1', 'tx-3': 'r2'});
+
+      await provider.deleteRecurring('r1');
+
+      expect(repository.links['tx-1'], isNull);
+      expect(repository.links['tx-2'], isNull);
+      expect(repository.links['tx-3'], 'r2', reason: 'r2 is still running');
+    });
+
+    test('leaves occurrences linked when the write fails', () async {
+      repository.shouldFailDelete = true;
+      repository.links['tx-1'] = 'r1';
+
+      await expectLater(provider.deleteRecurring('r1'), throwsA(isA<Exception>()));
+
+      expect(repository.links['tx-1'], 'r1');
     });
 
     test('notifies listeners once the delete has committed', () async {

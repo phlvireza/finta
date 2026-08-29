@@ -395,7 +395,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stopRecurringMessage =>
-      'This will stop future transactions from being generated automatically. Existing transactions will remain.';
+      'This will stop future transactions from being generated automatically. Existing transactions will remain, but will no longer be marked as recurring.';
 
   @override
   String get recurringStopped => 'Recurring transaction stopped';
@@ -1278,6 +1278,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notASubscription => 'Not a subscription';
+
+  @override
+  String get cancelSubscription => 'Cancel subscription';
+
+  @override
+  String get cancelSubscriptionMessage =>
+      'This stops future charges from being added. Past charges stay in your history, but will no longer be marked as recurring.';
+
+  @override
+  String get subscriptionCancelled => 'Subscription cancelled';
 
   @override
   String get reminderOff => 'No reminder';

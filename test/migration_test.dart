@@ -1127,4 +1127,193 @@ void main() {
       await db.close();
     });
   });
+
+  group('v12 — unlinking occurrences of stopped recurring templates', () {
+    /// A v1 install replayed to v11, holding the three states v12 has to tell
+    /// apart: a live template, one the user stopped back when stopping left
+    /// the link behind, and an id whose template row is gone entirely
+    /// (hardDelete, or a backup restored without its templates).
+    Future<Database> upgradedToV11() async {
+      final db = await databaseFactoryFfi.openDatabase(
+        ':memory:',
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: _createV1Schema,
+          onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
+        ),
+      );
+
+      await db.insert('categories', {
+        'id': 'cat_bills',
+        'name': 'Bills & Utilities',
+        'type': 'expense',
+        'icon': 'receipt_long',
+        'color': '#2E5FA8',
+        'isDefault': 0,
+        'sortOrder': 3,
+        'createdAt': '2026-01-01T00:00:00.000',
+      });
+
+      await db.insert('recurring_transactions', {
+        'id': 'rec_live',
+        'type': 'expense',
+        'amount': 65000,
+        'categoryId': 'cat_bills',
+        'merchant': 'Netflix',
+        'frequency': 'monthly',
+        'startDate': '2026-01-05',
+        'isActive': 1,
+        'createdAt': '2026-01-01T00:00:00.000',
+      });
+      await db.insert('recurring_transactions', {
+        'id': 'rec_stopped',
+        'type': 'expense',
+        'amount': 40000,
+        'categoryId': 'cat_bills',
+        'merchant': 'Spotify',
+        'frequency': 'monthly',
+        'startDate': '2026-01-07',
+        'isActive': 0,
+        'createdAt': '2026-01-01T00:00:00.000',
+      });
+
+      for (final row in [
+        {'id': 'tx_live1', 'date': '2026-01-05', 'recurringId': 'rec_live'},
+        {'id': 'tx_live2', 'date': '2026-02-05', 'recurringId': 'rec_live'},
+        {'id': 'tx_stopped1', 'date': '2026-01-07', 'recurringId': 'rec_stopped'},
+        {'id': 'tx_stopped2', 'date': '2026-02-07', 'recurringId': 'rec_stopped'},
+        {'id': 'tx_dangling', 'date': '2026-02-11', 'recurringId': 'rec_gone'},
+        {'id': 'tx_manual', 'date': '2026-02-09', 'recurringId': null},
+      ]) {
+        await db.insert('transactions', {
+          'id': row['id'],
+          'type': 'expense',
+          'amount': 40000,
+          'categoryId': 'cat_bills',
+          'date': row['date'],
+          'recurringId': row['recurringId'],
+          'createdAt': '2026-01-01T00:00:00.000',
+          'updatedAt': '2026-01-01T00:00:00.000',
+        });
+      }
+
+      await Migrations.v2(db);
+      await Migrations.v3(db);
+      await Migrations.v4(db);
+      await Migrations.v5(db);
+      await Migrations.v6(db);
+      await Migrations.v7(db);
+      await Migrations.v8(db);
+      await Migrations.v9(db);
+      await Migrations.v10(db);
+      await Migrations.v11(db);
+      return db;
+    }
+
+    Future<String?> recurringIdOf(Database db, String txId) async {
+      final rows = await db.query(
+        'transactions',
+        columns: ['recurringId'],
+        where: 'id = ?',
+        whereArgs: [txId],
+      );
+      return rows.first['recurringId'] as String?;
+    }
+
+    test('clears recurringId on occurrences of a stopped template', () async {
+      final db = await upgradedToV11();
+      await Migrations.v12(db);
+
+      expect(await recurringIdOf(db, 'tx_stopped1'), isNull);
+      expect(await recurringIdOf(db, 'tx_stopped2'), isNull);
+
+      await db.close();
+    });
+
+    test('leaves occurrences of an active template linked', () async {
+      final db = await upgradedToV11();
+      await Migrations.v12(db);
+
+      expect(await recurringIdOf(db, 'tx_live1'), 'rec_live');
+      expect(await recurringIdOf(db, 'tx_live2'), 'rec_live');
+
+      await db.close();
+    });
+
+    test('clears a recurringId whose template row no longer exists', () async {
+      final db = await upgradedToV11();
+      await Migrations.v12(db);
+
+      expect(await recurringIdOf(db, 'tx_dangling'), isNull);
+
+      await db.close();
+    });
+
+    test('deletes no transactions and touches nothing else on them', () async {
+      // The money was really spent — v12 only cuts the link. A row losing
+      // its amount, date or category here would be silent data loss.
+      final db = await upgradedToV11();
+      await Migrations.v12(db);
+
+      final rows = await db.query('transactions', orderBy: 'id');
+      expect(rows.map((r) => r['id']), [
+        'tx_dangling',
+        'tx_live1',
+        'tx_live2',
+        'tx_manual',
+        'tx_stopped1',
+        'tx_stopped2',
+      ]);
+
+      final stopped = rows.firstWhere((r) => r['id'] == 'tx_stopped1');
+      expect(stopped['amount'], 40000);
+      expect(stopped['date'], '2026-01-07');
+      expect(stopped['categoryId'], 'cat_bills');
+      // v10 backfilled this off the template before the link was cut; the
+      // merchant it copied has to survive losing the link.
+      expect(stopped['merchant'], 'Spotify');
+
+      await db.close();
+    });
+
+    test('leaves the template rows themselves alone', () async {
+      // v12 repairs transactions only — a stopped template stays stopped and
+      // a live one stays live, so nothing starts generating again.
+      final db = await upgradedToV11();
+      await Migrations.v12(db);
+
+      final templates = await db.query(
+        'recurring_transactions',
+        orderBy: 'id',
+      );
+      expect(templates, hasLength(2));
+      expect(templates[0]['id'], 'rec_live');
+      expect(templates[0]['isActive'], 1);
+      expect(templates[1]['id'], 'rec_stopped');
+      expect(templates[1]['isActive'], 0);
+
+      await db.close();
+    });
+
+    test('is idempotent — a second run changes nothing', () async {
+      final db = await upgradedToV11();
+      await Migrations.v12(db);
+      final after = await db.query('transactions', orderBy: 'id');
+
+      await Migrations.v12(db);
+
+      expect(await db.query('transactions', orderBy: 'id'), after);
+
+      await db.close();
+    });
+
+    test('leaves an untouched transaction with no link null', () async {
+      final db = await upgradedToV11();
+      await Migrations.v12(db);
+
+      expect(await recurringIdOf(db, 'tx_manual'), isNull);
+
+      await db.close();
+    });
+  });
 }

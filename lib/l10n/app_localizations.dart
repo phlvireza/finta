@@ -845,7 +845,7 @@ abstract class AppLocalizations {
   /// No description provided for @stopRecurringMessage.
   ///
   /// In en, this message translates to:
-  /// **'This will stop future transactions from being generated automatically. Existing transactions will remain.'**
+  /// **'This will stop future transactions from being generated automatically. Existing transactions will remain, but will no longer be marked as recurring.'**
   String get stopRecurringMessage;
 
   /// No description provided for @recurringStopped.
@@ -2359,6 +2359,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not a subscription'**
   String get notASubscription;
+
+  /// No description provided for @cancelSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel subscription'**
+  String get cancelSubscription;
+
+  /// No description provided for @cancelSubscriptionMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This stops future charges from being added. Past charges stay in your history, but will no longer be marked as recurring.'**
+  String get cancelSubscriptionMessage;
+
+  /// No description provided for @subscriptionCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription cancelled'**
+  String get subscriptionCancelled;
 
   /// No description provided for @reminderOff.
   ///

@@ -273,6 +273,43 @@ class Migrations {
     });
   }
 
+  /// v11 → v12: cuts `transactions.recurringId` loose from templates that are
+  /// no longer live. Data only, no DDL, so a fresh `_onCreate` install and a
+  /// fully-upgraded one still produce an identical schema.
+  ///
+  /// Stopping a recurring template used to deactivate the template and stop
+  /// there. `TransactionModel.isRecurring` is just `recurringId != null`, so
+  /// every occurrence it had already posted kept drawing the repeat badge —
+  /// pointing at a schedule that every screen filters out on `isActive`, and
+  /// that the user could therefore never see, pause or resume again. The badge
+  /// outlived the thing it described. `RecurringRepository.delete` now unlinks
+  /// as it deactivates; this repairs the rows stopped before that existed.
+  ///
+  /// The second statement covers ids that resolve to no row at all — a
+  /// `hardDelete`, or a backup restored without its templates. Those are the
+  /// same stale badge with no row left to explain it.
+  ///
+  /// Transactions are only unlinked, never deleted: the money was really
+  /// spent, and unlike a goal or a debt there is nothing to give back.
+  /// Occurrences of *active* templates are untouched — their badge is honest.
+  static Future<void> v12(Database db) async {
+    await db.transaction((txn) async {
+      await txn.execute('''
+        UPDATE transactions SET recurringId = NULL
+        WHERE recurringId IS NOT NULL
+          AND recurringId IN (
+            SELECT id FROM recurring_transactions WHERE isActive = 0
+          )
+      ''');
+
+      await txn.execute('''
+        UPDATE transactions SET recurringId = NULL
+        WHERE recurringId IS NOT NULL
+          AND recurringId NOT IN (SELECT id FROM recurring_transactions)
+      ''');
+    });
+  }
+
   /// The v10 colour moves, kept beside the migration that applies them so
   /// the "before" hex stays readable — [SeedData] only records the "after".
   static const List<({String type, String name, String oldColor, String newColor})>

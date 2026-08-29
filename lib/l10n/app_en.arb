@@ -172,7 +172,7 @@
   "unknown": "Unknown",
   "next": "Next",
   "stopRecurring": "Stop Recurring",
-  "stopRecurringMessage": "This will stop future transactions from being generated automatically. Existing transactions will remain.",
+  "stopRecurringMessage": "This will stop future transactions from being generated automatically. Existing transactions will remain, but will no longer be marked as recurring.",
   "recurringStopped": "Recurring transaction stopped",
   "stop": "Stop",
   "skip": "Skip",
@@ -699,6 +699,9 @@
   "resume": "Resume",
   "setReminder": "Set reminder",
   "notASubscription": "Not a subscription",
+  "cancelSubscription": "Cancel subscription",
+  "cancelSubscriptionMessage": "This stops future charges from being added. Past charges stay in your history, but will no longer be marked as recurring.",
+  "subscriptionCancelled": "Subscription cancelled",
   "reminderOff": "No reminder",
   "reminderDaysBeforeOption": "{days} days before",
   "@reminderDaysBeforeOption": {

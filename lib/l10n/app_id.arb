@@ -170,7 +170,7 @@
   "unknown": "Tidak diketahui",
   "next": "Berikutnya",
   "stopRecurring": "Hentikan Rutin",
-  "stopRecurringMessage": "Ini akan menghentikan pembuatan transaksi otomatis di masa depan. Transaksi yang ada akan tetap dipertahankan.",
+  "stopRecurringMessage": "Ini akan menghentikan pembuatan transaksi otomatis di masa depan. Transaksi yang ada tetap dipertahankan, tetapi tidak lagi ditandai sebagai rutin.",
   "recurringStopped": "Transaksi berulang dihentikan",
   "stop": "Hentikan",
   "skip": "Lewati",
@@ -697,6 +697,9 @@
   "resume": "Lanjutkan",
   "setReminder": "Atur pengingat",
   "notASubscription": "Bukan langganan",
+  "cancelSubscription": "Batalkan langganan",
+  "cancelSubscriptionMessage": "Ini akan menghentikan penambahan tagihan berikutnya. Tagihan sebelumnya tetap ada di riwayat, tetapi tidak lagi ditandai sebagai rutin.",
+  "subscriptionCancelled": "Langganan dibatalkan",
   "reminderOff": "Tanpa pengingat",
   "reminderDaysBeforeOption": "{days} hari sebelumnya",
   "@reminderDaysBeforeOption": {

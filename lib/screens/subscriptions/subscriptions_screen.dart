@@ -11,6 +11,7 @@ import '../../providers/settings_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../../widgets/squi/squi_state.dart';
 import '../../core/constants/squi.dart';
+import '../../widgets/confirm_dialog.dart';
 import '../../widgets/section_card.dart';
 import '../../widgets/status_pill.dart';
 import '../../widgets/tinted_icon.dart';
@@ -395,6 +396,7 @@ class _SubscriptionMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     return PopupMenuButton<String>(
       // The default 48px tap target is width the amount next to it needs
       // more than the menu does.
@@ -407,6 +409,13 @@ class _SubscriptionMenu extends StatelessWidget {
         ),
         PopupMenuItem(value: 'reminder', child: Text(loc.setReminder)),
         PopupMenuItem(value: 'untrack', child: Text(loc.notASubscription)),
+        PopupMenuItem(
+          value: 'cancel',
+          child: Text(
+            loc.cancelSubscription,
+            style: TextStyle(color: theme.colorScheme.error),
+          ),
+        ),
       ],
     );
   }
@@ -421,11 +430,48 @@ class _SubscriptionMenu extends StatelessWidget {
         await provider.resumeSubscription(subscription.id);
         break;
       case 'untrack':
+        // Deliberately not a cancel: the schedule keeps running and keeps
+        // posting charges, it just stops being listed here.
         await provider.setIsSubscription(subscription.id, false);
+        break;
+      case 'cancel':
+        await _cancel(context);
         break;
       case 'reminder':
         await _pickReminder(context);
         break;
+    }
+  }
+
+  /// Ends the subscription for good — the same stop as the Recurring
+  /// screen's delete, which is what "cancelled my Netflix" means. Untracking
+  /// only hides it from this list, so without this the screen had no way to
+  /// stop a charge that has actually stopped in real life.
+  Future<void> _cancel(BuildContext context) async {
+    final loc = AppLocalizations.of(context)!;
+    final confirmed = await ConfirmDialog.show(
+      context,
+      title: loc.cancelSubscription,
+      message: loc.cancelSubscriptionMessage,
+      confirmText: loc.stop,
+    );
+    if (!confirmed || !context.mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    final recurring = context.read<RecurringProvider>();
+    final transactions = context.read<TransactionProvider>();
+    final settings = context.read<SettingsProvider>();
+    try {
+      await recurring.deleteRecurring(subscription.id);
+      // The stop unlinks the charges it already posted, so they stop drawing
+      // the repeat badge — both cached lists still hold the old copies.
+      await transactions.loadTransactions(payday: settings.payday);
+      await transactions.loadAllTransactions();
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(SnackBar(content: Text(loc.subscriptionCancelled)));
+    } catch (e) {
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(SnackBar(content: Text(loc.errorFailedToDelete)));
     }
   }
 

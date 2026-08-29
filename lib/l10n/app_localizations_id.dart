@@ -396,7 +396,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get stopRecurringMessage =>
-      'Ini akan menghentikan pembuatan transaksi otomatis di masa depan. Transaksi yang ada akan tetap dipertahankan.';
+      'Ini akan menghentikan pembuatan transaksi otomatis di masa depan. Transaksi yang ada tetap dipertahankan, tetapi tidak lagi ditandai sebagai rutin.';
 
   @override
   String get recurringStopped => 'Transaksi berulang dihentikan';
@@ -1279,6 +1279,16 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get notASubscription => 'Bukan langganan';
+
+  @override
+  String get cancelSubscription => 'Batalkan langganan';
+
+  @override
+  String get cancelSubscriptionMessage =>
+      'Ini akan menghentikan penambahan tagihan berikutnya. Tagihan sebelumnya tetap ada di riwayat, tetapi tidak lagi ditandai sebagai rutin.';
+
+  @override
+  String get subscriptionCancelled => 'Langganan dibatalkan';
 
   @override
   String get reminderOff => 'Tanpa pengingat';
