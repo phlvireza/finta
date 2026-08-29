@@ -297,8 +297,16 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
                   ),
                   child: DateGroupHeader(date: entry.key, transactions: entry.value),
                 ),
+                // `dense: true` drops TransactionTile's own horizontal inset,
+                // so the parent has to supply it — otherwise the rows sit flush
+                // against the screen edge while the header above them is at 16.
                 ...entry.value.map(
-                  (tx) => TransactionTile(transaction: tx, dense: true),
+                  (tx) => Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppConstants.spacingLg,
+                    ),
+                    child: TransactionTile(transaction: tx, dense: true),
+                  ),
                 ),
               ],
             ))
