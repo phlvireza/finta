@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/account_provider.dart';
-import '../../providers/analytics_provider.dart';
-import '../../providers/budget_provider.dart';
 import '../../providers/goal_provider.dart';
-import '../../providers/settings_provider.dart';
-import '../../providers/transaction_provider.dart';
 import '../../models/goal_model.dart';
 import '../../widgets/confirm_dialog.dart';
 import '../../widgets/delete_with_history_dialog.dart';
 import '../../l10n/app_localizations.dart';
+import '../../providers/ledger_refresh.dart';
 
 /// Confirm, then delete [goal]. Returns true only if it was removed or
 /// archived — false when the user cancelled, since that is not a reason for
@@ -95,23 +91,15 @@ Future<bool> confirmPurgeGoal(BuildContext context, GoalModel goal) async {
 ///
 /// Deleting the contributions un-spends money, so every derived figure that
 /// counted them has to be recomputed — account balances, budget spend,
-/// analytics totals. Providers are captured before the first await, and the
-/// fan-out mirrors the one ContributeToGoalSheet does on the way in.
+/// analytics totals. The refresher is built before the delete is awaited so
+/// the reload still runs when the screen pops itself on success.
 Future<void> _purgeGoal(
   BuildContext context,
   GoalProvider provider,
   GoalModel goal,
 ) async {
-  final txProvider = context.read<TransactionProvider>();
-  final budgetProvider = context.read<BudgetProvider>();
-  final accountProvider = context.read<AccountProvider>();
-  final analytics = context.read<AnalyticsProvider>();
-  final settings = context.read<SettingsProvider>();
+  final refresh = ledgerRefresher(context, allTransactions: true);
 
   await provider.deleteGoal(goal.id, deleteContributions: true);
-  await txProvider.loadTransactions(payday: settings.payday);
-  await txProvider.loadAllTransactions();
-  await budgetProvider.loadBudgets(payday: settings.payday);
-  await accountProvider.loadAccounts();
-  await analytics.loadForCurrentPeriod(settings.payday);
+  await refresh();
 }

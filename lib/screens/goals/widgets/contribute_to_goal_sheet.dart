@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../providers/account_provider.dart';
-import '../../../providers/analytics_provider.dart';
-import '../../../providers/budget_provider.dart';
 import '../../../providers/category_provider.dart';
 import '../../../providers/goal_provider.dart';
 import '../../../providers/settings_provider.dart';
@@ -19,6 +16,7 @@ import '../../../widgets/squi/squi_moment_sheet.dart';
 import '../../transactions/widgets/account_picker.dart';
 import '../../transactions/widgets/category_picker.dart';
 import '../../transactions/widgets/date_picker_field.dart';
+import '../../../providers/ledger_refresh.dart';
 
 /// Bottom sheet to log a contribution toward a goal. A contribution is
 /// just an ordinary expense transaction — tagged with this goal's id — so it
@@ -125,10 +123,7 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
     // numbers until the app was restarted.
     final txProvider = context.read<TransactionProvider>();
     final goalProvider = context.read<GoalProvider>();
-    final budgetProvider = context.read<BudgetProvider>();
-    final accountProvider = context.read<AccountProvider>();
-    final analytics = context.read<AnalyticsProvider>();
-    final settings = context.read<SettingsProvider>();
+    final refresh = ledgerRefresher(context, goals: true);
     try {
       final beforeProgress = goalProvider.progressOf(widget.goal.id);
       final wasLedgerEmpty = !await txProvider.hasAnyNonTransferTransaction();
@@ -143,11 +138,7 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
             : _noteController.text.trim(),
         goalId: widget.goal.id,
       );
-      await txProvider.loadTransactions(payday: settings.payday);
-      await budgetProvider.loadBudgets(payday: settings.payday);
-      await accountProvider.loadAccounts();
-      await analytics.loadForCurrentPeriod(settings.payday);
-      await goalProvider.loadGoals();
+      await refresh();
       final afterProgress = goalProvider.progressOf(widget.goal.id);
       final eligible = <SquiMoment>{
         if (wasLedgerEmpty) SquiMoment.firstTransaction,

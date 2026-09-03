@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/transaction_provider.dart';
-import '../../../providers/budget_provider.dart';
-import '../../../providers/analytics_provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../providers/account_provider.dart';
 import '../../../providers/template_provider.dart';
 import '../../../providers/category_provider.dart';
-import '../../../providers/insights_provider.dart';
 import '../../../providers/recurring_provider.dart';
 import '../../../models/template_model.dart';
 import '../../../core/constants/app_constants.dart';
@@ -29,6 +26,7 @@ import 'date_picker_field.dart';
 import 'recurring_toggle.dart';
 import 'anomaly_confirm.dart';
 import 'save_template_dialog.dart';
+import '../../../providers/ledger_refresh.dart';
 
 enum _EntryType { expense, income, transfer }
 
@@ -201,22 +199,6 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
     );
   }
 
-  void _showTemplateInfo(BuildContext context, AppLocalizations loc) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(loc.saveAsTemplate),
-        content: Text(loc.saveAsTemplateHelp),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(loc.gotIt),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _save() async {
     final loc = AppLocalizations.of(context)!;
 
@@ -232,36 +214,13 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
     // A statistical-outlier nudge, not a hard block — only for expenses,
     // which is the only case with a category to check history against.
     if (!_isTransfer && !_isIncome) {
-      final check = await context.read<InsightsProvider>().checkAnomaly(
-        _categoryId!,
-        amount,
+      final proceed = await confirmAnomalyIfNeeded(
+        context,
+        loc: loc,
+        categoryId: _categoryId,
+        amount: amount,
       );
-      if (!mounted) return;
-      if (check != null && check.isAnomaly) {
-        final categoryName =
-            context
-                .read<CategoryProvider>()
-                .getCategoryById(_categoryId!)
-                ?.name ??
-            loc.unknown;
-        final settings = context.read<SettingsProvider>();
-        final proceed = await confirmUnusualAmount(
-          context,
-          loc: loc,
-          categoryName: categoryName,
-          formattedAmount: NumberUtils.formatCurrency(
-            amount,
-            symbol: settings.currencySymbol,
-            useDecimals: settings.currencyUseDecimals,
-          ),
-          formattedTypical: NumberUtils.formatCurrency(
-            check.mean,
-            symbol: settings.currencySymbol,
-            useDecimals: settings.currencyUseDecimals,
-          ),
-        );
-        if (!proceed || !mounted) return;
-      }
+      if (!proceed || !mounted) return;
     }
 
     setState(() {
@@ -271,10 +230,8 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
 
     try {
       final txProvider = context.read<TransactionProvider>();
-      final budgetProvider = context.read<BudgetProvider>();
-      final settings = context.read<SettingsProvider>();
-      final accountProvider = context.read<AccountProvider>();
       final recurringProvider = context.read<RecurringProvider>();
+      final refresh = ledgerRefresher(context);
       final wasLedgerEmpty =
           !_isTransfer && !await txProvider.hasAnyNonTransferTransaction();
 
@@ -328,14 +285,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
         );
       }
 
-      await txProvider.loadTransactions(payday: settings.payday);
-      await budgetProvider.loadBudgets(payday: settings.payday);
-      await accountProvider.loadAccounts();
-      if (mounted) {
-        await context.read<AnalyticsProvider>().loadForCurrentPeriod(
-          settings.payday,
-        );
-      }
+      await refresh();
 
       final moment = await SquiMilestoneService.instance.claim(
         eligible: wasLedgerEmpty
@@ -366,9 +316,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
 
     try {
       final txProvider = context.read<TransactionProvider>();
-      final budgetProvider = context.read<BudgetProvider>();
-      final settings = context.read<SettingsProvider>();
-      final accountProvider = context.read<AccountProvider>();
+      final refresh = ledgerRefresher(context);
       final wasLedgerEmpty = !await txProvider.hasAnyNonTransferTransaction();
 
       await txProvider.addTransaction(
@@ -381,14 +329,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
         date: DateTime.now(),
       );
 
-      await txProvider.loadTransactions(payday: settings.payday);
-      await budgetProvider.loadBudgets(payday: settings.payday);
-      await accountProvider.loadAccounts();
-      if (mounted) {
-        await context.read<AnalyticsProvider>().loadForCurrentPeriod(
-          settings.payday,
-        );
-      }
+      await refresh();
 
       final moment = await SquiMilestoneService.instance.claim(
         eligible: wasLedgerEmpty
@@ -455,7 +396,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                 ),
                 InkWell(
                   borderRadius: BorderRadius.circular(AppConstants.radiusFull),
-                  onTap: () => _showTemplateInfo(context, loc),
+                  onTap: () => showTemplateInfo(context, loc),
                   child: Padding(
                     padding: const EdgeInsets.all(2),
                     child: Icon(

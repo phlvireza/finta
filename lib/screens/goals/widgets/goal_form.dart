@@ -8,6 +8,7 @@ import '../../../core/formatters/currency_formatter.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/keypad_amount_field.dart';
+import '../../../widgets/color_swatch_picker.dart';
 
 /// Form for creating or editing a savings goal.
 class GoalForm extends StatefulWidget {
@@ -27,11 +28,6 @@ class _GoalFormState extends State<GoalForm> {
   DateTime? _targetDate;
   bool _autoValidate = false;
   bool _isSaving = false;
-
-  final List<String> _colorOptions = const [
-    '#5B8C5A', '#C87941', '#6F8B8A', '#C2665A', '#D4A05A',
-    '#7A8B6F', '#B07A5B', '#8B6F7A', '#CBA882', '#8A6E5E',
-  ];
 
   @override
   void initState() {
@@ -185,32 +181,9 @@ class _GoalFormState extends State<GoalForm> {
               const SizedBox(height: AppConstants.spacingXxl),
               Text(loc.color, style: theme.textTheme.labelMedium),
               const SizedBox(height: AppConstants.spacingMd),
-              SizedBox(
-                height: 48,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _colorOptions.length,
-                  separatorBuilder: (context, _) => const SizedBox(width: AppConstants.spacingMd),
-                  itemBuilder: (context, index) {
-                    final hex = _colorOptions[index];
-                    final c = Color(int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
-                    final isSelected = hex == _selectedColor;
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedColor = hex),
-                      child: Container(
-                        width: 48,
-                        decoration: BoxDecoration(
-                          color: c,
-                          shape: BoxShape.circle,
-                          border: isSelected
-                              ? Border.all(color: theme.colorScheme.onSurface, width: 3)
-                              : null,
-                        ),
-                        child: isSelected ? const Icon(Icons.check, color: Colors.white) : null,
-                      ),
-                    );
-                  },
-                ),
+              ColorSwatchPicker(
+                selected: _selectedColor,
+                onChanged: (hex) => setState(() => _selectedColor = hex),
               ),
               const SizedBox(height: AppConstants.spacingLg),
               SizedBox(

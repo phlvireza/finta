@@ -91,10 +91,15 @@ class AppColors {
     return categoryColor;
   }
 
-  /// The swatch picker offered when creating/editing an account or a
-  /// category — was duplicated verbatim as a private `_colorOptions` list in
-  /// both forms. Hex strings (not [Color]s) because that's the format the
-  /// account/category `color` field is stored and compared in.
+  /// The swatch picker offered when creating/editing an account, a category
+  /// or a goal, rendered by `ColorSwatchPicker`. Hex strings (not [Color]s)
+  /// because that's the format the `color` field is stored and compared in.
+  ///
+  /// The goal form used to hold its own private ten-colour list rather than
+  /// reading this one, so goals could be saved in colours no other form
+  /// offered — `#D4A05A` among them, which is dropped here for the reason
+  /// below. `ColorSwatchPicker` keeps any such stored colour selectable so
+  /// those goals still edit cleanly.
   ///
   /// Every colour [SeedData] assigns appears here, so opening a default
   /// category shows its swatch already selected. `#D4A05A` was dropped: it

@@ -211,8 +211,15 @@ class _CategoryTile extends StatelessWidget {
 
         if (context.mounted) {
           final settings = context.read<SettingsProvider>();
-          context.read<TransactionProvider>().loadTransactions(payday: settings.payday);
-          context.read<BudgetProvider>().loadBudgets(payday: settings.payday);
+          // Awaited so the catch below can actually wrap a failed reload —
+          // fire-and-forget here escaped as an unhandled async exception.
+          await context.read<TransactionProvider>().loadTransactions(
+            payday: settings.payday,
+          );
+          if (!context.mounted) return;
+          await context.read<BudgetProvider>().loadBudgets(
+            payday: settings.payday,
+          );
         }
       } catch (e) {
         if (context.mounted) {

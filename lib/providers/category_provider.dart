@@ -72,40 +72,32 @@ class CategoryProvider extends ChangeNotifier {
     required String color,
     String? parentId,
   }) async {
-    try {
-      final sortOrder = await _repository.getMaxSortOrder(type);
-      final category = CategoryModel(
-        id: _uuid.v4(),
-        name: name,
-        type: type,
-        icon: icon,
-        color: color,
-        isDefault: false,
-        parentId: parentId,
-        sortOrder: sortOrder,
-        createdAt: DateTime.now(),
-      );
+    final sortOrder = await _repository.getMaxSortOrder(type);
+    final category = CategoryModel(
+      id: _uuid.v4(),
+      name: name,
+      type: type,
+      icon: icon,
+      color: color,
+      isDefault: false,
+      parentId: parentId,
+      sortOrder: sortOrder,
+      createdAt: DateTime.now(),
+    );
 
-      await _repository.insert(category);
-      _categories.add(category);
-      notifyListeners();
-      return category;
-    } catch (e) {
-      rethrow;
-    }
+    await _repository.insert(category);
+    _categories.add(category);
+    notifyListeners();
+    return category;
   }
 
   /// Update an existing category.
   Future<void> updateCategory(CategoryModel category) async {
-    try {
-      await _repository.update(category);
-      final index = _categories.indexWhere((c) => c.id == category.id);
-      if (index != -1) {
-        _categories[index] = category;
-        notifyListeners();
-      }
-    } catch (e) {
-      rethrow;
+    await _repository.update(category);
+    final index = _categories.indexWhere((c) => c.id == category.id);
+    if (index != -1) {
+      _categories[index] = category;
+      notifyListeners();
     }
   }
 
@@ -140,22 +132,18 @@ class CategoryProvider extends ChangeNotifier {
   /// references it, it is archived instead of deleted so history is never
   /// lost as a side effect of a settings change.
   Future<void> deleteCategory(String id) async {
-    try {
-      final category = getCategoryById(id);
-      if (category == null || category.isDefault) return;
+    final category = getCategoryById(id);
+    if (category == null || category.isDefault) return;
 
-      final usage = await _repository.countUsage(id);
-      if (usage > 0) {
-        await _repository.archive(id);
-      } else {
-        await _repository.deleteUnused(id);
-      }
-      // Reload rather than mutate in place: an archived row must stay in
-      // _categories (with isArchived: true) so getCategoryById can still
-      // resolve it for old transactions.
-      await loadCategories();
-    } catch (e) {
-      rethrow;
+    final usage = await _repository.countUsage(id);
+    if (usage > 0) {
+      await _repository.archive(id);
+    } else {
+      await _repository.deleteUnused(id);
     }
+    // Reload rather than mutate in place: an archived row must stay in
+    // _categories (with isArchived: true) so getCategoryById can still
+    // resolve it for old transactions.
+    await loadCategories();
   }
 }

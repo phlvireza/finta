@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/account_provider.dart';
-import '../../providers/analytics_provider.dart';
-import '../../providers/budget_provider.dart';
 import '../../providers/debt_provider.dart';
-import '../../providers/settings_provider.dart';
-import '../../providers/transaction_provider.dart';
 import '../../models/debt_model.dart';
 import '../../widgets/confirm_dialog.dart';
 import '../../widgets/delete_with_history_dialog.dart';
 import '../../l10n/app_localizations.dart';
+import '../../providers/ledger_refresh.dart';
 
 /// Confirm, then delete [debt]. Returns true only if it was removed or
 /// archived — false when the user cancelled, since that is not a reason for
@@ -94,22 +90,18 @@ Future<bool> confirmPurgeDebt(BuildContext context, DebtModel debt) async {
 ///
 /// Deleting the repayments un-moves money, so every derived figure that
 /// counted them has to be recomputed — account balances, budget spend,
-/// analytics totals. Providers are captured before the first await, and the
-/// fan-out mirrors the one RepaymentSheet does on the way in.
+/// analytics totals. The refresher is built before the delete is awaited so
+/// the reload still runs when the screen pops itself on success.
 Future<void> _purgeDebt(
   BuildContext context,
   DebtProvider provider,
   DebtModel debt,
 ) async {
-  final txProvider = context.read<TransactionProvider>();
-  final budgetProvider = context.read<BudgetProvider>();
-  final accountProvider = context.read<AccountProvider>();
-  final analytics = context.read<AnalyticsProvider>();
-  final settings = context.read<SettingsProvider>();
+  // allTransactions because the calendar, subscription detection and CSV
+  // export all read the unbounded list, and the purged repayments would
+  // otherwise linger there.
+  final refresh = ledgerRefresher(context, allTransactions: true);
 
   await provider.deleteDebt(debt.id, deleteRepayments: true);
-  await txProvider.loadTransactions(payday: settings.payday);
-  await budgetProvider.loadBudgets(payday: settings.payday);
-  await accountProvider.loadAccounts();
-  await analytics.loadForCurrentPeriod(settings.payday);
+  await refresh();
 }

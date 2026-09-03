@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/transaction_model.dart';
-import '../../providers/analytics_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../../providers/recurring_provider.dart';
 import '../../providers/budget_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/account_provider.dart';
-import '../../providers/category_provider.dart';
-import '../../providers/insights_provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/formatters/currency_formatter.dart';
-import '../../core/utils/number_utils.dart';
 import '../../core/utils/squi_moments.dart';
 import '../../core/services/squi_milestone_service.dart';
 import '../../widgets/squi/squi_moment_sheet.dart';
@@ -27,6 +23,7 @@ import 'widgets/type_toggle.dart';
 import 'widgets/anomaly_confirm.dart';
 import 'widgets/save_template_dialog.dart';
 import '../../l10n/app_localizations.dart';
+import '../../providers/ledger_refresh.dart';
 
 /// Full-screen form for adding or editing a transaction.
 class AddTransactionScreen extends StatefulWidget {
@@ -117,37 +114,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
     // A statistical-outlier nudge, not a hard block — only for a brand-new
     // expense, where there's a category chosen to check history against.
-    if (widget.editTransaction == null && !_isIncome && _categoryId != null) {
-      final check = await context.read<InsightsProvider>().checkAnomaly(
-        _categoryId!,
-        amount,
+    if (widget.editTransaction == null && !_isIncome) {
+      final proceed = await confirmAnomalyIfNeeded(
+        context,
+        loc: loc,
+        categoryId: _categoryId,
+        amount: amount,
       );
-      if (!mounted) return;
-      if (check != null && check.isAnomaly) {
-        final categoryName =
-            context
-                .read<CategoryProvider>()
-                .getCategoryById(_categoryId!)
-                ?.name ??
-            loc.unknown;
-        final settings = context.read<SettingsProvider>();
-        final proceed = await confirmUnusualAmount(
-          context,
-          loc: loc,
-          categoryName: categoryName,
-          formattedAmount: NumberUtils.formatCurrency(
-            amount,
-            symbol: settings.currencySymbol,
-            useDecimals: settings.currencyUseDecimals,
-          ),
-          formattedTypical: NumberUtils.formatCurrency(
-            check.mean,
-            symbol: settings.currencySymbol,
-            useDecimals: settings.currencyUseDecimals,
-          ),
-        );
-        if (!proceed || !mounted) return;
-      }
+      if (!proceed || !mounted) return;
     }
 
     setState(() => _isSaving = true);
@@ -157,6 +131,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       final recurringProvider = context.read<RecurringProvider>();
       final budgetProvider = context.read<BudgetProvider>();
       final settings = context.read<SettingsProvider>();
+      final refresh = ledgerRefresher(context);
       final wasLedgerEmpty =
           widget.editTransaction == null &&
           !await txProvider.hasAnyNonTransferTransaction();
@@ -246,16 +221,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       }
 
       // Refresh all providers so the UI reflects the new or updated transaction
-      await txProvider.loadTransactions(payday: settings.payday);
-      await budgetProvider.loadBudgets(payday: settings.payday);
-      if (mounted) {
-        await context.read<AnalyticsProvider>().loadForCurrentPeriod(
-          settings.payday,
-        );
-      }
-      if (mounted) {
-        await context.read<AccountProvider>().loadAccounts();
-      }
+      await refresh();
 
       final moment = await SquiMilestoneService.instance.claim(
         eligible: wasLedgerEmpty
@@ -293,22 +259,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     );
   }
 
-  void _showTemplateInfo(BuildContext context, AppLocalizations loc) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(loc.saveAsTemplate),
-        content: Text(loc.saveAsTemplateHelp),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(loc.gotIt),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -334,7 +284,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 ),
                 InkWell(
                   borderRadius: BorderRadius.circular(AppConstants.radiusFull),
-                  onTap: () => _showTemplateInfo(context, loc),
+                  onTap: () => showTemplateInfo(context, loc),
                   child: Padding(
                     padding: const EdgeInsets.all(2),
                     child: Icon(

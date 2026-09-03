@@ -20,6 +20,7 @@ import '../../l10n/app_localizations.dart';
 import '../../widgets/masked_amount.dart';
 import '../../widgets/status_pill.dart';
 import '../transactions/widgets/account_picker.dart';
+import '../../providers/ledger_refresh.dart';
 
 /// One line in the preview list.
 ///
@@ -229,7 +230,9 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
     final categoryProvider = context.read<CategoryProvider>();
     final transactionProvider = context.read<TransactionProvider>();
     final accountProvider = context.read<AccountProvider>();
-    final settings = context.read<SettingsProvider>();
+    // Captured up front: the import creates categories and accounts before it
+    // writes, so by the time the reload runs this context may be gone.
+    final refresh = ledgerRefresher(context, allTransactions: true);
 
     try {
       final now = DateTime.now();
@@ -347,11 +350,9 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
       }
 
       await transactionProvider.importTransactions(toInsert);
-      await Future.wait([
-        transactionProvider.loadAllTransactions(),
-        transactionProvider.loadTransactions(payday: settings.payday),
-        accountProvider.loadAccounts(),
-      ]);
+      // allTransactions because an import writes rows across arbitrary
+      // periods, not just the current one.
+      await refresh();
 
       // The row count, not toInsert.length: the button the user pressed said
       // rows, and a confirmation reporting a larger number reads as duplication.

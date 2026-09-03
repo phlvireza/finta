@@ -79,9 +79,6 @@ class CategoryRepository {
     }
   }
 
-  /// Archive a category: it disappears from pickers but every historical
-  /// transaction keeps a resolvable name and icon. Related budgets and
-  /// recurring templates are deactivated (never deleted) since a budget or
   /// Renames several categories in one transaction, given id to new name.
   ///
   /// Writes only the `name` column, unlike [update], which persists a whole
@@ -106,6 +103,9 @@ class CategoryRepository {
     }
   }
 
+  /// Archive a category: it disappears from pickers but every historical
+  /// transaction keeps a resolvable name and icon. Related budgets and
+  /// recurring templates are deactivated (never deleted) since a budget or
   /// template for a category you can no longer spend on is meaningless.
   /// A group/overall budget that merely *includes* this category among
   /// others is left active — archiving one member shouldn't kill the

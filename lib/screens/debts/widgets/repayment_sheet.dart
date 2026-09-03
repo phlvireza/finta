@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../providers/account_provider.dart';
-import '../../../providers/analytics_provider.dart';
-import '../../../providers/budget_provider.dart';
 import '../../../providers/category_provider.dart';
 import '../../../providers/debt_provider.dart';
-import '../../../providers/settings_provider.dart';
 import '../../../providers/transaction_provider.dart';
 import '../../../models/debt_model.dart';
 import '../../../core/constants/app_constants.dart';
@@ -19,6 +15,7 @@ import '../../../widgets/squi/squi_moment_sheet.dart';
 import '../../transactions/widgets/account_picker.dart';
 import '../../transactions/widgets/category_picker.dart';
 import '../../transactions/widgets/date_picker_field.dart';
+import '../../../providers/ledger_refresh.dart';
 
 /// Bottom sheet to log a repayment against a debt. For a debt you owe
 /// ('borrowed'), a repayment is money leaving one of your accounts — an
@@ -115,10 +112,7 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
     // account's balance on screen.
     final txProvider = context.read<TransactionProvider>();
     final debtProvider = context.read<DebtProvider>();
-    final budgetProvider = context.read<BudgetProvider>();
-    final accountProvider = context.read<AccountProvider>();
-    final analytics = context.read<AnalyticsProvider>();
-    final settings = context.read<SettingsProvider>();
+    final refresh = ledgerRefresher(context, debts: true);
     try {
       final wasSettled = debtProvider.isSettled(widget.debt);
       final wasLedgerEmpty = !await txProvider.hasAnyNonTransferTransaction();
@@ -133,11 +127,7 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
             : _noteController.text.trim(),
         debtId: widget.debt.id,
       );
-      await txProvider.loadTransactions(payday: settings.payday);
-      await budgetProvider.loadBudgets(payday: settings.payday);
-      await accountProvider.loadAccounts();
-      await analytics.loadForCurrentPeriod(settings.payday);
-      await debtProvider.loadDebts();
+      await refresh();
       final isSettled = debtProvider.isSettled(widget.debt);
       final eligible = <SquiMoment>{
         if (wasLedgerEmpty) SquiMoment.firstTransaction,

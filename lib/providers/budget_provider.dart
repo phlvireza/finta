@@ -401,74 +401,62 @@ class BudgetProvider extends ChangeNotifier {
     required int payday,
     bool isRecurring = false,
   }) async {
-    try {
-      final now = DateTime.now();
-      final budget = BudgetModel(
-        id: _uuid.v4(),
-        name: name,
-        amount: amount,
-        period: period,
-        rolloverMode: rolloverMode,
-        scope: scope,
-        categoryIds: scope == 'overall' ? const [] : categoryIds,
-        isActive: true,
-        isRecurring: isRecurring,
-        createdAt: now,
-        updatedAt: now,
-      );
+    final now = DateTime.now();
+    final budget = BudgetModel(
+      id: _uuid.v4(),
+      name: name,
+      amount: amount,
+      period: period,
+      rolloverMode: rolloverMode,
+      scope: scope,
+      categoryIds: scope == 'overall' ? const [] : categoryIds,
+      isActive: true,
+      isRecurring: isRecurring,
+      createdAt: now,
+      updatedAt: now,
+    );
 
-      await _repository.insert(budget);
-      _budgets.add(budget);
+    await _repository.insert(budget);
+    _budgets.add(budget);
 
-      final periodRange = _periodFor(budget, payday);
-      final spent = await _spentFor(budget, periodRange.start, periodRange.end);
-      final rollover = await _rolloverService.getCarriedAmount(budget, payday: payday);
-      _budgetStatuses[budget.id] =
-          BudgetStatus(budget: budget, spent: spent, period: periodRange, rolloverAmount: rollover);
+    final periodRange = _periodFor(budget, payday);
+    final spent = await _spentFor(budget, periodRange.start, periodRange.end);
+    final rollover = await _rolloverService.getCarriedAmount(budget, payday: payday);
+    _budgetStatuses[budget.id] =
+        BudgetStatus(budget: budget, spent: spent, period: periodRange, rolloverAmount: rollover);
 
-      notifyListeners();
-    } catch (e) {
-      rethrow;
-    }
+    notifyListeners();
   }
 
   Future<void> updateBudget(BudgetModel budget, {required int payday}) async {
-    try {
-      final updated = budget.copyWith(updatedAt: DateTime.now());
-      await _repository.update(updated);
-      final index = _budgets.indexWhere((b) => b.id == updated.id);
-      if (index != -1) {
-        _budgets[index] = updated;
+    final updated = budget.copyWith(updatedAt: DateTime.now());
+    await _repository.update(updated);
+    final index = _budgets.indexWhere((b) => b.id == updated.id);
+    if (index != -1) {
+      _budgets[index] = updated;
 
-        final periodRange = _periodFor(updated, payday);
-        final spent = await _spentFor(updated, periodRange.start, periodRange.end);
-        final rollover = await _rolloverService.getCarriedAmount(updated, payday: payday);
-        _budgetStatuses[updated.id] = BudgetStatus(
-            budget: updated, spent: spent, period: periodRange, rolloverAmount: rollover);
+      final periodRange = _periodFor(updated, payday);
+      final spent = await _spentFor(updated, periodRange.start, periodRange.end);
+      final rollover = await _rolloverService.getCarriedAmount(updated, payday: payday);
+      _budgetStatuses[updated.id] = BudgetStatus(
+          budget: updated, spent: spent, period: periodRange, rolloverAmount: rollover);
 
-        notifyListeners();
-      }
-    } catch (e) {
-      rethrow;
+      notifyListeners();
     }
   }
 
   Future<void> deleteBudget(String id) async {
-    try {
-      await _repository.delete(id);
+    await _repository.delete(id);
 
-      final index = _budgets.indexWhere((b) => b.id == id);
-      if (index != -1) {
-        _budgetStatuses.remove(id);
-        _budgets.removeAt(index);
-        // Deleting an ended budget answers its leftover prompt by
-        // removing the thing being asked about.
-        _pendingLeftovers =
-            _pendingLeftovers.where((l) => l.budget.id != id).toList();
-        notifyListeners();
-      }
-    } catch (e) {
-      rethrow;
+    final index = _budgets.indexWhere((b) => b.id == id);
+    if (index != -1) {
+      _budgetStatuses.remove(id);
+      _budgets.removeAt(index);
+      // Deleting an ended budget answers its leftover prompt by
+      // removing the thing being asked about.
+      _pendingLeftovers =
+          _pendingLeftovers.where((l) => l.budget.id != id).toList();
+      notifyListeners();
     }
   }
 }

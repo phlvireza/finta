@@ -26,6 +26,7 @@ import '../../widgets/picker_sheet.dart';
 import '../../widgets/section_card.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import '../../l10n/app_localizations.dart';
+import '../../providers/ledger_refresh.dart';
 
 enum _ViewMode { list, calendar }
 
@@ -193,23 +194,16 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     });
   }
 
-  /// Reloads every provider whose numbers a bulk action could have moved —
-  /// same set [_deleteTransaction] refreshes after a single delete.
-  /// Kept manually in sync since bulk and single-delete are separate call sites.
+  /// Reloads every provider whose numbers a bulk action could have moved.
+  ///
+  /// Wider than [_deleteTransaction]'s fan-out on purpose: a single delete goes
+  /// through [TransactionProvider.deleteTransaction], which drops the row from
+  /// the in-memory lists and notifies on its own, so it has no reason to reload
+  /// transactions. The bulk paths write straight through the repository and
+  /// leave those lists stale, so this one has to.
   Future<void> _reloadAfterBulkChange() async {
     if (!mounted) return;
-    final settings = context.read<SettingsProvider>();
-    await context.read<TransactionProvider>().loadTransactions(
-      payday: settings.payday,
-    );
-    if (!mounted) return;
-    await context.read<BudgetProvider>().loadBudgets(payday: settings.payday);
-    if (!mounted) return;
-    await context.read<AnalyticsProvider>().loadForCurrentPeriod(
-      settings.payday,
-    );
-    if (!mounted) return;
-    await context.read<AccountProvider>().loadAccounts();
+    await refreshAfterLedgerMutation(context);
   }
 
   Future<void> _bulkDelete() async {

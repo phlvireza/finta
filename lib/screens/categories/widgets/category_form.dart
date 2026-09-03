@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 import '../../../providers/category_provider.dart';
 import '../../../models/category_model.dart';
 import '../../../core/constants/app_constants.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../widgets/form_sheet.dart';
 import 'icon_picker.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/color_swatch_picker.dart';
 
 /// Form for creating or editing a category.
 ///
@@ -38,8 +38,6 @@ class _CategoryFormState extends State<CategoryForm> {
   String _selectedColor = '#C87941';
   String? _parentId;
   bool _autoValidate = false;
-
-  final List<String> _colorOptions = AppColors.swatchOptions;
 
   /// A seeded category can be recoloured but not otherwise reshaped.
   ///
@@ -281,35 +279,9 @@ class _CategoryFormState extends State<CategoryForm> {
             // Color Picker
             Text(loc.color, style: theme.textTheme.labelMedium),
             const SizedBox(height: AppConstants.spacingMd),
-            SizedBox(
-              height: 48,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: _colorOptions.length,
-                separatorBuilder: (_, _) => const SizedBox(width: AppConstants.spacingMd),
-                itemBuilder: (context, index) {
-                  final hex = _colorOptions[index];
-                  final c = Color(int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
-                  final isSelected = hex == _selectedColor;
-
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedColor = hex),
-                    child: Container(
-                      width: 48,
-                      decoration: BoxDecoration(
-                        color: c,
-                        shape: BoxShape.circle,
-                        border: isSelected
-                            ? Border.all(color: theme.colorScheme.onSurface, width: 3)
-                            : null,
-                      ),
-                      child: isSelected
-                          ? const Icon(Icons.check, color: Colors.white)
-                          : null,
-                    ),
-                  );
-                },
-              ),
+            ColorSwatchPicker(
+              selected: _selectedColor,
+              onChanged: (hex) => setState(() => _selectedColor = hex),
             ),
           ],
           ),

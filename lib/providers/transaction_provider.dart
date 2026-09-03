@@ -190,33 +190,29 @@ class TransactionProvider extends ChangeNotifier {
     String? goalId,
     String? debtId,
   }) async {
-    try {
-      final now = DateTime.now();
-      final transaction = TransactionModel(
-        id: _uuid.v4(),
-        type: type,
-        amount: amount,
-        categoryId: categoryId,
-        accountId: accountId,
-        merchant: merchant,
-        date: date,
-        note: note,
-        recurringId: recurringId,
-        goalId: goalId,
-        debtId: debtId,
-        createdAt: now,
-        updatedAt: now,
-      );
+    final now = DateTime.now();
+    final transaction = TransactionModel(
+      id: _uuid.v4(),
+      type: type,
+      amount: amount,
+      categoryId: categoryId,
+      accountId: accountId,
+      merchant: merchant,
+      date: date,
+      note: note,
+      recurringId: recurringId,
+      goalId: goalId,
+      debtId: debtId,
+      createdAt: now,
+      updatedAt: now,
+    );
 
-      await _repository.insert(transaction);
-      _applyInsert(transaction);
-      _hasAnyTransactions = true;
+    await _repository.insert(transaction);
+    _applyInsert(transaction);
+    _hasAnyTransactions = true;
 
-      notifyListeners();
-      return transaction;
-    } catch (e) {
-      rethrow;
-    }
+    notifyListeners();
+    return transaction;
   }
 
   /// Records a transfer as two linked legs — an expense on [fromAccountId]
@@ -234,47 +230,43 @@ class TransactionProvider extends ChangeNotifier {
     if (fromAccountId == toAccountId) {
       throw ArgumentError('Source and destination accounts must differ');
     }
-    try {
-      final transferId = _uuid.v4();
-      final now = DateTime.now();
-      final legs = [
-        TransactionModel(
-          id: _uuid.v4(),
-          type: 'expense',
-          amount: amount,
-          categoryId: SeedData.transferCategoryId,
-          accountId: fromAccountId,
-          transferId: transferId,
-          isTransfer: true,
-          date: date,
-          note: note,
-          createdAt: now,
-          updatedAt: now,
-        ),
-        TransactionModel(
-          id: _uuid.v4(),
-          type: 'income',
-          amount: amount,
-          categoryId: SeedData.transferCategoryId,
-          accountId: toAccountId,
-          transferId: transferId,
-          isTransfer: true,
-          date: date,
-          note: note,
-          createdAt: now,
-          updatedAt: now,
-        ),
-      ];
+    final transferId = _uuid.v4();
+    final now = DateTime.now();
+    final legs = [
+      TransactionModel(
+        id: _uuid.v4(),
+        type: 'expense',
+        amount: amount,
+        categoryId: SeedData.transferCategoryId,
+        accountId: fromAccountId,
+        transferId: transferId,
+        isTransfer: true,
+        date: date,
+        note: note,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      TransactionModel(
+        id: _uuid.v4(),
+        type: 'income',
+        amount: amount,
+        categoryId: SeedData.transferCategoryId,
+        accountId: toAccountId,
+        transferId: transferId,
+        isTransfer: true,
+        date: date,
+        note: note,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    ];
 
-      await _repository.insertBatch(legs);
-      for (final leg in legs) {
-        _applyInsert(leg);
-      }
-
-      notifyListeners();
-    } catch (e) {
-      rethrow;
+    await _repository.insertBatch(legs);
+    for (final leg in legs) {
+      _applyInsert(leg);
     }
+
+    notifyListeners();
   }
 
   /// Shared by [addTransaction] and [addTransfer]: reflects a freshly
@@ -302,87 +294,79 @@ class TransactionProvider extends ChangeNotifier {
 
   /// Update an existing transaction.
   Future<void> updateTransaction(TransactionModel transaction) async {
-    try {
-      final updated = transaction.copyWith(updatedAt: DateTime.now());
-      await _repository.update(updated);
+    final updated = transaction.copyWith(updatedAt: DateTime.now());
+    await _repository.update(updated);
 
-      final index = _transactions.indexWhere((t) => t.id == updated.id);
-      final oldWasInPeriod = index != -1;
-      final newIsInPeriod = _inPeriod(updated.date);
+    final index = _transactions.indexWhere((t) => t.id == updated.id);
+    final oldWasInPeriod = index != -1;
+    final newIsInPeriod = _inPeriod(updated.date);
 
-      // Only remove the OLD contribution if it was actually counted
-      // (i.e. its date was in period), and only add the NEW contribution
-      // if the (possibly changed) date is in period. Editing a date from
-      // inside the period to outside it — or vice versa — must move the
-      // totals by exactly one side of that swap, not both or neither.
-      if (oldWasInPeriod) {
-        final old = _transactions[index];
-        if (!old.isTransfer) {
-          if (old.isIncome) _totalIncome -= old.amount;
-          if (old.isExpense) _totalExpense -= old.amount;
-        }
+    // Only remove the OLD contribution if it was actually counted
+    // (i.e. its date was in period), and only add the NEW contribution
+    // if the (possibly changed) date is in period. Editing a date from
+    // inside the period to outside it — or vice versa — must move the
+    // totals by exactly one side of that swap, not both or neither.
+    if (oldWasInPeriod) {
+      final old = _transactions[index];
+      if (!old.isTransfer) {
+        if (old.isIncome) _totalIncome -= old.amount;
+        if (old.isExpense) _totalExpense -= old.amount;
       }
-      if (newIsInPeriod && !updated.isTransfer) {
-        if (updated.isIncome) _totalIncome += updated.amount;
-        if (updated.isExpense) _totalExpense += updated.amount;
-      }
-
-      if (oldWasInPeriod && newIsInPeriod) {
-        _transactions[index] = updated;
-      } else if (oldWasInPeriod && !newIsInPeriod) {
-        _transactions.removeAt(index);
-      } else if (!oldWasInPeriod && newIsInPeriod) {
-        _transactions.add(updated);
-      }
-      _transactions.sort(_byDateDesc);
-
-      final allIndex = _allTransactions.indexWhere((t) => t.id == updated.id);
-      if (allIndex != -1) {
-        _allTransactions[allIndex] = updated;
-        _allTransactions.sort(_byDateDesc);
-      }
-
-      notifyListeners();
-    } catch (e) {
-      rethrow;
     }
+    if (newIsInPeriod && !updated.isTransfer) {
+      if (updated.isIncome) _totalIncome += updated.amount;
+      if (updated.isExpense) _totalExpense += updated.amount;
+    }
+
+    if (oldWasInPeriod && newIsInPeriod) {
+      _transactions[index] = updated;
+    } else if (oldWasInPeriod && !newIsInPeriod) {
+      _transactions.removeAt(index);
+    } else if (!oldWasInPeriod && newIsInPeriod) {
+      _transactions.add(updated);
+    }
+    _transactions.sort(_byDateDesc);
+
+    final allIndex = _allTransactions.indexWhere((t) => t.id == updated.id);
+    if (allIndex != -1) {
+      _allTransactions[allIndex] = updated;
+      _allTransactions.sort(_byDateDesc);
+    }
+
+    notifyListeners();
   }
 
   /// Delete a transaction. If it's one leg of a transfer, both legs are
   /// removed together — a transfer must never end up with only one side
   /// still posted.
   Future<void> deleteTransaction(String id) async {
-    try {
-      TransactionModel? target;
-      for (final t in _allTransactions) {
-        if (t.id == id) {
-          target = t;
-          break;
-        }
+    TransactionModel? target;
+    for (final t in _allTransactions) {
+      if (t.id == id) {
+        target = t;
+        break;
       }
-      target ??= await _repository.getById(id);
-      if (target == null) return;
-
-      final transferId = target.transferId;
-      if (transferId != null) {
-        await _repository.deleteTransferPair(transferId);
-        for (final leg
-            in _allTransactions
-                .where((t) => t.transferId == transferId)
-                .toList()) {
-          _removeFromMemory(leg);
-        }
-      } else {
-        await _repository.delete(id);
-        _removeFromMemory(target);
-      }
-
-      _hasAnyTransactions = await _repository.hasAnyNonTransferTransaction();
-
-      notifyListeners();
-    } catch (e) {
-      rethrow;
     }
+    target ??= await _repository.getById(id);
+    if (target == null) return;
+
+    final transferId = target.transferId;
+    if (transferId != null) {
+      await _repository.deleteTransferPair(transferId);
+      for (final leg
+          in _allTransactions
+              .where((t) => t.transferId == transferId)
+              .toList()) {
+        _removeFromMemory(leg);
+      }
+    } else {
+      await _repository.delete(id);
+      _removeFromMemory(target);
+    }
+
+    _hasAnyTransactions = await _repository.hasAnyNonTransferTransaction();
+
+    notifyListeners();
   }
 
   void _removeFromMemory(TransactionModel transaction) {
@@ -414,12 +398,8 @@ class TransactionProvider extends ChangeNotifier {
 
   /// Search transactions by note content.
   Future<List<TransactionModel>> searchTransactions(String query) async {
-    try {
-      if (query.isEmpty) return await _repository.getAll();
-      return await _repository.search(query);
-    } catch (e) {
-      rethrow;
-    }
+    if (query.isEmpty) return await _repository.getAll();
+    return await _repository.search(query);
   }
 
   /// Get grouped transactions by date for a list.
@@ -434,16 +414,12 @@ class TransactionProvider extends ChangeNotifier {
 
   /// Get the sum spent in a specific category for the current period.
   Future<double> getCategorySpending(String categoryId, int payday) async {
-    try {
-      final period = AppDateUtils.getCurrentPeriod(payday);
-      return await _repository.getCategorySumByDateRange(
-        categoryId,
-        period.start,
-        period.end,
-      );
-    } catch (e) {
-      rethrow;
-    }
+    final period = AppDateUtils.getCurrentPeriod(payday);
+    return await _repository.getCategorySumByDateRange(
+      categoryId,
+      period.start,
+      period.end,
+    );
   }
 
   /// Merchants matching [query], most-used first — powers the entry

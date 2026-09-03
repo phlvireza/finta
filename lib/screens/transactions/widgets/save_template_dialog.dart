@@ -90,3 +90,24 @@ Future<String?> saveAsTemplate(
   showFeedback(loc.templateSaved(name), isError: false);
   return name;
 }
+
+/// Explains what a template is, from the (i) beside the bookmark action.
+///
+/// Lived as a byte-identical private `_showTemplateInfo` in both the
+/// quick-add sheet and the full add screen; it sits beside [saveAsTemplate]
+/// for the same reason that function does.
+void showTemplateInfo(BuildContext context, AppLocalizations loc) {
+  showDialog<void>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(loc.saveAsTemplate),
+      content: Text(loc.saveAsTemplateHelp),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: Text(loc.gotIt),
+        ),
+      ],
+    ),
+  );
+}
