@@ -55,7 +55,6 @@ class DashboardScreen extends StatelessWidget {
                   SizedBox(height: MediaQuery.of(context).size.height * 0.2),
                   ErrorState(
                     title: AppLocalizations.of(context)!.errorFailedToLoadData,
-                    message: txProvider.error ?? budgetProvider.error,
                     onRetry: () {
                       final settings = context.read<SettingsProvider>();
                       txProvider.loadTransactions(payday: settings.payday);

@@ -17,12 +17,21 @@ class DatePickerField extends StatelessWidget {
   Future<void> _selectDate(BuildContext context) async {
     final theme = Theme.of(context);
     final now = DateTime.now();
+    final selectedDay = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+    );
+    final firstDate = DateTime(now.year - 5);
+    final lastDate = DateTime(now.year + 5);
 
     final date = await showDatePicker(
       context: context,
       initialDate: selectedDate,
-      firstDate: DateTime(now.year - 5),
-      lastDate: DateTime(now.year + 5),
+      // Imported records can fall outside the normal entry window. Include
+      // their date so opening the picker never rejects or changes that record.
+      firstDate: selectedDay.isBefore(firstDate) ? selectedDay : firstDate,
+      lastDate: selectedDay.isAfter(lastDate) ? selectedDay : lastDate,
       builder: (context, child) {
         return Theme(
           data: theme.copyWith(

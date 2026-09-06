@@ -224,7 +224,6 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
           height: 320,
           child: ErrorState(
             title: loc.errorFailedToLoadData,
-            message: _error,
             onRetry: _load,
           ),
         ),

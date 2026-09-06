@@ -1689,4 +1689,15 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get squiMomentDismiss => 'Oke';
+
+  @override
+  String get savedRefreshFailed =>
+      'Transaksi Anda sudah tersimpan, tetapi tampilan belum dapat diperbarui. Coba lagi untuk memperbarui tampilan.';
+
+  @override
+  String get transactionSaved => 'Transaksi tersimpan';
+
+  @override
+  String get startupFailed =>
+      'Data Anda tidak dapat dibuka. Silakan coba lagi.';
 }

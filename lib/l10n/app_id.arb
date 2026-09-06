@@ -943,5 +943,8 @@
   "squiDebtSettledBody": "Squi ikut senang. Jumlahnya lunas semua.",
   "squiFirstTransactionTitle": "Itu yang pertama",
   "squiFirstTransactionBody": "Sekarang Squi punya titik awal.",
-  "squiMomentDismiss": "Oke"
+  "squiMomentDismiss": "Oke",
+  "savedRefreshFailed": "Transaksi Anda sudah tersimpan, tetapi tampilan belum dapat diperbarui. Coba lagi untuk memperbarui tampilan.",
+  "transactionSaved": "Transaksi tersimpan",
+  "startupFailed": "Data Anda tidak dapat dibuka. Silakan coba lagi."
 }

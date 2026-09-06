@@ -16,6 +16,7 @@ import '../../transactions/widgets/account_picker.dart';
 import '../../transactions/widgets/category_picker.dart';
 import '../../transactions/widgets/date_picker_field.dart';
 import '../../../providers/ledger_refresh.dart';
+import '../../../widgets/transaction_save_recovery.dart';
 
 /// Bottom sheet to log a repayment against a debt. For a debt you owe
 /// ('borrowed'), a repayment is money leaving one of your accounts — an
@@ -61,6 +62,7 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
   late String _categoryId;
   DateTime _date = DateTime.now();
   bool _isSaving = false;
+  Future<void> Function()? _finishSave;
 
   /// A repayment on a debt you owe is spending; a repayment on money you lent
   /// out is income coming back. The picker has to be filtered to the matching
@@ -98,6 +100,7 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
   }
 
   Future<void> _save() async {
+    if (_isSaving || _finishSave != null) return;
     if (!_formKey.currentState!.validate() || _accountId == null) {
       setState(() {});
       return;
@@ -127,28 +130,33 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
             : _noteController.text.trim(),
         debtId: widget.debt.id,
       );
-      await refresh();
-      final isSettled = debtProvider.isSettled(widget.debt);
-      final eligible = <SquiMoment>{
-        if (wasLedgerEmpty) SquiMoment.firstTransaction,
-        if (!wasSettled && isSettled) SquiMoment.debtSettled,
-      };
-      final moment = await SquiMilestoneService.instance.claim(
-        eligible: eligible,
-        debtId: widget.debt.id,
-      );
-      if (mounted) {
-        Navigator.of(context).pop(
-          SquiSaveResult(
-            saved: true,
-            moment: moment,
-            subjectName: widget.debt.name,
-          ),
+      // Once committed, retries may refresh and finish, but must never repost.
+      _finishSave = () async {
+        await refresh();
+        final isSettled = debtProvider.isSettled(widget.debt);
+        final eligible = <SquiMoment>{
+          if (wasLedgerEmpty) SquiMoment.firstTransaction,
+          if (!wasSettled && isSettled) SquiMoment.debtSettled,
+        };
+        final moment = await SquiMilestoneService.instance.claim(
+          eligible: eligible,
+          debtId: widget.debt.id,
         );
-      }
+        if (mounted) {
+          Navigator.of(context).pop(
+            SquiSaveResult(
+              saved: true,
+              moment: moment,
+              subjectName: widget.debt.name,
+            ),
+          );
+        }
+      };
+      await _finishSave!();
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
+        if (_finishSave != null) return;
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(
           context,
@@ -159,6 +167,9 @@ class _RepaymentSheetState extends State<RepaymentSheet> {
 
   @override
   Widget build(BuildContext context) {
+    if (_finishSave != null && !_isSaving) {
+      return TransactionSaveRecovery(onRetry: _finishSave!);
+    }
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
 

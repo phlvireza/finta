@@ -1,3 +1,4 @@
+import '../../../widgets/transaction_save_recovery.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/transaction_provider.dart';
@@ -107,6 +108,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
   String _recurringFrequency = 'monthly';
   bool _isSubscription = false;
   bool _isSaving = false;
+  Future<void> Function()? _finishSave;
   bool _autoValidate = false;
 
   /// Only for failures that belong to no single field — a save that threw,
@@ -200,6 +202,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
   }
 
   Future<void> _save() async {
+    if (_isSaving || _finishSave != null) return;
     final loc = AppLocalizations.of(context)!;
 
     setState(() {
@@ -211,24 +214,24 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
 
     final amount = parseFormattedAmount(_amountController.text);
 
-    // A statistical-outlier nudge, not a hard block — only for expenses,
-    // which is the only case with a category to check history against.
-    if (!_isTransfer && !_isIncome) {
-      final proceed = await confirmAnomalyIfNeeded(
-        context,
-        loc: loc,
-        categoryId: _categoryId,
-        amount: amount,
-      );
-      if (!proceed || !mounted) return;
-    }
-
-    setState(() {
-      _isSaving = true;
-      _error = null;
-    });
-
+    setState(() => _isSaving = true);
     try {
+      // A statistical-outlier nudge, not a hard block — only for expenses,
+      // which is the only case with a category to check history against.
+      if (!_isTransfer && !_isIncome) {
+        final proceed = await confirmAnomalyIfNeeded(
+          context,
+          loc: loc,
+          categoryId: _categoryId,
+          amount: amount,
+        );
+        if (!mounted) return;
+        if (!proceed) {
+          setState(() => _isSaving = false);
+          return;
+        }
+      }
+
       final txProvider = context.read<TransactionProvider>();
       final recurringProvider = context.read<RecurringProvider>();
       final refresh = ledgerRefresher(context);
@@ -285,16 +288,21 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
         );
       }
 
-      await refresh();
+      _finishSave = () async {
+        await refresh();
 
-      final moment = await SquiMilestoneService.instance.claim(
-        eligible: wasLedgerEmpty
-            ? {SquiMoment.firstTransaction}
-            : <SquiMoment>{},
-      );
-      if (mounted) {
-        Navigator.of(context).pop(SquiSaveResult(saved: true, moment: moment));
-      }
+        final moment = await SquiMilestoneService.instance.claim(
+          eligible: wasLedgerEmpty
+              ? {SquiMoment.firstTransaction}
+              : <SquiMoment>{},
+        );
+        if (mounted) {
+          Navigator.of(
+            context,
+          ).pop(SquiSaveResult(saved: true, moment: moment));
+        }
+      };
+      await _finishSave!();
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -309,6 +317,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
   /// closes the sheet — the whole point of a template is skipping the
   /// rest of the form.
   Future<void> _useTemplate(TemplateModel template) async {
+    if (_isSaving || _finishSave != null) return;
     setState(() {
       _isSaving = true;
       _error = null;
@@ -329,16 +338,21 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
         date: DateTime.now(),
       );
 
-      await refresh();
+      _finishSave = () async {
+        await refresh();
 
-      final moment = await SquiMilestoneService.instance.claim(
-        eligible: wasLedgerEmpty
-            ? {SquiMoment.firstTransaction}
-            : <SquiMoment>{},
-      );
-      if (mounted) {
-        Navigator.of(context).pop(SquiSaveResult(saved: true, moment: moment));
-      }
+        final moment = await SquiMilestoneService.instance.claim(
+          eligible: wasLedgerEmpty
+              ? {SquiMoment.firstTransaction}
+              : <SquiMoment>{},
+        );
+        if (mounted) {
+          Navigator.of(
+            context,
+          ).pop(SquiSaveResult(saved: true, moment: moment));
+        }
+      };
+      await _finishSave!();
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -369,6 +383,13 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
+
+    if (_finishSave != null && !_isSaving) {
+      return FormSheet(
+        title: loc.transactionSaved,
+        body: TransactionSaveRecovery(onRetry: _finishSave!),
+      );
+    }
 
     final accentColor = _isTransfer
         ? theme.colorScheme.primary

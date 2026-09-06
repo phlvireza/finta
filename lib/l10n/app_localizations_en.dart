@@ -1690,4 +1690,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get squiMomentDismiss => 'Nice';
+
+  @override
+  String get savedRefreshFailed =>
+      'Your transaction is saved, but the screen could not refresh. Retry to update the screen.';
+
+  @override
+  String get transactionSaved => 'Transaction saved';
+
+  @override
+  String get startupFailed => 'Unable to open your data. Please try again.';
 }

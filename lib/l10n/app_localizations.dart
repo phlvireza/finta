@@ -3013,6 +3013,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nice'**
   String get squiMomentDismiss;
+
+  /// No description provided for @savedRefreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your transaction is saved, but the screen could not refresh. Retry to update the screen.'**
+  String get savedRefreshFailed;
+
+  /// No description provided for @transactionSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction saved'**
+  String get transactionSaved;
+
+  /// No description provided for @startupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to open your data. Please try again.'**
+  String get startupFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -253,7 +253,6 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
           height: 320,
           child: ErrorState(
             title: loc.errorFailedToLoadData,
-            message: _error,
             onRetry: () => _load(status),
           ),
         ),

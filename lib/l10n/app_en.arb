@@ -945,5 +945,8 @@
   "squiDebtSettledBody": "Squi is pleased. That is the full amount, cleared.",
   "squiFirstTransactionTitle": "That is the first one",
   "squiFirstTransactionBody": "Squi has somewhere to start from now.",
-  "squiMomentDismiss": "Nice"
+  "squiMomentDismiss": "Nice",
+  "savedRefreshFailed": "Your transaction is saved, but the screen could not refresh. Retry to update the screen.",
+  "transactionSaved": "Transaction saved",
+  "startupFailed": "Unable to open your data. Please try again."
 }

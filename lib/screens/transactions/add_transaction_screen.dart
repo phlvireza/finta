@@ -1,3 +1,4 @@
+import '../../widgets/transaction_save_recovery.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/transaction_model.dart';
@@ -50,6 +51,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   bool _isSubscription = false;
 
   bool _isSaving = false;
+  Future<void> Function()? _finishSave;
   bool _autoValidate = false;
 
   @override
@@ -104,6 +106,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Future<void> _save() async {
+    if (_isSaving || _finishSave != null) return;
     setState(() => _autoValidate = true);
     if (!_formKey.currentState!.validate()) {
       return;
@@ -112,21 +115,24 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final loc = AppLocalizations.of(context)!;
     final amount = parseFormattedAmount(_amountController.text);
 
-    // A statistical-outlier nudge, not a hard block — only for a brand-new
-    // expense, where there's a category chosen to check history against.
-    if (widget.editTransaction == null && !_isIncome) {
-      final proceed = await confirmAnomalyIfNeeded(
-        context,
-        loc: loc,
-        categoryId: _categoryId,
-        amount: amount,
-      );
-      if (!proceed || !mounted) return;
-    }
-
     setState(() => _isSaving = true);
-
     try {
+      // A statistical-outlier nudge, not a hard block — only for a brand-new
+      // expense, where there's a category chosen to check history against.
+      if (widget.editTransaction == null && !_isIncome) {
+        final proceed = await confirmAnomalyIfNeeded(
+          context,
+          loc: loc,
+          categoryId: _categoryId,
+          amount: amount,
+        );
+        if (!mounted) return;
+        if (!proceed) {
+          setState(() => _isSaving = false);
+          return;
+        }
+      }
+
       final txProvider = context.read<TransactionProvider>();
       final recurringProvider = context.read<RecurringProvider>();
       final budgetProvider = context.read<BudgetProvider>();
@@ -164,6 +170,20 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         recurringId = recTx.id;
       }
 
+      Future<void> finishSave() async {
+        // Refresh all providers so the UI reflects the new or updated transaction
+        await refresh();
+
+        final moment = await SquiMilestoneService.instance.claim(
+          eligible: wasLedgerEmpty
+              ? {SquiMoment.firstTransaction}
+              : <SquiMoment>{},
+        );
+        if (!mounted) return;
+        if (moment != null) await SquiMomentSheet.show(context, moment);
+        if (mounted) Navigator.of(context).pop();
+      }
+
       if (widget.editTransaction != null) {
         // Update existing
         final updated = widget.editTransaction!.copyWith(
@@ -176,6 +196,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           note: _noteController.text.trim(),
         );
         await txProvider.updateTransaction(updated);
+        _finishSave = finishSave;
       } else {
         // Add new
         await txProvider.addTransaction(
@@ -188,6 +209,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           note: _noteController.text.trim(),
           recurringId: recurringId,
         );
+
+        _finishSave = finishSave;
 
         // Check budget if expense
         if (!_isIncome) {
@@ -220,23 +243,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         }
       }
 
-      // Refresh all providers so the UI reflects the new or updated transaction
-      await refresh();
-
-      final moment = await SquiMilestoneService.instance.claim(
-        eligible: wasLedgerEmpty
-            ? {SquiMoment.firstTransaction}
-            : <SquiMoment>{},
-      );
-      if (!mounted) return;
-      if (moment != null) await SquiMomentSheet.show(context, moment);
-      if (mounted) Navigator.of(context).pop();
+      await _finishSave!();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.errorFailedToSave),
+            content: Text(
+              _finishSave == null
+                  ? AppLocalizations.of(context)!.errorFailedToSave
+                  : AppLocalizations.of(context)!.savedRefreshFailed,
+            ),
           ),
         );
         setState(() => _isSaving = false);
@@ -264,6 +281,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final theme = Theme.of(context);
     final isEditing = widget.editTransaction != null;
     final loc = AppLocalizations.of(context)!;
+
+    if (_finishSave != null && !_isSaving) {
+      return Scaffold(
+        appBar: AppBar(title: Text(loc.transactionSaved)),
+        body: SingleChildScrollView(
+          child: TransactionSaveRecovery(onRetry: _finishSave!),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(

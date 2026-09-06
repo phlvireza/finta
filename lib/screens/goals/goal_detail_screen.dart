@@ -198,7 +198,6 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
           height: 320,
           child: ErrorState(
             title: loc.errorFailedToLoadData,
-            message: _error,
             onRetry: _load,
           ),
         ),

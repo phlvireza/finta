@@ -353,10 +353,10 @@ class TransactionProvider extends ChangeNotifier {
     final transferId = target.transferId;
     if (transferId != null) {
       await _repository.deleteTransferPair(transferId);
-      for (final leg
-          in _allTransactions
-              .where((t) => t.transferId == transferId)
-              .toList()) {
+      for (final leg in {
+        ..._transactions,
+        ..._allTransactions,
+      }.where((t) => t.transferId == transferId).toList()) {
         _removeFromMemory(leg);
       }
     } else {

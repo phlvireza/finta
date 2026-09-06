@@ -1159,7 +1159,6 @@ void main() {
         'type': 'expense',
         'amount': 65000,
         'categoryId': 'cat_bills',
-        'merchant': 'Netflix',
         'frequency': 'monthly',
         'startDate': '2026-01-05',
         'isActive': 1,
@@ -1170,7 +1169,6 @@ void main() {
         'type': 'expense',
         'amount': 40000,
         'categoryId': 'cat_bills',
-        'merchant': 'Spotify',
         'frequency': 'monthly',
         'startDate': '2026-01-07',
         'isActive': 0,
@@ -1180,8 +1178,16 @@ void main() {
       for (final row in [
         {'id': 'tx_live1', 'date': '2026-01-05', 'recurringId': 'rec_live'},
         {'id': 'tx_live2', 'date': '2026-02-05', 'recurringId': 'rec_live'},
-        {'id': 'tx_stopped1', 'date': '2026-01-07', 'recurringId': 'rec_stopped'},
-        {'id': 'tx_stopped2', 'date': '2026-02-07', 'recurringId': 'rec_stopped'},
+        {
+          'id': 'tx_stopped1',
+          'date': '2026-01-07',
+          'recurringId': 'rec_stopped',
+        },
+        {
+          'id': 'tx_stopped2',
+          'date': '2026-02-07',
+          'recurringId': 'rec_stopped',
+        },
         {'id': 'tx_dangling', 'date': '2026-02-11', 'recurringId': 'rec_gone'},
         {'id': 'tx_manual', 'date': '2026-02-09', 'recurringId': null},
       ]) {
@@ -1202,6 +1208,19 @@ void main() {
       await Migrations.v4(db);
       await Migrations.v5(db);
       await Migrations.v6(db);
+      // Merchant exists only after v6; seed it before v10 backfills charges.
+      await db.update(
+        'recurring_transactions',
+        {'merchant': 'Netflix'},
+        where: 'id = ?',
+        whereArgs: ['rec_live'],
+      );
+      await db.update(
+        'recurring_transactions',
+        {'merchant': 'Spotify'},
+        where: 'id = ?',
+        whereArgs: ['rec_stopped'],
+      );
       await Migrations.v7(db);
       await Migrations.v8(db);
       await Migrations.v9(db);
@@ -1282,10 +1301,7 @@ void main() {
       final db = await upgradedToV11();
       await Migrations.v12(db);
 
-      final templates = await db.query(
-        'recurring_transactions',
-        orderBy: 'id',
-      );
+      final templates = await db.query('recurring_transactions', orderBy: 'id');
       expect(templates, hasLength(2));
       expect(templates[0]['id'], 'rec_live');
       expect(templates[0]['isActive'], 1);

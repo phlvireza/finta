@@ -8,10 +8,7 @@ class CurrencyInputFormatter extends TextInputFormatter {
   final bool allowDecimals;
   final int maxDigits;
 
-  CurrencyInputFormatter({
-    this.allowDecimals = false,
-    this.maxDigits = 15,
-  });
+  CurrencyInputFormatter({this.allowDecimals = false, this.maxDigits = 15});
 
   @override
   TextEditingValue formatEditUpdate(
@@ -29,11 +26,15 @@ class CurrencyInputFormatter extends TextInputFormatter {
     // Handle backspacing over a comma
     if (oldValue.text.length > newText.length) {
       int diff = oldValue.text.length - newText.length;
-      if (diff == 1 && selectionIndex >= 0 && selectionIndex < oldValue.text.length) {
+      if (diff == 1 &&
+          selectionIndex >= 0 &&
+          selectionIndex < oldValue.text.length) {
         if (oldValue.text[selectionIndex] == ',') {
           // A comma was deleted, so we should delete the digit before it instead
           if (selectionIndex > 0) {
-            newText = newText.substring(0, selectionIndex - 1) + newText.substring(selectionIndex);
+            newText =
+                newText.substring(0, selectionIndex - 1) +
+                newText.substring(selectionIndex);
             selectionIndex -= 1;
           }
         }
@@ -147,10 +148,19 @@ double parseFormattedAmount(String formatted) {
 /// totals go negative in normal use, so this reached the dashboard.
 /// The fractional part is taken from the magnitude for the same reason —
 /// it used to carry its own minus sign and produce "-1,500.-75".
-String formatAmount(double amount, {String symbol = '', bool useDecimals = false}) {
+String formatAmount(
+  double amount, {
+  String symbol = '',
+  bool useDecimals = false,
+}) {
   final isNegative = amount < 0;
   final magnitude = amount.abs();
-  final intPart = magnitude.truncate();
+  var intPart = magnitude.truncate();
+  var cents = ((magnitude - intPart) * 100).round();
+  if (useDecimals && cents == 100) {
+    intPart++;
+    cents = 0;
+  }
   final buffer = StringBuffer();
 
   final digits = intPart.toString();
@@ -165,7 +175,7 @@ String formatAmount(double amount, {String symbol = '', bool useDecimals = false
   String result = buffer.toString();
 
   if (useDecimals) {
-    final decPart = ((magnitude - intPart) * 100).round().toString().padLeft(2, '0');
+    final decPart = cents.toString().padLeft(2, '0');
     result = '$result.$decPart';
   }
 

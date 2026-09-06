@@ -411,7 +411,6 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           : txProvider.error != null
           ? ErrorState(
               title: loc.errorFailedToLoadData,
-              message: txProvider.error!,
               onRetry: () => txProvider.loadAllTransactions(),
             )
           : isCalendarMode

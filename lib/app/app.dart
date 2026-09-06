@@ -20,6 +20,7 @@ import '../screens/more/more_screen.dart';
 import '../screens/transactions/widgets/quick_add_sheet.dart';
 import '../core/constants/app_colors.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/error_state.dart';
 
 /// Root app widget — handles initialization, onboarding routing,
 /// and the main bottom navigation shell.
@@ -32,6 +33,8 @@ class FintaApp extends StatefulWidget {
 
 class _FintaAppState extends State<FintaApp> {
   bool _isInitialized = false;
+  bool _isInitializing = false;
+  bool _initializationFailed = false;
   int _currentIndex = 0;
 
   /// Index of [ManageBudgetsScreen] in [_screens] — the one tab where the
@@ -56,6 +59,21 @@ class _FintaAppState extends State<FintaApp> {
   }
 
   Future<void> _initializeApp() async {
+    if (_isInitializing) return;
+    setState(() {
+      _isInitializing = true;
+      _initializationFailed = false;
+    });
+    try {
+      await _loadApp();
+    } catch (_) {
+      if (mounted) setState(() => _initializationFailed = true);
+    } finally {
+      _isInitializing = false;
+    }
+  }
+
+  Future<void> _loadApp() async {
     final settings = context.read<SettingsProvider>();
     final categories = context.read<CategoryProvider>();
     final recurring = context.read<RecurringProvider>();
@@ -153,7 +171,14 @@ class _FintaAppState extends State<FintaApp> {
     if (!_isInitialized) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        body: const Center(child: CircularProgressIndicator()),
+        body: _initializationFailed
+            ? SingleChildScrollView(
+                child: ErrorState(
+                  title: AppLocalizations.of(context)!.startupFailed,
+                  onRetry: _initializeApp,
+                ),
+              )
+            : const Center(child: CircularProgressIndicator()),
       );
     }
 

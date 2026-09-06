@@ -127,7 +127,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   : analytics.error != null
                       ? ErrorState(
                           title: loc.errorFailedToLoadData,
-                          message: analytics.error,
                           onRetry: _loadData,
                         )
                       : ListView(

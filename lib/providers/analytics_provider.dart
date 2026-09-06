@@ -40,7 +40,11 @@ class CashflowMonth {
   final double income;
   final double expense;
 
-  const CashflowMonth({required this.monthStart, required this.income, required this.expense});
+  const CashflowMonth({
+    required this.monthStart,
+    required this.income,
+    required this.expense,
+  });
 
   double get net => income - expense;
 }
@@ -59,7 +63,7 @@ class AnalyticsProvider extends ChangeNotifier {
   final TransactionRepository _repository;
 
   AnalyticsProvider({TransactionRepository? repository})
-      : _repository = repository ?? TransactionRepository();
+    : _repository = repository ?? TransactionRepository();
 
   List<CategoryAnalytics> _expenseBreakdown = [];
   List<CategoryAnalytics> _incomeBreakdown = [];
@@ -128,37 +132,47 @@ class AnalyticsProvider extends ChangeNotifier {
 
     try {
       // Expense breakdown
-      final expenseSums = await _repository.getCategorySums('expense', start, end);
-      _totalExpense = await _repository.getSumByTypeAndDateRange('expense', start, end);
-      _expenseBreakdown = expenseSums.map((m) {
-        final total = (m['total'] as num).toDouble();
-        return CategoryAnalytics(
-          categoryId: m['categoryId'] as String,
-          total: total,
-          percentage: _totalExpense > 0 ? total / _totalExpense : 0,
-        );
-      }).toList();
+      final expenseSums = await _repository.getCategorySums(
+        'expense',
+        start,
+        end,
+      );
+      _totalExpense = await _repository.getSumByTypeAndDateRange(
+        'expense',
+        start,
+        end,
+      );
+      _expenseBreakdown = _categoryBreakdown(expenseSums, _totalExpense);
 
       // Income breakdown
-      final incomeSums = await _repository.getCategorySums('income', start, end);
-      _totalIncome = await _repository.getSumByTypeAndDateRange('income', start, end);
-      _incomeBreakdown = incomeSums.map((m) {
-        final total = (m['total'] as num).toDouble();
-        return CategoryAnalytics(
-          categoryId: m['categoryId'] as String,
-          total: total,
-          percentage: _totalIncome > 0 ? total / _totalIncome : 0,
-        );
-      }).toList();
+      final incomeSums = await _repository.getCategorySums(
+        'income',
+        start,
+        end,
+      );
+      _totalIncome = await _repository.getSumByTypeAndDateRange(
+        'income',
+        start,
+        end,
+      );
+      _incomeBreakdown = _categoryBreakdown(incomeSums, _totalIncome);
 
       // Always reassigned, never left over from an earlier range — a stale
       // comparison is worse than no comparison.
       _previousTotalExpense = comparedTo == null
           ? 0
-          : await _repository.getSumByTypeAndDateRange('expense', comparedTo.start, comparedTo.end);
+          : await _repository.getSumByTypeAndDateRange(
+              'expense',
+              comparedTo.start,
+              comparedTo.end,
+            );
       _previousTotalIncome = comparedTo == null
           ? 0
-          : await _repository.getSumByTypeAndDateRange('income', comparedTo.start, comparedTo.end);
+          : await _repository.getSumByTypeAndDateRange(
+              'income',
+              comparedTo.start,
+              comparedTo.end,
+            );
     } catch (e) {
       _error = e.toString();
       rethrow;
@@ -168,10 +182,25 @@ class AnalyticsProvider extends ChangeNotifier {
     }
   }
 
+  /// Preserve repository ordering and use the separately queried ledger total.
+  static List<CategoryAnalytics> _categoryBreakdown(
+    List<Map<String, dynamic>> categorySums,
+    double ledgerTotal,
+  ) {
+    return categorySums.map((row) {
+      final total = (row['total'] as num).toDouble();
+      return CategoryAnalytics(
+        categoryId: row['categoryId'] as String,
+        total: total,
+        percentage: ledgerTotal > 0 ? total / ledgerTotal : 0,
+      );
+    }).toList();
+  }
+
   /// Load analytics for the current period based on user selection.
   Future<void> loadForCurrentPeriod(int payday) async {
     ({DateTime start, DateTime end}) current;
-    
+
     switch (_selectedPeriod) {
       case AnalyticsPeriod.weekly:
         current = AppDateUtils.getWeeklyPeriod();
@@ -187,7 +216,11 @@ class AnalyticsProvider extends ChangeNotifier {
 
     final previous = AppDateUtils.getPreviousPeriod(current);
 
-    await loadAnalytics(start: current.start, end: current.end, comparedTo: previous);
+    await loadAnalytics(
+      start: current.start,
+      end: current.end,
+      comparedTo: previous,
+    );
     await loadTopMerchants(_merchantType, current.start, current.end);
   }
 
@@ -207,7 +240,7 @@ class AnalyticsProvider extends ChangeNotifier {
   void setPeriodFilter(AnalyticsPeriod period, int payday) {
     if (_selectedPeriod == period) return;
     _selectedPeriod = period;
-    
+
     if (period == AnalyticsPeriod.yearly) {
       loadYearlyData(DateTime.now().year);
     } else {
@@ -244,7 +277,8 @@ class AnalyticsProvider extends ChangeNotifier {
         );
       }
 
-      _monthlyData = monthMap.values.toList()..sort((a, b) => a.month.compareTo(b.month));
+      _monthlyData = monthMap.values.toList()
+        ..sort((a, b) => a.month.compareTo(b.month));
     } catch (e) {
       _error = e.toString();
       rethrow;
@@ -302,8 +336,7 @@ class AnalyticsProvider extends ChangeNotifier {
           income: e.value.income,
           expense: e.value.expense,
         );
-      }).toList()
-        ..sort((a, b) => a.monthStart.compareTo(b.monthStart));
+      }).toList()..sort((a, b) => a.monthStart.compareTo(b.monthStart));
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -318,7 +351,11 @@ class AnalyticsProvider extends ChangeNotifier {
       final now = DateTime.now();
       final end = DateTime(now.year, now.month + 1, 0);
       final start = DateTime(now.year, now.month - months + 1, 1);
-      final rows = await _repository.getCategoryMonthlySums(categoryId, start, end);
+      final rows = await _repository.getCategoryMonthlySums(
+        categoryId,
+        start,
+        end,
+      );
 
       final byMonth = <String, double>{};
       for (var i = 0; i < months; i++) {
@@ -337,8 +374,7 @@ class AnalyticsProvider extends ChangeNotifier {
           monthStart: DateTime(int.parse(parts[0]), int.parse(parts[1]), 1),
           total: e.value,
         );
-      }).toList()
-        ..sort((a, b) => a.monthStart.compareTo(b.monthStart));
+      }).toList()..sort((a, b) => a.monthStart.compareTo(b.monthStart));
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -354,7 +390,8 @@ class AnalyticsProvider extends ChangeNotifier {
     try {
       final rows = await _repository.getDailyExpenseSums(start, end);
       _dailyExpenses = {
-        for (final row in rows) row['date'] as String: (row['total'] as num).toDouble(),
+        for (final row in rows)
+          row['date'] as String: (row['total'] as num).toDouble(),
       };
       notifyListeners();
     } catch (e) {
@@ -370,15 +407,22 @@ class AnalyticsProvider extends ChangeNotifier {
   /// The fold happens here rather than in SQL, and strictly before the
   /// top-[limit] cut — a merchant can be the biggest spend of the period and
   /// still miss the cut on every individual spelling.
-  Future<void> loadTopMerchants(String type, DateTime start, DateTime end, {int limit = 10}) async {
+  Future<void> loadTopMerchants(
+    String type,
+    DateTime start,
+    DateTime end, {
+    int limit = 10,
+  }) async {
     try {
       final rows = await _repository.getMerchantTotals(type, start, end);
       _topMerchants = foldMerchantTotals(
-        rows.map((row) => (
-              merchant: row['merchant'] as String,
-              total: (row['total'] as num).toDouble(),
-              count: row['cnt'] as int,
-            )),
+        rows.map(
+          (row) => (
+            merchant: row['merchant'] as String,
+            total: (row['total'] as num).toDouble(),
+            count: row['cnt'] as int,
+          ),
+        ),
         limit: limit,
       );
       notifyListeners();
@@ -389,5 +433,6 @@ class AnalyticsProvider extends ChangeNotifier {
     }
   }
 
-  static String _ymKey(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}';
+  static String _ymKey(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}';
 }

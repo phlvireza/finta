@@ -17,6 +17,7 @@ import '../../transactions/widgets/account_picker.dart';
 import '../../transactions/widgets/category_picker.dart';
 import '../../transactions/widgets/date_picker_field.dart';
 import '../../../providers/ledger_refresh.dart';
+import '../../../widgets/transaction_save_recovery.dart';
 
 /// Bottom sheet to log a contribution toward a goal. A contribution is
 /// just an ordinary expense transaction — tagged with this goal's id — so it
@@ -75,6 +76,7 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
   String _categoryId = SeedData.savingsGoalsCategoryId;
   DateTime _date = DateTime.now();
   bool _isSaving = false;
+  Future<void> Function()? _finishSave;
 
   @override
   void initState() {
@@ -110,6 +112,7 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
   }
 
   Future<void> _save() async {
+    if (_isSaving || _finishSave != null) return;
     if (!_formKey.currentState!.validate() || _accountId == null) {
       setState(() {});
       return;
@@ -138,30 +141,35 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
             : _noteController.text.trim(),
         goalId: widget.goal.id,
       );
-      await refresh();
-      final afterProgress = goalProvider.progressOf(widget.goal.id);
-      final eligible = <SquiMoment>{
-        if (wasLedgerEmpty) SquiMoment.firstTransaction,
-        if (beforeProgress < widget.goal.targetAmount &&
-            afterProgress >= widget.goal.targetAmount)
-          SquiMoment.goalReached,
-      };
-      final moment = await SquiMilestoneService.instance.claim(
-        eligible: eligible,
-        goalId: widget.goal.id,
-      );
-      if (mounted) {
-        Navigator.of(context).pop(
-          SquiSaveResult(
-            saved: true,
-            moment: moment,
-            subjectName: widget.goal.name,
-          ),
+      // Once committed, retries may refresh and finish, but must never repost.
+      _finishSave = () async {
+        await refresh();
+        final afterProgress = goalProvider.progressOf(widget.goal.id);
+        final eligible = <SquiMoment>{
+          if (wasLedgerEmpty) SquiMoment.firstTransaction,
+          if (beforeProgress < widget.goal.targetAmount &&
+              afterProgress >= widget.goal.targetAmount)
+            SquiMoment.goalReached,
+        };
+        final moment = await SquiMilestoneService.instance.claim(
+          eligible: eligible,
+          goalId: widget.goal.id,
         );
-      }
+        if (mounted) {
+          Navigator.of(context).pop(
+            SquiSaveResult(
+              saved: true,
+              moment: moment,
+              subjectName: widget.goal.name,
+            ),
+          );
+        }
+      };
+      await _finishSave!();
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
+        if (_finishSave != null) return;
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(
           context,
@@ -172,6 +180,9 @@ class _ContributeToGoalSheetState extends State<ContributeToGoalSheet> {
 
   @override
   Widget build(BuildContext context) {
+    if (_finishSave != null && !_isSaving) {
+      return TransactionSaveRecovery(onRetry: _finishSave!);
+    }
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
 
