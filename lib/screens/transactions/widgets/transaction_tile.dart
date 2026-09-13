@@ -6,14 +6,13 @@ import '../../../providers/account_provider.dart';
 import '../../../providers/debt_provider.dart';
 import '../../../providers/goal_provider.dart';
 import '../../../providers/settings_provider.dart';
-import '../../../providers/transaction_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/utils/number_utils.dart';
 import '../../../core/utils/transaction_display.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../widgets/confirm_dialog.dart';
+import '../transaction_actions.dart';
 import '../add_transaction_screen.dart';
 
 /// Reusable tile for displaying a single transaction. Used on both the
@@ -64,7 +63,9 @@ class TransactionTile extends StatelessWidget {
 
     final iconBoxSize = dense ? 40.0 : 48.0;
     final iconSize = dense ? 20.0 : 24.0;
-    final titleStyle = dense ? theme.textTheme.titleSmall : theme.textTheme.titleMedium;
+    final titleStyle = dense
+        ? theme.textTheme.titleSmall
+        : theme.textTheme.titleMedium;
     final amountFontSize = dense ? 14.0 : 15.0;
     final recurringIconSize = dense ? 12.0 : 14.0;
 
@@ -92,17 +93,19 @@ class TransactionTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap ??
+        onTap:
+            onTap ??
             () {
               if (transaction.isTransfer) {
                 _showTransferDetails(context);
                 return;
               }
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) => AddTransactionScreen(
-                  editTransaction: transaction,
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      AddTransactionScreen(editTransaction: transaction),
                 ),
-              ));
+              );
             },
         borderRadius: BorderRadius.circular(AppConstants.radiusSm),
         child: Padding(
@@ -158,11 +161,7 @@ class TransactionTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '${isIncome ? '+' : '-'} ${NumberUtils.formatCurrency(
-                      transaction.amount,
-                      symbol: settings.currencySymbol,
-                      useDecimals: settings.currencyUseDecimals,
-                    )}',
+                    '${isIncome ? '+' : '-'} ${NumberUtils.formatCurrency(transaction.amount, symbol: settings.currencySymbol, useDecimals: settings.currencyUseDecimals)}',
                     style: AppTypography.amountStyle(
                       color: amountColor,
                       fontSize: amountFontSize,
@@ -205,7 +204,10 @@ class TransactionTile extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(loc.transfer, style: Theme.of(sheetContext).textTheme.titleLarge),
+              Text(
+                loc.transfer,
+                style: Theme.of(sheetContext).textTheme.titleLarge,
+              ),
               const SizedBox(height: AppConstants.spacingMd),
               Text(
                 isOut
@@ -228,17 +230,13 @@ class TransactionTile extends StatelessWidget {
                   icon: const Icon(Icons.delete_outline),
                   label: Text(loc.deleteTransfer),
                   onPressed: () async {
-                    final confirmed = await ConfirmDialog.show(
+                    final outcome = await confirmDeleteTransaction(
                       sheetContext,
-                      title: loc.deleteTransfer,
-                      message: loc.confirmDeleteTransfer,
+                      transaction,
                     );
-                    if (confirmed && sheetContext.mounted) {
-                      await sheetContext.read<TransactionProvider>().deleteTransaction(transaction.id);
-                      if (sheetContext.mounted) {
-                        await sheetContext.read<AccountProvider>().loadAccounts();
-                      }
-                      if (sheetContext.mounted) Navigator.of(sheetContext).pop();
+                    if (outcome == DeletionOutcome.committed &&
+                        sheetContext.mounted) {
+                      Navigator.of(sheetContext).pop();
                     }
                   },
                 ),

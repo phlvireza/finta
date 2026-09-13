@@ -1,50 +1,118 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
-import 'package:fl_chart/fl_chart.dart';
-import '../../providers/budget_provider.dart';
-import '../../providers/settings_provider.dart';
-import '../../providers/category_provider.dart';
+
 import '../../core/constants/app_constants.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_typography.dart';
-import '../../core/utils/number_utils.dart';
-import '../../core/utils/date_utils.dart';
-import '../../core/utils/budget_display.dart';
-import '../../models/budget_model.dart';
-import '../../widgets/squi/squi_state.dart';
 import '../../core/constants/squi.dart';
+import '../../core/utils/budget_display.dart';
+import '../../core/utils/date_utils.dart';
+import '../../core/utils/number_utils.dart';
+import '../../l10n/app_localizations.dart';
+import '../../models/budget_model.dart';
+import '../../providers/budget_provider.dart';
+import '../../providers/category_provider.dart';
+import '../../providers/settings_provider.dart';
+import '../../widgets/error_state.dart';
 import '../../widgets/form_sheet.dart';
 import '../../widgets/masked_amount.dart';
 import '../../widgets/section_card.dart';
+import '../../widgets/skeleton_box.dart';
+import '../../widgets/squi/squi_state.dart';
 import 'budget_actions.dart';
 import 'budget_detail_screen.dart';
+import 'budget_overview_data.dart';
+import 'widgets/budget_comparison_chart.dart';
 import 'widgets/budget_form.dart';
 import 'widgets/budget_leftover_card.dart';
 import 'widgets/budget_progress_bar.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
-import '../../l10n/app_localizations.dart';
+import 'widgets/budget_summary_card.dart';
 
 /// Screen to list, create, and manage budgets.
-class ManageBudgetsScreen extends StatelessWidget {
+class ManageBudgetsScreen extends StatefulWidget {
   /// True when hosted as a tab in the app shell rather than pushed from
-  /// [MoreScreen]. The shell already docks a FAB over the nav bar — and on
-  /// this tab that FAB creates a budget — so an embedded instance raises no
-  /// FAB and offers no add action of its own. Pushed from [MoreScreen] there
-  /// is no shell FAB, so it raises its own.
+  /// More. The shell owns the docked add button in that configuration.
   final bool embedded;
 
   const ManageBudgetsScreen({super.key, this.embedded = false});
+
+  @override
+  State<ManageBudgetsScreen> createState() => _ManageBudgetsScreenState();
+
+  /// Opens the existing create/edit form without changing its persistence
+  /// behavior. The app shell calls this for its docked FAB.
+  static void showBudgetForm(BuildContext context, {String? budgetId}) {
+    FormSheet.show(
+      context,
+      builder: (_) => BudgetForm(budgetIdToEdit: budgetId),
+    );
+  }
+}
+
+class _ManageBudgetsScreenState extends State<ManageBudgetsScreen> {
+  String? _selectedCadence;
 
   @override
   Widget build(BuildContext context) {
     final budgetProvider = context.watch<BudgetProvider>();
     final categories = context.watch<CategoryProvider>();
     final settings = context.watch<SettingsProvider>();
-
+    final loc = AppLocalizations.of(context)!;
     final budgets = budgetProvider.activeBudgets;
     final ended = budgetProvider.endedBudgets;
+    final allStatuses = budgets
+        .map((budget) => budgetProvider.budgetStatuses[budget.id])
+        .whereType<BudgetStatus>()
+        .toList();
+    final availableCadences = [
+      for (final value in const ['weekly', 'monthly'])
+        if (budgets.any((budget) => budget.period == value) ||
+            ended.any((budget) => budget.period == value))
+          value,
+    ];
+    final defaultCadence = availableCadences.contains('monthly')
+        ? 'monthly'
+        : 'weekly';
+    final cadence = availableCadences.contains(_selectedCadence)
+        ? _selectedCadence!
+        : defaultCadence;
+    final hasCadenceChoice = availableCadences.length > 1;
+    final cadenceLabel = cadence == 'weekly' ? loc.weekly : loc.monthly;
+    final statuses = filterBudgetStatusesByCadence(allStatuses, cadence);
+    final endedForCadence = ended
+        .where((budget) => budget.period == cadence)
+        .toList();
 
-    final loc = AppLocalizations.of(context)!;
+    Future<void> retry() async {
+      try {
+        await budgetProvider.loadBudgets(payday: settings.payday);
+      } catch (_) {
+        // The provider retains the error for the state below to present.
+      }
+    }
+
+    final fab = widget.embedded
+        ? null
+        : FloatingActionButton(
+            heroTag: null,
+            onPressed: () => ManageBudgetsScreen.showBudgetForm(context),
+            child: const Icon(Icons.add),
+          );
+
+    if (budgetProvider.isLoading && budgets.isEmpty && ended.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: Text(loc.manageBudgets)),
+        body: const _BudgetLoadingState(),
+        floatingActionButton: fab,
+      );
+    }
+
+    if (budgetProvider.error != null && budgets.isEmpty && ended.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: Text(loc.manageBudgets)),
+        body: ErrorState(title: loc.errorFailedToLoadData, onRetry: retry),
+        floatingActionButton: fab,
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text(loc.manageBudgets)),
@@ -54,7 +122,7 @@ class ManageBudgetsScreen extends StatelessWidget {
               title: loc.squiEmptyBudgets,
               subtitle: loc.squiEmptyBudgetsBody,
               action: FilledButton.icon(
-                onPressed: () => showBudgetForm(context),
+                onPressed: () => ManageBudgetsScreen.showBudgetForm(context),
                 icon: const Icon(Icons.add),
                 label: Text(loc.createFirstBudget),
               ),
@@ -67,32 +135,80 @@ class ManageBudgetsScreen extends StatelessWidget {
                 AppConstants.fabClearance,
               ),
               children: [
-                // Above the budgets themselves: it's a question waiting on
-                // an answer, and it disappears for good once given.
-                if (budgetProvider.pendingLeftovers.isNotEmpty) ...[
-                  const BudgetLeftoverCard(),
+                if (budgetProvider.error != null) ...[
+                  _InlineBudgetError(onRetry: retry),
                   const SizedBox(height: AppConstants.spacingLg),
                 ],
-                if (budgets.isNotEmpty) ...[
+                if (hasCadenceChoice) ...[
+                  Semantics(
+                    label: loc.budgetCadenceSelector,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: SegmentedButton<String>(
+                        key: const ValueKey('budget-cadence-selector'),
+                        segments: [
+                          for (final value in availableCadences)
+                            ButtonSegment(
+                              value: value,
+                              label: Text(
+                                value == 'weekly' ? loc.weekly : loc.monthly,
+                              ),
+                            ),
+                        ],
+                        selected: {cadence},
+                        showSelectedIcon: false,
+                        style: const ButtonStyle(
+                          minimumSize: WidgetStatePropertyAll(Size(0, 44)),
+                        ),
+                        onSelectionChanged: (selection) =>
+                            setState(() => _selectedCadence = selection.single),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppConstants.spacingLg),
+                ],
+                if (statuses.isNotEmpty) ...[
                   SectionCard(
-                    child: _BudgetChart(
-                      budgetProvider: budgetProvider,
+                    child: BudgetSummaryCard(
+                      statuses: statuses,
+                      settings: settings,
+                      cadenceLabel: hasCadenceChoice ? null : cadenceLabel,
+                    ),
+                  ),
+                  const SizedBox(height: AppConstants.spacingLg),
+                  SectionCard(
+                    child: BudgetComparisonChart(
+                      key: ValueKey('budget-chart-$cadence'),
+                      items: [
+                        for (final status in statuses)
+                          BudgetChartItem(
+                            title: resolveBudgetDisplay(
+                              budget: status.budget,
+                              categories: categories,
+                              loc: loc,
+                              fallbackColor: Theme.of(
+                                context,
+                              ).colorScheme.primary,
+                            ).title,
+                            status: status,
+                          ),
+                      ],
                       settings: settings,
                     ),
                   ),
                   const SizedBox(height: AppConstants.spacingLg),
                   SectionCard(
+                    title: loc.budgetDetailsTitle,
                     child: Column(
                       children: [
-                        for (var i = 0; i < budgets.length; i++) ...[
+                        for (var i = 0; i < statuses.length; i++) ...[
                           if (i > 0)
                             const Divider(height: AppConstants.spacingXl),
                           _ActiveBudgetRow(
-                            budget: budgets[i],
-                            status:
-                                budgetProvider.budgetStatuses[budgets[i].id],
+                            budget: statuses[i].budget,
+                            status: statuses[i],
                             display: resolveBudgetDisplay(
-                              budget: budgets[i],
+                              budget: statuses[i].budget,
                               categories: categories,
                               loc: loc,
                               fallbackColor: Theme.of(
@@ -105,20 +221,33 @@ class ManageBudgetsScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+                ] else ...[
+                  SectionCard(
+                    child: _CadenceEmptyState(
+                      cadenceLabel: cadenceLabel,
+                      onAdd: () => ManageBudgetsScreen.showBudgetForm(context),
+                    ),
+                  ),
                 ],
-                if (ended.isNotEmpty) ...[
+                // Settlement actions stay visible without displacing the
+                // health summary users came here to read.
+                if (budgetProvider.pendingLeftovers.isNotEmpty) ...[
+                  const SizedBox(height: AppConstants.spacingLg),
+                  const BudgetLeftoverCard(),
+                ],
+                if (endedForCadence.isNotEmpty) ...[
                   const SizedBox(height: AppConstants.spacingLg),
                   SectionCard(
                     title: loc.endedBudgets,
                     child: Column(
                       children: [
-                        for (var i = 0; i < ended.length; i++) ...[
+                        for (var i = 0; i < endedForCadence.length; i++) ...[
                           if (i > 0)
                             const Divider(height: AppConstants.spacingXl),
                           _EndedBudgetRow(
-                            budget: ended[i],
+                            budget: endedForCadence[i],
                             display: resolveBudgetDisplay(
-                              budget: ended[i],
+                              budget: endedForCadence[i],
                               categories: categories,
                               loc: loc,
                               fallbackColor: Theme.of(
@@ -128,7 +257,7 @@ class ManageBudgetsScreen extends StatelessWidget {
                             settings: settings,
                             onDelete: (title) => confirmDeleteBudget(
                               context,
-                              budgetId: ended[i].id,
+                              budgetId: endedForCadence[i].id,
                               title: title,
                             ),
                           ),
@@ -139,35 +268,88 @@ class ManageBudgetsScreen extends StatelessWidget {
                 ],
               ],
             ),
-      // Embedded, the shell's docked FAB owns this corner and already opens
-      // this same form — a second button here would just be a duplicate.
-      floatingActionButton: embedded
-          ? null
-          : FloatingActionButton(
-              heroTag: null,
-              onPressed: () => showBudgetForm(context),
-              child: const Icon(Icons.add),
-            ),
+      floatingActionButton: fab,
     );
   }
+}
 
-  /// Opens the budget form. Public and static because the app shell's docked
-  /// FAB drives it directly when the Budgets tab is showing.
-  static void showBudgetForm(BuildContext context, {String? budgetId}) {
-    // No keyboard padding here — [FormSheet] inside [BudgetForm] owns it.
-    // This used to add its own on top, which both doubled the inset and
-    // froze it at whatever it was when the sheet opened, since this
-    // context never rebuilds as the keyboard animates in.
-    FormSheet.show(
-      context,
-      builder: (_) => BudgetForm(budgetIdToEdit: budgetId),
+class _BudgetLoadingState extends StatelessWidget {
+  const _BudgetLoadingState();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(AppConstants.spacingLg),
+      children: const [
+        SkeletonBox(height: 44),
+        SizedBox(height: AppConstants.spacingLg),
+        SkeletonBox(height: 176),
+        SizedBox(height: AppConstants.spacingLg),
+        SkeletonBox(height: 330),
+        SizedBox(height: AppConstants.spacingLg),
+        SkeletonBox(height: 180),
+      ],
+    );
+  }
+}
+
+class _InlineBudgetError extends StatelessWidget {
+  final Future<void> Function() onRetry;
+
+  const _InlineBudgetError({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
+    return Material(
+      color: theme.colorScheme.error.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.spacingMd),
+        child: Row(
+          children: [
+            Icon(Icons.error_outline, color: theme.colorScheme.error),
+            const SizedBox(width: AppConstants.spacingMd),
+            Expanded(
+              child: Text(
+                loc.budgetStaleDataError,
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
+            TextButton(onPressed: onRetry, child: Text(loc.retry)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CadenceEmptyState extends StatelessWidget {
+  final String cadenceLabel;
+  final VoidCallback onAdd;
+
+  const _CadenceEmptyState({required this.cadenceLabel, required this.onAdd});
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    return SquiState(
+      pose: SquiPose.empty,
+      title: loc.noBudgetsForCadence(cadenceLabel.toLowerCase()),
+      subtitle: loc.noBudgetsForCadenceBody,
+      action: FilledButton.icon(
+        onPressed: onAdd,
+        icon: const Icon(Icons.add),
+        label: Text(loc.addBudget),
+      ),
     );
   }
 }
 
 class _ActiveBudgetRow extends StatelessWidget {
   final BudgetModel budget;
-  final BudgetStatus? status;
+  final BudgetStatus status;
   final ({String title, IconData icon, Color color}) display;
   final SettingsProvider settings;
 
@@ -182,8 +364,6 @@ class _ActiveBudgetRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
-    if (status == null) return const SizedBox.shrink();
-
     return Slidable(
       key: ValueKey(budget.id),
       endActionPane: ActionPane(
@@ -204,36 +384,25 @@ class _ActiveBudgetRow extends StatelessWidget {
         ],
       ),
       child: InkWell(
-        // Tap opens the detail rather than the edit form: the question a
-        // budget row prompts is "what did I spend it on", and edit is one
-        // tap further in from there.
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => BudgetDetailScreen(budgetId: budget.id),
           ),
         ),
-        child: BudgetProgressBar(
-          status: status!,
-          symbol: settings.currencySymbol,
-          useDecimals: settings.currencyUseDecimals,
-          compact: true,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 44),
+          child: BudgetProgressBar(
+            status: status,
+            symbol: settings.currencySymbol,
+            useDecimals: settings.currencyUseDecimals,
+            compact: true,
+          ),
         ),
       ),
     );
   }
 }
 
-/// A one-off budget that has run its course. Rendered dimmed rather than
-/// dropped from the list: a budget the user set silently disappearing at
-/// the period boundary reads as data loss, even though it is exactly what
-/// "repeat off" was asked to do. Still swipe-to-delete, so the list can be
-/// cleared deliberately.
-///
-/// No progress bar — an ended budget's status is never computed (only
-/// active budgets are, since a stray status for an inactive budget would
-/// wrongly make `getStatusForCategory` treat that category as already
-/// covered), so there is no spend figure to draw a bar from without
-/// fabricating one.
 class _EndedBudgetRow extends StatelessWidget {
   final BudgetModel budget;
   final ({String title, IconData icon, Color color}) display;
@@ -252,6 +421,7 @@ class _EndedBudgetRow extends StatelessWidget {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
     final mutedColor = theme.colorScheme.onSurfaceVariant;
+    final locale = Localizations.localeOf(context).toString();
 
     return Slidable(
       key: ValueKey('ended-${budget.id}'),
@@ -271,6 +441,7 @@ class _EndedBudgetRow extends StatelessWidget {
       child: Opacity(
         opacity: 0.6,
         child: ListTile(
+          minVerticalPadding: AppConstants.spacingMd,
           contentPadding: EdgeInsets.zero,
           leading: Icon(display.icon, color: mutedColor),
           title: Text(display.title),
@@ -279,8 +450,9 @@ class _EndedBudgetRow extends StatelessWidget {
             style: theme.textTheme.bodySmall?.copyWith(color: mutedColor),
           ),
           trailing: MaskedAmount(
-            text: NumberUtils.formatCurrency(
+            text: NumberUtils.formatCurrencyLocalized(
               budget.amount,
+              locale: locale,
               symbol: settings.currencySymbol,
               useDecimals: settings.currencyUseDecimals,
             ),
@@ -288,137 +460,6 @@ class _EndedBudgetRow extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _BudgetChart extends StatelessWidget {
-  final BudgetProvider budgetProvider;
-  final SettingsProvider settings;
-
-  const _BudgetChart({required this.budgetProvider, required this.settings});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final loc = AppLocalizations.of(context)!;
-
-    double totalBudget = 0;
-    double totalSpent = 0;
-
-    for (var b in budgetProvider.activeBudgets) {
-      final status = budgetProvider.budgetStatuses[b.id];
-      if (status != null) {
-        totalBudget += status.effectiveAmount;
-        totalSpent += status.spent;
-      }
-    }
-
-    final isDark = theme.brightness == Brightness.dark;
-    final ratio = totalBudget > 0 ? totalSpent / totalBudget : 0.0;
-    // Same threshold ladder as every other budget bar in the app — a
-    // user at 20% of their aggregate budget should not see a warning
-    // colour just because this chart is drawn separately from those.
-    final spentColor = AppColors.budgetBarColor(
-      isExceeded: ratio > AppConstants.budgetExceededThreshold,
-      isWarning:
-          ratio >= AppConstants.budgetWarningThreshold &&
-          ratio < AppConstants.budgetExceededThreshold,
-      categoryColor: theme.colorScheme.primary,
-      isDark: isDark,
-    );
-    final remainingColor = theme.colorScheme.surfaceContainerHighest;
-
-    // The chart section can't be negative, but the caption should be: a
-    // clamped zero would read as "nothing left" whether the user is exactly
-    // on budget or 2M over it.
-    final netRemaining = totalBudget - totalSpent;
-    final remaining = netRemaining < 0 ? 0.0 : netRemaining;
-
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            SizedBox(
-              height: 180,
-              child: PieChart(
-                PieChartData(
-                  sectionsSpace: 2,
-                  centerSpaceRadius: 70,
-                  startDegreeOffset: -90,
-                  sections: [
-                    PieChartSectionData(
-                      color: spentColor,
-                      value: totalSpent,
-                      title: '',
-                      radius: 12,
-                    ),
-                    PieChartSectionData(
-                      color: remainingColor,
-                      value: remaining,
-                      title: '',
-                      radius: 12,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(
-              width: 124,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // The centre reads "how much can I still spend" first —
-                  // "Left this period" plus the remaining amount — rather
-                  // than leading with the spent total, which is repeated
-                  // (alongside the budgeted total) in the caption below.
-                  Text(
-                    netRemaining < 0 ? loc.overBudget : loc.leftThisPeriod,
-                    style: theme.textTheme.labelMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      NumberUtils.formatCurrency(
-                        netRemaining < 0 ? -netRemaining : netRemaining,
-                        symbol: settings.currencySymbol,
-                        useDecimals: settings.currencyUseDecimals,
-                      ),
-                      style: AppTypography.amountStyle(
-                        color: netRemaining < 0
-                            ? spentColor
-                            : theme.textTheme.bodyLarge!.color!,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppConstants.spacingMd),
-        Text(
-          loc.spentOfTotal(
-            NumberUtils.formatCurrency(
-              totalSpent,
-              symbol: settings.currencySymbol,
-              useDecimals: settings.currencyUseDecimals,
-            ),
-            NumberUtils.formatCurrency(
-              totalBudget,
-              symbol: settings.currencySymbol,
-              useDecimals: settings.currencyUseDecimals,
-            ),
-          ),
-          style: theme.textTheme.bodySmall,
-          textAlign: TextAlign.center,
-        ),
-      ],
     );
   }
 }

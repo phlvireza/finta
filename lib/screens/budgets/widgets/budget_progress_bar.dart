@@ -1,13 +1,15 @@
+import '../../../core/utils/budget_health.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/budget_provider.dart';
 import '../../../providers/category_provider.dart';
 import '../../../core/constants/app_constants.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_typography.dart';
 import '../../../core/utils/number_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../core/utils/budget_display.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/masked_amount.dart';
 import 'budget_pace_bar.dart';
 
 /// Progress bar visualizing budget usage — works for any scope
@@ -24,6 +26,7 @@ class BudgetProgressBar extends StatelessWidget {
   final String symbol;
   final bool useDecimals;
   final bool compact;
+  final bool summary;
 
   const BudgetProgressBar({
     super.key,
@@ -31,13 +34,14 @@ class BudgetProgressBar extends StatelessWidget {
     required this.symbol,
     required this.useDecimals,
     this.compact = false,
+    this.summary = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final loc = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toString();
     final categories = context.watch<CategoryProvider>();
     final display = resolveBudgetDisplay(
       budget: status.budget,
@@ -46,16 +50,32 @@ class BudgetProgressBar extends StatelessWidget {
       fallbackColor: theme.colorScheme.primary,
     );
 
-    final barColor = AppColors.budgetBarColor(
-      isExceeded: status.isExceeded,
-      isWarning: status.isWarning,
-      categoryColor: display.color,
-      isDark: isDark,
-    );
-
-    final ratio = status.ratio.clamp(0.0, 1.0);
     final timeElapsed = AppDateUtils.periodElapsedFraction(status.period);
-    final paceLabel = budgetPaceLabel(loc, budgetPaceFor(status.ratio, timeElapsed));
+    final health = budgetHealthFor(status, timeElapsed);
+    final barColor = health == BudgetHealth.overLimit
+        ? theme.colorScheme.error
+        : theme.colorScheme.primary;
+    final hasLimit = status.effectiveAmount > 0;
+    final ratio = hasLimit
+        ? status.ratio
+        : health == BudgetHealth.overLimit
+        ? 1.0
+        : 0.0;
+    final healthLabel = !hasLimit
+        ? loc.noAvailableBudget
+        : status.ratio == 1
+        ? loc.budgetLimitReached
+        : switch (health) {
+            BudgetHealth.overLimit => loc.budgetOverLimit,
+            BudgetHealth.needsAttention => loc.budgetNeedsAttention,
+            BudgetHealth.withinLimits => loc.budgetWithinLimits,
+          };
+    String money(double amount) => NumberUtils.formatCurrencyLocalized(
+      amount,
+      locale: locale,
+      symbol: symbol,
+      useDecimals: useDecimals,
+    );
 
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,96 +86,116 @@ class BudgetProgressBar extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: display.color.withValues(alpha: AppConstants.tintAlpha),
+                color: theme.colorScheme.primary.withValues(
+                  alpha: AppConstants.tintAlpha,
+                ),
                 borderRadius: BorderRadius.circular(AppConstants.radiusSm),
               ),
-              child: Icon(display.icon, size: 16, color: display.color),
+              child: Icon(
+                display.icon,
+                size: 16,
+                color: theme.colorScheme.primary,
+              ),
             ),
             const SizedBox(width: AppConstants.spacingMd),
             Expanded(
               child: Text(display.title, style: theme.textTheme.titleMedium),
             ),
+          ],
+        ),
+        const SizedBox(height: AppConstants.spacingSm),
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
             Text(
-              '${NumberUtils.formatPercentage(ratio)} ${loc.used}',
-              style: theme.textTheme.labelMedium?.copyWith(color: barColor),
+              healthLabel,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.onSurface,
+                fontWeight: FontWeight.w700,
+              ),
             ),
+            if (hasLimit)
+              Text(
+                '${NumberUtils.formatPercentage(status.ratio)} ${loc.used}',
+                style: theme.textTheme.labelMedium,
+              ),
           ],
         ),
         const SizedBox(height: AppConstants.spacingMd),
-        BudgetPaceBar(
-          ratio: ratio,
-          timeElapsedFraction: timeElapsed,
-          barColor: barColor,
+        Semantics(
+          label: '${display.title}: $healthLabel',
+          child: BudgetPaceBar(
+            ratio: ratio,
+            timeElapsedFraction: timeElapsed,
+            barColor: barColor,
+            height: 12,
+          ),
         ),
         const SizedBox(height: AppConstants.spacingSm),
-        // One split caption line instead of a pace row followed by a
-        // separate amounts row: the pace verdict on the left, the amount
-        // left (or the over-budget flag) on the right.
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  paceLabel,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.textTheme.bodySmall?.color,
-                  ),
-                ),
-                const SizedBox(width: 2),
-                InkWell(
-                  borderRadius: BorderRadius.circular(AppConstants.radiusFull),
-                  onTap: () => _showPaceInfo(context, loc),
-                  child: Padding(
-                    padding: const EdgeInsets.all(2),
-                    child: Icon(
-                      Icons.info_outline,
-                      size: 13,
-                      color: theme.textTheme.bodySmall?.color,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Flexible(
-              child: Text(
-                status.isExceeded
-                    ? loc.overBudget
-                    : '${NumberUtils.formatCurrency(status.remaining, symbol: symbol, useDecimals: useDecimals)} ${loc.left}',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: status.isExceeded ? barColor : theme.textTheme.bodySmall?.color,
-                  fontWeight: status.isExceeded ? FontWeight.bold : null,
-                ),
-                textAlign: TextAlign.end,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
+        MaskedAmount(
+          text: health == BudgetHealth.overLimit
+              ? loc.budgetOverspentAmount(
+                  money(status.spent - status.effectiveAmount),
+                )
+              : '${money(status.remaining)} ${loc.left}',
+          style: AppTypography.amountStyle(
+            color: theme.colorScheme.onSurface,
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
         ),
-        // "spent of budgeted" — without the budget on the row there is
-        // nothing to check the percentage above against. Uses
-        // effectiveAmount, not budget.amount, so it agrees with the ratio;
-        // any gap between the two is what the rollover line below explains.
-        const SizedBox(height: 2),
+        if (!summary) ...[
+          const SizedBox(height: 4),
+          MaskedAmount(
+            text:
+                '${money(status.spent)} ${loc.ofString} ${money(status.effectiveAmount)}',
+            style: theme.textTheme.bodySmall,
+          ),
+        ],
+        const SizedBox(height: 4),
         Text(
-          '${NumberUtils.formatCurrency(status.spent, symbol: symbol, useDecimals: useDecimals)} '
-          '${loc.ofString} '
-          '${NumberUtils.formatCurrency(status.effectiveAmount, symbol: symbol, useDecimals: useDecimals)}',
+          AppDateUtils.formatPeriodRange(
+            status.period.start,
+            status.period.end,
+          ),
           style: theme.textTheme.bodySmall,
-          overflow: TextOverflow.ellipsis,
         ),
+        if (!summary)
+          TextButton.icon(
+            onPressed: () => _showPaceInfo(context, loc),
+            icon: const Icon(Icons.info_outline, size: 18),
+            label: Text(loc.budgetTimeMarker),
+            style: TextButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              padding: const EdgeInsets.symmetric(horizontal: 0),
+            ),
+          ),
+
         if (status.budget.hasRollover && status.rolloverAmount != 0) ...[
           const SizedBox(height: AppConstants.spacingXs),
-          Text(
-            status.rolloverAmount > 0
+          MaskedAmount(
+            text: status.rolloverAmount > 0
                 ? loc.rolledOverPositive(
-                    NumberUtils.formatCurrency(status.rolloverAmount, symbol: symbol, useDecimals: useDecimals),
+                    NumberUtils.formatCurrencyLocalized(
+                      status.rolloverAmount,
+                      locale: locale,
+                      symbol: symbol,
+                      useDecimals: useDecimals,
+                    ),
                   )
                 : loc.rolledOverNegative(
-                    NumberUtils.formatCurrency(-status.rolloverAmount, symbol: symbol, useDecimals: useDecimals),
+                    NumberUtils.formatCurrencyLocalized(
+                      -status.rolloverAmount,
+                      locale: locale,
+                      symbol: symbol,
+                      useDecimals: useDecimals,
+                    ),
                   ),
-            style: theme.textTheme.labelSmall?.copyWith(color: theme.textTheme.bodySmall?.color),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.textTheme.bodySmall?.color,
+            ),
           ),
         ],
       ],

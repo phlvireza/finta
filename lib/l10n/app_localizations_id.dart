@@ -771,16 +771,16 @@ class AppLocalizationsId extends AppLocalizations {
   String get budgetPeriod => 'Periode';
 
   @override
-  String get budgetRepeat => 'Ulangi setiap periode';
+  String get budgetRepeat => 'Ulangi anggaran ini';
 
   @override
   String budgetRepeatRenewsOn(String date) {
-    return 'Diperbarui $date.';
+    return 'Berulang setiap periode · Diperbarui $date';
   }
 
   @override
   String budgetRepeatEndsOn(String date) {
-    return 'Berakhir $date. Hanya mencakup periode ini.';
+    return 'Anggaran satu kali · Berakhir $date';
   }
 
   @override
@@ -1626,10 +1626,11 @@ class AppLocalizationsId extends AppLocalizations {
   String get squiEmptyDebtsBody => 'Tidak ada yang perlu Squi catat di sini.';
 
   @override
-  String get squiEmptyBudgets => 'Belum ada anggaran';
+  String get squiEmptyBudgets => 'Squi menunggu anggaran pertamamu';
 
   @override
-  String get squiEmptyBudgetsBody => 'Tetapkan batas, Squi bantu mengawasi.';
+  String get squiEmptyBudgetsBody =>
+      'Tetapkan batas pengeluaran dan Squi akan membantumu tetap sesuai rencana.';
 
   @override
   String get squiQuietSubscriptions => 'Tidak ada jadwal';
@@ -1700,4 +1701,93 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get startupFailed =>
       'Data Anda tidak dapat dibuka. Silakan coba lagi.';
+
+  @override
+  String get budgetHealth => 'Kondisi anggaran';
+
+  @override
+  String activeBudgetCount(int count) {
+    return '$count anggaran aktif';
+  }
+
+  @override
+  String get budgetOverLimit => 'Melebihi batas';
+
+  @override
+  String get budgetNeedsAttention => 'Perlu perhatian';
+
+  @override
+  String get budgetWithinLimits => 'Dalam batas';
+
+  @override
+  String get budgetLimitReached => 'Batas tercapai';
+
+  @override
+  String get noAvailableBudget => 'Tidak ada anggaran tersedia';
+
+  @override
+  String budgetOverspentAmount(String amount) {
+    return '$amount melebihi batas';
+  }
+
+  @override
+  String get budgetTimeMarker => 'Penanda = waktu berlalu';
+
+  @override
+  String get budgetHealthSubtitle =>
+      'Setiap anggaran dibandingkan dengan batas dan periodenya sendiri.';
+
+  @override
+  String get budgetPriority => 'Anggaran yang perlu dipantau';
+
+  @override
+  String get budgetAllHealthy => 'Anggaran Anda masih dalam batas';
+
+  @override
+  String get transactionDeleted => 'Transaksi dihapus';
+
+  @override
+  String get deletedRefreshFailed =>
+      'Transaksi telah dihapus. Pembaruan gagal. Coba lagi untuk memperbarui saldo dan ringkasan.';
+
+  @override
+  String get budgetOverByLabel => 'Anggaran terlampaui sebesar';
+
+  @override
+  String get budgetedLabel => 'Dianggarkan';
+
+  @override
+  String get budgetTotalUsage => 'Penggunaan total anggaran';
+
+  @override
+  String get budgetTotalProgressHidden =>
+      'Progres total anggaran. Jumlah disembunyikan.';
+
+  @override
+  String get budgetChartTitle => 'Anggaran dibanding pengeluaran';
+
+  @override
+  String get budgetChartHint => 'Ketuk batang untuk melihat jumlah tepat';
+
+  @override
+  String get budgetChartHiddenAmounts =>
+      'Perbandingan anggaran. Jumlah disembunyikan.';
+
+  @override
+  String get budgetCadenceSelector => 'Periode anggaran';
+
+  @override
+  String get budgetDetailsTitle => 'Rincian anggaran';
+
+  @override
+  String get budgetStaleDataError => 'Angka ini mungkin belum terbaru.';
+
+  @override
+  String noBudgetsForCadence(String cadence) {
+    return 'Squi menunggu anggaran $cadence';
+  }
+
+  @override
+  String get noBudgetsForCadenceBody =>
+      'Pilih periode lain atau tambahkan sekarang.';
 }

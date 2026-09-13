@@ -1,9 +1,8 @@
+import 'transaction_actions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/transaction_provider.dart';
-import '../../providers/budget_provider.dart';
 import '../../providers/settings_provider.dart';
-import '../../providers/analytics_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/account_provider.dart';
 import '../../models/transaction_model.dart';
@@ -150,38 +149,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   Future<void> _deleteTransaction(TransactionModel tx) async {
-    final loc = AppLocalizations.of(context)!;
-    final settings = context.read<SettingsProvider>();
-    final formattedAmount = NumberUtils.formatCurrency(
-      tx.amount,
-      symbol: settings.currencySymbol,
-      useDecimals: settings.currencyUseDecimals,
-    );
-    final typeName = tx.isIncome ? loc.income : loc.expense;
-
-    final confirmed = await ConfirmDialog.show(
-      context,
-      title: loc.delete,
-      message: loc.confirmDeleteTransactionMessage(typeName, formattedAmount),
-      confirmText: loc.delete,
-    );
-
-    if (confirmed && mounted) {
-      await context.read<TransactionProvider>().deleteTransaction(tx.id);
-
-      if (mounted) {
-        final settings = context.read<SettingsProvider>();
-        await context.read<BudgetProvider>().loadBudgets(
-          payday: settings.payday,
-        );
-        if (!mounted) return;
-        await context.read<AnalyticsProvider>().loadForCurrentPeriod(
-          settings.payday,
-        );
-        if (!mounted) return;
-        await context.read<AccountProvider>().loadAccounts();
-      }
-    }
+    await confirmDeleteTransaction(context, tx);
   }
 
   void _toggleSelection(String id) {

@@ -1529,19 +1529,19 @@ abstract class AppLocalizations {
   /// No description provided for @budgetRepeat.
   ///
   /// In en, this message translates to:
-  /// **'Repeat every period'**
+  /// **'Repeat this budget'**
   String get budgetRepeat;
 
   /// No description provided for @budgetRepeatRenewsOn.
   ///
   /// In en, this message translates to:
-  /// **'Renews {date}.'**
+  /// **'Repeats every period · Renews {date}'**
   String budgetRepeatRenewsOn(String date);
 
   /// No description provided for @budgetRepeatEndsOn.
   ///
   /// In en, this message translates to:
-  /// **'Ends {date}. Covers this period only.'**
+  /// **'One-time budget · Ends {date}'**
   String budgetRepeatEndsOn(String date);
 
   /// No description provided for @endedBudgets.
@@ -2903,13 +2903,13 @@ abstract class AppLocalizations {
   /// No description provided for @squiEmptyBudgets.
   ///
   /// In en, this message translates to:
-  /// **'No budgets yet'**
+  /// **'Squi is waiting for your first budget'**
   String get squiEmptyBudgets;
 
   /// No description provided for @squiEmptyBudgetsBody.
   ///
   /// In en, this message translates to:
-  /// **'Set a limit and Squi will help you keep an eye on it.'**
+  /// **'Set a spending limit and Squi will help you stay on track.'**
   String get squiEmptyBudgetsBody;
 
   /// No description provided for @squiQuietSubscriptions.
@@ -3031,6 +3031,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unable to open your data. Please try again.'**
   String get startupFailed;
+
+  /// No description provided for @budgetHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget health'**
+  String get budgetHealth;
+
+  /// No description provided for @activeBudgetCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} active budgets'**
+  String activeBudgetCount(int count);
+
+  /// No description provided for @budgetOverLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Over limit'**
+  String get budgetOverLimit;
+
+  /// No description provided for @budgetNeedsAttention.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs attention'**
+  String get budgetNeedsAttention;
+
+  /// No description provided for @budgetWithinLimits.
+  ///
+  /// In en, this message translates to:
+  /// **'Within limits'**
+  String get budgetWithinLimits;
+
+  /// No description provided for @budgetLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Limit reached'**
+  String get budgetLimitReached;
+
+  /// No description provided for @noAvailableBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'No available budget'**
+  String get noAvailableBudget;
+
+  /// No description provided for @budgetOverspentAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} over limit'**
+  String budgetOverspentAmount(String amount);
+
+  /// No description provided for @budgetTimeMarker.
+  ///
+  /// In en, this message translates to:
+  /// **'Marker = time elapsed'**
+  String get budgetTimeMarker;
+
+  /// No description provided for @budgetHealthSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Each budget compared with its own limit and period.'**
+  String get budgetHealthSubtitle;
+
+  /// No description provided for @budgetPriority.
+  ///
+  /// In en, this message translates to:
+  /// **'Budgets to watch'**
+  String get budgetPriority;
+
+  /// No description provided for @budgetAllHealthy.
+  ///
+  /// In en, this message translates to:
+  /// **'Your budgets are within limits'**
+  String get budgetAllHealthy;
+
+  /// No description provided for @transactionDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction deleted'**
+  String get transactionDeleted;
+
+  /// No description provided for @deletedRefreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The transaction was deleted. Refresh failed. Retry to update your balances and summaries.'**
+  String get deletedRefreshFailed;
+
+  /// No description provided for @budgetOverByLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Over budget by'**
+  String get budgetOverByLabel;
+
+  /// No description provided for @budgetedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Budgeted'**
+  String get budgetedLabel;
+
+  /// No description provided for @budgetTotalUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'Total budget usage'**
+  String get budgetTotalUsage;
+
+  /// No description provided for @budgetTotalProgressHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Total budget progress. Amounts are hidden.'**
+  String get budgetTotalProgressHidden;
+
+  /// No description provided for @budgetChartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget versus spending'**
+  String get budgetChartTitle;
+
+  /// No description provided for @budgetChartHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a bar for exact amounts'**
+  String get budgetChartHint;
+
+  /// No description provided for @budgetChartHiddenAmounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget comparison. Amounts are hidden.'**
+  String get budgetChartHiddenAmounts;
+
+  /// No description provided for @budgetCadenceSelector.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget period'**
+  String get budgetCadenceSelector;
+
+  /// No description provided for @budgetDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget details'**
+  String get budgetDetailsTitle;
+
+  /// No description provided for @budgetStaleDataError.
+  ///
+  /// In en, this message translates to:
+  /// **'These figures may be out of date.'**
+  String get budgetStaleDataError;
+
+  /// No description provided for @noBudgetsForCadence.
+  ///
+  /// In en, this message translates to:
+  /// **'Squi is waiting for a {cadence} budget'**
+  String noBudgetsForCadence(String cadence);
+
+  /// No description provided for @noBudgetsForCadenceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another period or add one now.'**
+  String get noBudgetsForCadenceBody;
 }
 
 class _AppLocalizationsDelegate

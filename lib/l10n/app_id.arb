@@ -359,8 +359,8 @@
   "budgetName": "Nama anggaran",
   "budgetNameOptional": "Nama anggaran (opsional)",
   "budgetPeriod": "Periode",
-  "budgetRepeat": "Ulangi setiap periode",
-  "budgetRepeatRenewsOn": "Diperbarui {date}.",
+  "budgetRepeat": "Ulangi anggaran ini",
+  "budgetRepeatRenewsOn": "Berulang setiap periode · Diperbarui {date}",
   "@budgetRepeatRenewsOn": {
     "placeholders": {
       "date": {
@@ -368,7 +368,7 @@
       }
     }
   },
-  "budgetRepeatEndsOn": "Berakhir {date}. Hanya mencakup periode ini.",
+  "budgetRepeatEndsOn": "Anggaran satu kali · Berakhir {date}",
   "@budgetRepeatEndsOn": {
     "placeholders": {
       "date": {
@@ -919,8 +919,8 @@
   "squiEmptyGoalsBody": "Squi jago menabung. Pilih sesuatu yang layak ditabung.",
   "squiEmptyDebts": "Tidak ada utang",
   "squiEmptyDebtsBody": "Tidak ada yang perlu Squi catat di sini.",
-  "squiEmptyBudgets": "Belum ada anggaran",
-  "squiEmptyBudgetsBody": "Tetapkan batas, Squi bantu mengawasi.",
+  "squiEmptyBudgets": "Squi menunggu anggaran pertamamu",
+  "squiEmptyBudgetsBody": "Tetapkan batas pengeluaran dan Squi akan membantumu tetap sesuai rencana.",
   "squiQuietSubscriptions": "Tidak ada jadwal",
   "squiQuietSubscriptionsBody": "Belum ada yang perlu dicatat. Squi tidur dulu.",
   "squiQuietRecurring": "Tidak ada yang berulang",
@@ -946,5 +946,52 @@
   "squiMomentDismiss": "Oke",
   "savedRefreshFailed": "Transaksi Anda sudah tersimpan, tetapi tampilan belum dapat diperbarui. Coba lagi untuk memperbarui tampilan.",
   "transactionSaved": "Transaksi tersimpan",
-  "startupFailed": "Data Anda tidak dapat dibuka. Silakan coba lagi."
+  "startupFailed": "Data Anda tidak dapat dibuka. Silakan coba lagi.",
+  "budgetHealth": "Kondisi anggaran",
+  "activeBudgetCount": "{count} anggaran aktif",
+  "@activeBudgetCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "budgetOverLimit": "Melebihi batas",
+  "budgetNeedsAttention": "Perlu perhatian",
+  "budgetWithinLimits": "Dalam batas",
+  "budgetLimitReached": "Batas tercapai",
+  "noAvailableBudget": "Tidak ada anggaran tersedia",
+  "budgetOverspentAmount": "{amount} melebihi batas",
+  "@budgetOverspentAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetTimeMarker": "Penanda = waktu berlalu",
+  "budgetHealthSubtitle": "Setiap anggaran dibandingkan dengan batas dan periodenya sendiri.",
+  "budgetPriority": "Anggaran yang perlu dipantau",
+  "budgetAllHealthy": "Anggaran Anda masih dalam batas",
+  "transactionDeleted": "Transaksi dihapus",
+  "deletedRefreshFailed": "Transaksi telah dihapus. Pembaruan gagal. Coba lagi untuk memperbarui saldo dan ringkasan.",
+  "budgetOverByLabel": "Anggaran terlampaui sebesar",
+  "budgetedLabel": "Dianggarkan",
+  "budgetTotalUsage": "Penggunaan total anggaran",
+  "budgetTotalProgressHidden": "Progres total anggaran. Jumlah disembunyikan.",
+  "budgetChartTitle": "Anggaran dibanding pengeluaran",
+  "budgetChartHint": "Ketuk batang untuk melihat jumlah tepat",
+  "budgetChartHiddenAmounts": "Perbandingan anggaran. Jumlah disembunyikan.",
+  "budgetCadenceSelector": "Periode anggaran",
+  "budgetDetailsTitle": "Rincian anggaran",
+  "budgetStaleDataError": "Angka ini mungkin belum terbaru.",
+  "noBudgetsForCadence": "Squi menunggu anggaran {cadence}",
+  "@noBudgetsForCadence": {
+    "placeholders": {
+      "cadence": {
+        "type": "String"
+      }
+    }
+  },
+  "noBudgetsForCadenceBody": "Pilih periode lain atau tambahkan sekarang."
 }

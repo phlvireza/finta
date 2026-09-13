@@ -33,11 +33,8 @@ import 'transaction_provider.dart';
 /// - [goals] / [debts] reload progress that is derived from transactions
 ///   tagged with a `goalId` / `debtId`.
 ///
-/// Deliberately *not* used by the narrow sites: stopping a recurring template
-/// only unlinks occurrences (badges change, no money moves), and deleting a
-/// single transaction goes through [TransactionProvider.deleteTransaction],
-/// which already updates its own lists in memory. Reaching for the full chain
-/// there would be wasted queries, not extra safety.
+/// Single-transaction deletion also uses this chain so a failed post-write
+/// refresh can recover through the same authoritative reads as a save.
 Future<void> refreshAfterLedgerMutation(
   BuildContext context, {
   bool allTransactions = false,

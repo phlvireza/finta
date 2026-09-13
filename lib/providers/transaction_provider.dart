@@ -1,3 +1,4 @@
+import '../core/utils/deletion_operation.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/transaction_model.dart';
@@ -364,9 +365,13 @@ class TransactionProvider extends ChangeNotifier {
       _removeFromMemory(target);
     }
 
-    _hasAnyTransactions = await _repository.hasAnyNonTransferTransaction();
-
-    notifyListeners();
+    try {
+      _hasAnyTransactions = await _repository.hasAnyNonTransferTransaction();
+    } catch (error) {
+      throw DeletionCommittedException(error);
+    } finally {
+      notifyListeners();
+    }
   }
 
   void _removeFromMemory(TransactionModel transaction) {

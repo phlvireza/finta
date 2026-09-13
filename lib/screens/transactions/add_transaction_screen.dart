@@ -1,3 +1,4 @@
+import 'transaction_actions.dart';
 import '../../widgets/transaction_save_recovery.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -51,6 +52,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   bool _isSubscription = false;
 
   bool _isSaving = false;
+  bool _isDeleting = false;
   Future<void> Function()? _finishSave;
   bool _autoValidate = false;
 
@@ -106,7 +108,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Future<void> _save() async {
-    if (_isSaving || _finishSave != null) return;
+    if (_isSaving || _isDeleting || _finishSave != null) return;
     setState(() => _autoValidate = true);
     if (!_formKey.currentState!.validate()) {
       return;
@@ -261,6 +263,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     }
   }
 
+  Future<void> _delete() async {
+    if (_isSaving || _isDeleting || _finishSave != null) return;
+    setState(() => _isDeleting = true);
+    final outcome = await confirmDeleteTransaction(
+      context,
+      widget.editTransaction!,
+    );
+    if (!mounted) return;
+    if (outcome == DeletionOutcome.committed) {
+      Navigator.of(context).pop();
+    } else {
+      setState(() => _isDeleting = false);
+    }
+  }
+
   /// Saves the form's current values as a one-tap quick-add template.
   /// Only offered for a brand-new entry — templating an edit-in-progress
   /// would be an odd, easy-to-mispress action next to Save.
@@ -299,6 +316,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
+          if (isEditing)
+            TextButton.icon(
+              onPressed: _isSaving || _isDeleting ? null : _delete,
+              icon: const Icon(Icons.delete_outline),
+              label: Text(loc.delete),
+              style: TextButton.styleFrom(
+                foregroundColor: theme.colorScheme.error,
+              ),
+            ),
           if (!isEditing)
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -342,7 +368,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             child: _isSaving
                 ? const Center(child: CircularProgressIndicator())
                 : ElevatedButton(
-                    onPressed: _save,
+                    onPressed: _isDeleting ? null : _save,
                     child: Text(
                       isEditing ? loc.saveChanges : loc.saveTransaction,
                     ),

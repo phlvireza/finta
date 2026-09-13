@@ -1,3 +1,5 @@
+import 'package:flutter_slidable/flutter_slidable.dart';
+import '../transactions/transaction_actions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/budget_provider.dart';
@@ -42,6 +44,7 @@ class BudgetDetailScreen extends StatefulWidget {
 class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
   List<TransactionModel>? _transactions;
   String? _error;
+  int _loadGeneration = 0;
 
   /// The status the loaded list belongs to. [BudgetProvider] rebuilds its
   /// `BudgetStatus` objects from scratch on every `loadBudgets`, and every
@@ -62,7 +65,9 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final status = context.read<BudgetProvider>().budgetStatuses[widget.budgetId];
+    final status = context
+        .read<BudgetProvider>()
+        .budgetStatuses[widget.budgetId];
     if (status != null && !identical(status, _loadedFor)) {
       _loadedFor = status;
       _load(status);
@@ -71,18 +76,19 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
 
   Future<void> _load(BudgetStatus status) async {
     final provider = context.read<BudgetProvider>();
+    final generation = ++_loadGeneration;
     try {
       final items = await provider.transactionsFor(
         status.budget,
         period: status.period,
       );
-      if (!mounted) return;
+      if (!mounted || generation != _loadGeneration) return;
       setState(() {
         _transactions = items;
         _error = null;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || generation != _loadGeneration) return;
       setState(() => _error = e.toString());
     }
   }
@@ -151,7 +157,9 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
     final loc = AppLocalizations.of(context)!;
     final settings = context.watch<SettingsProvider>();
     final categories = context.watch<CategoryProvider>();
-    final status = context.watch<BudgetProvider>().budgetStatuses[widget.budgetId];
+    final status = context
+        .watch<BudgetProvider>()
+        .budgetStatuses[widget.budgetId];
 
     // Only active budgets get a status. Deleting the budget from elsewhere,
     // or a one-off budget being retired while this screen is open, lands
@@ -206,18 +214,13 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
               useDecimals: settings.currencyUseDecimals,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
-            child: Text(
-              AppDateUtils.formatPeriodRange(status.period.start, status.period.end),
-              style: theme.textTheme.bodySmall,
-            ),
-          ),
           const SizedBox(height: AppConstants.spacingLg),
           // Always offered, including once the budget is exceeded — going over
           // is exactly when the next expense still needs recording.
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppConstants.spacingLg,
+            ),
             child: SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -229,7 +232,9 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
           ),
           const SizedBox(height: AppConstants.spacingXl),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppConstants.spacingLg,
+            ),
             child: Text(loc.transactions, style: theme.textTheme.titleMedium),
           ),
           ..._buildTransactionSection(context, loc, status),
@@ -282,33 +287,59 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
       ];
     }
 
-    final grouped = context.read<TransactionProvider>().getGroupedTransactions(transactions);
+    final grouped = context.read<TransactionProvider>().getGroupedTransactions(
+      transactions,
+    );
     return grouped.entries
-        .map((entry) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppConstants.spacingLg,
-                    AppConstants.spacingMd,
-                    AppConstants.spacingLg,
-                    0,
-                  ),
-                  child: DateGroupHeader(date: entry.key, transactions: entry.value),
+        .map(
+          (entry) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppConstants.spacingLg,
+                  AppConstants.spacingMd,
+                  AppConstants.spacingLg,
+                  0,
                 ),
-                // `dense: true` drops TransactionTile's own horizontal inset,
-                // so the parent has to supply it — otherwise the rows sit flush
-                // against the screen edge while the header above them is at 16.
-                ...entry.value.map(
-                  (tx) => Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppConstants.spacingLg,
+                child: DateGroupHeader(
+                  date: entry.key,
+                  transactions: entry.value,
+                ),
+              ),
+              // `dense: true` drops TransactionTile's own horizontal inset,
+              // so the parent has to supply it — otherwise the rows sit flush
+              // against the screen edge while the header above them is at 16.
+              ...entry.value.map(
+                (tx) => Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.spacingLg,
+                  ),
+                  child: Slidable(
+                    key: ValueKey(tx.id),
+                    endActionPane: ActionPane(
+                      motion: const ScrollMotion(),
+                      extentRatio: 0.25,
+                      children: [
+                        SlidableAction(
+                          onPressed: (_) =>
+                              confirmDeleteTransaction(context, tx),
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                          foregroundColor: Theme.of(
+                            context,
+                          ).colorScheme.onError,
+                          icon: Icons.delete,
+                          label: loc.delete,
+                        ),
+                      ],
                     ),
                     child: TransactionTile(transaction: tx, dense: true),
                   ),
                 ),
-              ],
-            ))
+              ),
+            ],
+          ),
+        )
         .toList();
   }
 }

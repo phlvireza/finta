@@ -770,16 +770,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetPeriod => 'Period';
 
   @override
-  String get budgetRepeat => 'Repeat every period';
+  String get budgetRepeat => 'Repeat this budget';
 
   @override
   String budgetRepeatRenewsOn(String date) {
-    return 'Renews $date.';
+    return 'Repeats every period · Renews $date';
   }
 
   @override
   String budgetRepeatEndsOn(String date) {
-    return 'Ends $date. Covers this period only.';
+    return 'One-time budget · Ends $date';
   }
 
   @override
@@ -1624,11 +1624,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get squiEmptyDebtsBody => 'Squi has nothing to keep track of here.';
 
   @override
-  String get squiEmptyBudgets => 'No budgets yet';
+  String get squiEmptyBudgets => 'Squi is waiting for your first budget';
 
   @override
   String get squiEmptyBudgetsBody =>
-      'Set a limit and Squi will help you keep an eye on it.';
+      'Set a spending limit and Squi will help you stay on track.';
 
   @override
   String get squiQuietSubscriptions => 'Nothing scheduled';
@@ -1700,4 +1700,92 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get startupFailed => 'Unable to open your data. Please try again.';
+
+  @override
+  String get budgetHealth => 'Budget health';
+
+  @override
+  String activeBudgetCount(int count) {
+    return '$count active budgets';
+  }
+
+  @override
+  String get budgetOverLimit => 'Over limit';
+
+  @override
+  String get budgetNeedsAttention => 'Needs attention';
+
+  @override
+  String get budgetWithinLimits => 'Within limits';
+
+  @override
+  String get budgetLimitReached => 'Limit reached';
+
+  @override
+  String get noAvailableBudget => 'No available budget';
+
+  @override
+  String budgetOverspentAmount(String amount) {
+    return '$amount over limit';
+  }
+
+  @override
+  String get budgetTimeMarker => 'Marker = time elapsed';
+
+  @override
+  String get budgetHealthSubtitle =>
+      'Each budget compared with its own limit and period.';
+
+  @override
+  String get budgetPriority => 'Budgets to watch';
+
+  @override
+  String get budgetAllHealthy => 'Your budgets are within limits';
+
+  @override
+  String get transactionDeleted => 'Transaction deleted';
+
+  @override
+  String get deletedRefreshFailed =>
+      'The transaction was deleted. Refresh failed. Retry to update your balances and summaries.';
+
+  @override
+  String get budgetOverByLabel => 'Over budget by';
+
+  @override
+  String get budgetedLabel => 'Budgeted';
+
+  @override
+  String get budgetTotalUsage => 'Total budget usage';
+
+  @override
+  String get budgetTotalProgressHidden =>
+      'Total budget progress. Amounts are hidden.';
+
+  @override
+  String get budgetChartTitle => 'Budget versus spending';
+
+  @override
+  String get budgetChartHint => 'Tap a bar for exact amounts';
+
+  @override
+  String get budgetChartHiddenAmounts =>
+      'Budget comparison. Amounts are hidden.';
+
+  @override
+  String get budgetCadenceSelector => 'Budget period';
+
+  @override
+  String get budgetDetailsTitle => 'Budget details';
+
+  @override
+  String get budgetStaleDataError => 'These figures may be out of date.';
+
+  @override
+  String noBudgetsForCadence(String cadence) {
+    return 'Squi is waiting for a $cadence budget';
+  }
+
+  @override
+  String get noBudgetsForCadenceBody => 'Choose another period or add one now.';
 }

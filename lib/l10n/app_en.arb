@@ -361,8 +361,8 @@
   "budgetName": "Budget name",
   "budgetNameOptional": "Budget name (optional)",
   "budgetPeriod": "Period",
-  "budgetRepeat": "Repeat every period",
-  "budgetRepeatRenewsOn": "Renews {date}.",
+  "budgetRepeat": "Repeat this budget",
+  "budgetRepeatRenewsOn": "Repeats every period · Renews {date}",
   "@budgetRepeatRenewsOn": {
     "placeholders": {
       "date": {
@@ -370,7 +370,7 @@
       }
     }
   },
-  "budgetRepeatEndsOn": "Ends {date}. Covers this period only.",
+  "budgetRepeatEndsOn": "One-time budget · Ends {date}",
   "@budgetRepeatEndsOn": {
     "placeholders": {
       "date": {
@@ -921,8 +921,8 @@
   "squiEmptyGoalsBody": "Squi is good at saving. Pick something worth saving for.",
   "squiEmptyDebts": "Nothing owed",
   "squiEmptyDebtsBody": "Squi has nothing to keep track of here.",
-  "squiEmptyBudgets": "No budgets yet",
-  "squiEmptyBudgetsBody": "Set a limit and Squi will help you keep an eye on it.",
+  "squiEmptyBudgets": "Squi is waiting for your first budget",
+  "squiEmptyBudgetsBody": "Set a spending limit and Squi will help you stay on track.",
   "squiQuietSubscriptions": "Nothing scheduled",
   "squiQuietSubscriptionsBody": "Nothing to track yet. Squi is napping.",
   "squiQuietRecurring": "Nothing repeating",
@@ -948,5 +948,52 @@
   "squiMomentDismiss": "Nice",
   "savedRefreshFailed": "Your transaction is saved, but the screen could not refresh. Retry to update the screen.",
   "transactionSaved": "Transaction saved",
-  "startupFailed": "Unable to open your data. Please try again."
+  "startupFailed": "Unable to open your data. Please try again.",
+  "budgetHealth": "Budget health",
+  "activeBudgetCount": "{count} active budgets",
+  "@activeBudgetCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "budgetOverLimit": "Over limit",
+  "budgetNeedsAttention": "Needs attention",
+  "budgetWithinLimits": "Within limits",
+  "budgetLimitReached": "Limit reached",
+  "noAvailableBudget": "No available budget",
+  "budgetOverspentAmount": "{amount} over limit",
+  "@budgetOverspentAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetTimeMarker": "Marker = time elapsed",
+  "budgetHealthSubtitle": "Each budget compared with its own limit and period.",
+  "budgetPriority": "Budgets to watch",
+  "budgetAllHealthy": "Your budgets are within limits",
+  "transactionDeleted": "Transaction deleted",
+  "deletedRefreshFailed": "The transaction was deleted. Refresh failed. Retry to update your balances and summaries.",
+  "budgetOverByLabel": "Over budget by",
+  "budgetedLabel": "Budgeted",
+  "budgetTotalUsage": "Total budget usage",
+  "budgetTotalProgressHidden": "Total budget progress. Amounts are hidden.",
+  "budgetChartTitle": "Budget versus spending",
+  "budgetChartHint": "Tap a bar for exact amounts",
+  "budgetChartHiddenAmounts": "Budget comparison. Amounts are hidden.",
+  "budgetCadenceSelector": "Budget period",
+  "budgetDetailsTitle": "Budget details",
+  "budgetStaleDataError": "These figures may be out of date.",
+  "noBudgetsForCadence": "Squi is waiting for a {cadence} budget",
+  "@noBudgetsForCadence": {
+    "placeholders": {
+      "cadence": {
+        "type": "String"
+      }
+    }
+  },
+  "noBudgetsForCadenceBody": "Choose another period or add one now."
 }
