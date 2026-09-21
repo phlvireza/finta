@@ -1274,6 +1274,18 @@ abstract class AppLocalizations {
   /// **'Opening Balance'**
   String get openingBalance;
 
+  /// No description provided for @currentBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Balance'**
+  String get currentBalance;
+
+  /// No description provided for @amountOwedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount Owed'**
+  String get amountOwedLabel;
+
   /// No description provided for @creditLimitOptional.
   ///
   /// In en, this message translates to:

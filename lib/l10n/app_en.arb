@@ -280,6 +280,8 @@
   "accountName": "Account Name",
   "accountType": "Account Type",
   "openingBalance": "Opening Balance",
+  "currentBalance": "Current Balance",
+  "amountOwedLabel": "Amount Owed",
   "creditLimitOptional": "Credit Limit (optional)",
   "includeInTotal": "Include in totals",
   "includeInTotalDescription": "Counts toward net worth and available cash",

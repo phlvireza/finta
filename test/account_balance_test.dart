@@ -11,7 +11,10 @@ import 'package:finta/core/database/migrations.dart';
 /// account's balance is a plain income/expense sum, and reporting
 /// aggregates must exclude `isTransfer` rows.
 Future<Database> _openTestDb() async {
-  final db = await databaseFactoryFfi.openDatabase(':memory:', options: OpenDatabaseOptions(version: 1));
+  final db = await databaseFactoryFfi.openDatabase(
+    ':memory:',
+    options: OpenDatabaseOptions(version: 1),
+  );
   await db.execute(Migrations.createAccountsTable);
   await db.execute('''
     CREATE TABLE transactions (
@@ -27,18 +30,23 @@ Future<Database> _openTestDb() async {
 }
 
 Future<Map<String, double>> _getAllBalances(Database db) async {
-  final accounts = await db.query('accounts', columns: ['id', 'openingBalance']);
+  final accounts = await db.query(
+    'accounts',
+    columns: ['id', 'openingBalance'],
+  );
   final sums = await db.rawQuery(
     'SELECT accountId, type, SUM(amount) as total FROM transactions GROUP BY accountId, type',
   );
   final balances = <String, double>{
-    for (final a in accounts) a['id'] as String: (a['openingBalance'] as num).toDouble(),
+    for (final a in accounts)
+      a['id'] as String: (a['openingBalance'] as num).toDouble(),
   };
   for (final row in sums) {
     final accountId = row['accountId'] as String?;
     if (accountId == null || !balances.containsKey(accountId)) continue;
     final total = (row['total'] as num).toDouble();
-    balances[accountId] = balances[accountId]! + (row['type'] == 'income' ? total : -total);
+    balances[accountId] =
+        balances[accountId]! + (row['type'] == 'income' ? total : -total);
   }
   return balances;
 }
@@ -57,7 +65,11 @@ void main() {
     databaseFactory = databaseFactoryFfi;
   });
 
-  Future<void> insertAccount(Database db, String id, {double openingBalance = 0}) {
+  Future<void> insertAccount(
+    Database db,
+    String id, {
+    double openingBalance = 0,
+  }) {
     return db.insert('accounts', {
       'id': id,
       'name': id,
@@ -78,6 +90,7 @@ void main() {
     double amount,
     String accountId, {
     bool isTransfer = false,
+    String date = '2026-07-01',
   }) {
     return db.insert('transactions', {
       'id': id,
@@ -85,55 +98,117 @@ void main() {
       'amount': amount,
       'accountId': accountId,
       'isTransfer': isTransfer ? 1 : 0,
-      'date': '2026-07-01',
+      'date': date,
     });
   }
 
-  test('account balance is opening balance plus income minus expense', () async {
-    final db = await _openTestDb();
-    await insertAccount(db, 'a1', openingBalance: 100000);
-    await insertTx(db, 'tx1', 'income', 50000, 'a1');
-    await insertTx(db, 'tx2', 'expense', 20000, 'a1');
+  test(
+    'account balance is opening balance plus income minus expense',
+    () async {
+      final db = await _openTestDb();
+      await insertAccount(db, 'a1', openingBalance: 100000);
+      await insertTx(db, 'tx1', 'income', 50000, 'a1');
+      await insertTx(db, 'tx2', 'expense', 20000, 'a1');
 
-    final balances = await _getAllBalances(db);
-    expect(balances['a1'], 130000);
+      final balances = await _getAllBalances(db);
+      expect(balances['a1'], 130000);
 
-    await db.close();
-  });
+      await db.close();
+    },
+  );
 
-  test('a transfer moves the exact amount between two accounts without leaking', () async {
-    final db = await _openTestDb();
-    await insertAccount(db, 'from', openingBalance: 100000);
-    await insertAccount(db, 'to', openingBalance: 0);
+  test(
+    'account balance keeps transactions from previous budget periods',
+    () async {
+      final db = await _openTestDb();
+      await insertAccount(db, 'a1', openingBalance: 100000);
+      await insertTx(
+        db,
+        'old-income',
+        'income',
+        50000,
+        'a1',
+        date: '2025-01-01',
+      );
+      await insertTx(
+        db,
+        'current-expense',
+        'expense',
+        20000,
+        'a1',
+        date: '2026-07-01',
+      );
 
-    // A transfer is an expense leg on the source + an income leg on the
-    // destination, both isTransfer — exactly what TransactionProvider.
-    // addTransfer posts.
-    await insertTx(db, 'leg1', 'expense', 30000, 'from', isTransfer: true);
-    await insertTx(db, 'leg2', 'income', 30000, 'to', isTransfer: true);
+      final balances = await _getAllBalances(db);
+      expect(
+        balances['a1'],
+        130000,
+        reason:
+            'budget periods filter reports, not the all-time account ledger',
+      );
 
-    final balances = await _getAllBalances(db);
-    expect(balances['from'], 70000);
-    expect(balances['to'], 30000);
-    // Net worth (sum of both accounts) is unchanged by the transfer.
-    expect(balances['from']! + balances['to']!, 100000);
+      await db.close();
+    },
+  );
 
-    await db.close();
-  });
+  test(
+    'a transfer moves the exact amount between two accounts without leaking',
+    () async {
+      final db = await _openTestDb();
+      await insertAccount(db, 'from', openingBalance: 100000);
+      await insertAccount(db, 'to', openingBalance: 0);
+
+      // A transfer is an expense leg on the source + an income leg on the
+      // destination, both isTransfer — exactly what TransactionProvider.
+      // addTransfer posts.
+      await insertTx(db, 'leg1', 'expense', 30000, 'from', isTransfer: true);
+      await insertTx(db, 'leg2', 'income', 30000, 'to', isTransfer: true);
+
+      final balances = await _getAllBalances(db);
+      expect(balances['from'], 70000);
+      expect(balances['to'], 30000);
+      // Net worth (sum of both accounts) is unchanged by the transfer.
+      expect(balances['from']! + balances['to']!, 100000);
+
+      await db.close();
+    },
+  );
 
   test('income/expense reporting aggregates exclude isTransfer rows', () async {
     final db = await _openTestDb();
     await insertAccount(db, 'a1');
     await insertAccount(db, 'a2');
     await insertTx(db, 'tx1', 'expense', 45000, 'a1'); // real spend
-    await insertTx(db, 'leg1', 'expense', 500000, 'a1', isTransfer: true); // transfer out
-    await insertTx(db, 'leg2', 'income', 500000, 'a2', isTransfer: true); // transfer in
+    await insertTx(
+      db,
+      'leg1',
+      'expense',
+      500000,
+      'a1',
+      isTransfer: true,
+    ); // transfer out
+    await insertTx(
+      db,
+      'leg2',
+      'income',
+      500000,
+      'a2',
+      isTransfer: true,
+    ); // transfer in
 
     final totalExpense = await _sumExcludingTransfers(db, 'expense');
     final totalIncome = await _sumExcludingTransfers(db, 'income');
 
-    expect(totalExpense, 45000, reason: 'the 500k transfer must not count as spending');
-    expect(totalIncome, 0, reason: 'the 500k transfer must not count as income');
+    expect(
+      totalExpense,
+      45000,
+      reason: 'the 500k transfer must not count as spending',
+    );
+    expect(
+      totalIncome,
+      0,
+      reason: 'the 500k transfer must not count as income',
+    );
 
     await db.close();
   });

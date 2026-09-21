@@ -628,6 +628,12 @@ class AppLocalizationsId extends AppLocalizations {
   String get openingBalance => 'Saldo Awal';
 
   @override
+  String get currentBalance => 'Saldo Saat Ini';
+
+  @override
+  String get amountOwedLabel => 'Jumlah Utang';
+
+  @override
   String get creditLimitOptional => 'Limit Kartu Kredit (opsional)';
 
   @override

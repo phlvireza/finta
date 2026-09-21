@@ -23,14 +23,16 @@ class AccountForm extends StatefulWidget {
 class _AccountFormState extends State<AccountForm> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _openingBalanceController = TextEditingController();
+  final _balanceController = TextEditingController();
   final _creditLimitController = TextEditingController();
+  double? _currentBalanceOnOpen;
+  String _initialBalanceText = '0';
+  bool _balanceShownAsDebt = false;
   String _type = 'cash';
   String _selectedColor = '#C87941';
   bool _includeInTotal = true;
   bool _autoValidate = false;
   bool _isSaving = false;
-
 
   @override
   void initState() {
@@ -42,10 +44,16 @@ class _AccountFormState extends State<AccountForm> {
       _selectedColor = account.color;
       _includeInTotal = account.includeInTotal;
       final settings = context.read<SettingsProvider>();
-      _openingBalanceController.text = formatAmount(
-        account.openingBalance,
+      final currentBalance = context.read<AccountProvider>().balanceOf(
+        account.id,
+      );
+      _currentBalanceOnOpen = currentBalance;
+      _balanceShownAsDebt = account.isCreditCard && currentBalance < 0;
+      _initialBalanceText = formatAmount(
+        _balanceShownAsDebt ? -currentBalance : currentBalance,
         useDecimals: settings.currencyUseDecimals,
       );
+      _balanceController.text = _initialBalanceText;
       if (account.creditLimit != null) {
         _creditLimitController.text = formatAmount(
           account.creditLimit!,
@@ -53,14 +61,14 @@ class _AccountFormState extends State<AccountForm> {
         );
       }
     } else {
-      _openingBalanceController.text = '0';
+      _balanceController.text = _initialBalanceText;
     }
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _openingBalanceController.dispose();
+    _balanceController.dispose();
     _creditLimitController.dispose();
     super.dispose();
   }
@@ -73,13 +81,29 @@ class _AccountFormState extends State<AccountForm> {
     final loc = AppLocalizations.of(context)!;
     final provider = context.read<AccountProvider>();
     final name = _nameController.text.trim();
-    final openingBalance = parseFormattedAmount(_openingBalanceController.text);
-    final creditLimit = _type == 'credit_card' && _creditLimitController.text.isNotEmpty
+    final enteredBalance = parseFormattedAmount(_balanceController.text);
+    final creditLimit =
+        _type == 'credit_card' && _creditLimitController.text.isNotEmpty
         ? parseFormattedAmount(_creditLimitController.text)
         : null;
 
     try {
       if (widget.accountToEdit != null) {
+        final account = widget.accountToEdit!;
+        final currentBalance = _currentBalanceOnOpen!;
+        // The form exposes the same live balance shown on Home, but the
+        // database stores an opening balance plus immutable transaction
+        // history. Reconcile only the baseline by the user's correction so
+        // saving never duplicates, rewrites, or deletes transactions.
+        //
+        // Preserve the exact stored value when the formatted field was not
+        // touched. This avoids rounding a hidden fraction merely by opening
+        // and saving the form after switching to a zero-decimal currency.
+        final openingBalance = _balanceController.text == _initialBalanceText
+            ? account.openingBalance
+            : account.openingBalance +
+                  (_balanceShownAsDebt ? -enteredBalance : enteredBalance) -
+                  currentBalance;
         final updated = widget.accountToEdit!.copyWith(
           name: name,
           type: _type,
@@ -94,7 +118,7 @@ class _AccountFormState extends State<AccountForm> {
         await provider.addAccount(
           name: name,
           type: _type,
-          openingBalance: openingBalance,
+          openingBalance: enteredBalance,
           color: _selectedColor,
           creditLimit: creditLimit,
           includeInTotal: _includeInTotal,
@@ -105,9 +129,9 @@ class _AccountFormState extends State<AccountForm> {
       if (mounted) {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(loc.errorFailedToSave)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(loc.errorFailedToSave)));
       }
     }
   }
@@ -143,14 +167,18 @@ class _AccountFormState extends State<AccountForm> {
     // body between them scrolls).
     return Form(
       key: _formKey,
-      autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+      autovalidateMode: _autoValidate
+          ? AutovalidateMode.always
+          : AutovalidateMode.disabled,
       child: FormSheet(
         title: widget.accountToEdit != null ? loc.editAccount : loc.addAccount,
         action: _isSaving
             ? const Center(child: CircularProgressIndicator())
             : ElevatedButton(onPressed: _save, child: Text(loc.save)),
         body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppConstants.spacingLg,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,10 +191,15 @@ class _AccountFormState extends State<AccountForm> {
                     height: 48,
                     decoration: BoxDecoration(
                       color: colorValue.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+                      borderRadius: BorderRadius.circular(
+                        AppConstants.radiusMd,
+                      ),
                       border: Border.all(color: colorValue),
                     ),
-                    child: Icon(AccountModel.iconForType(_type), color: colorValue),
+                    child: Icon(
+                      AccountModel.iconForType(_type),
+                      color: colorValue,
+                    ),
                   ),
                   const SizedBox(width: AppConstants.spacingLg),
                   Expanded(
@@ -177,14 +210,17 @@ class _AccountFormState extends State<AccountForm> {
                         filled: true,
                         fillColor: theme.colorScheme.surfaceContainerHighest,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+                          borderRadius: BorderRadius.circular(
+                            AppConstants.radiusMd,
+                          ),
                           borderSide: BorderSide.none,
                         ),
                       ),
                       textCapitalization: TextCapitalization.words,
                       maxLength: 30,
-                      validator: (val) =>
-                          (val == null || val.trim().isEmpty) ? loc.pleaseEnterName : null,
+                      validator: (val) => (val == null || val.trim().isEmpty)
+                          ? loc.pleaseEnterName
+                          : null,
                     ),
                   ),
                 ],
@@ -209,8 +245,12 @@ class _AccountFormState extends State<AccountForm> {
               const SizedBox(height: AppConstants.spacingLg),
 
               KeypadAmountField(
-                controller: _openingBalanceController,
-                labelText: loc.openingBalance,
+                controller: _balanceController,
+                labelText: _balanceShownAsDebt
+                    ? loc.amountOwedLabel
+                    : loc.currentBalance,
+                allowNegative: !_balanceShownAsDebt,
+                zeroWhenEmpty: true,
                 validator: optionalAmountValidator(loc),
               ),
 

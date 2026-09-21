@@ -627,6 +627,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openingBalance => 'Opening Balance';
 
   @override
+  String get currentBalance => 'Current Balance';
+
+  @override
+  String get amountOwedLabel => 'Amount Owed';
+
+  @override
   String get creditLimitOptional => 'Credit Limit (optional)';
 
   @override

@@ -36,6 +36,14 @@ class KeypadAmountField extends StatelessWidget {
   /// out or owed.
   final bool isIncome;
 
+  /// Whether the keypad may finalize a negative result. Account balances can
+  /// be overdrawn; ordinary transaction, goal, and debt amounts cannot.
+  final bool allowNegative;
+
+  /// Whether clearing every digit should show an explicit zero after the
+  /// keypad closes. Optional fields keep the default empty-string behavior.
+  final bool zeroWhenEmpty;
+
   final FormFieldValidator<String>? validator;
 
   const KeypadAmountField({
@@ -44,6 +52,8 @@ class KeypadAmountField extends StatelessWidget {
     required this.labelText,
     this.keypadLabel,
     this.isIncome = false,
+    this.allowNegative = false,
+    this.zeroWhenEmpty = false,
     this.validator,
   });
 
@@ -57,6 +67,8 @@ class KeypadAmountField extends StatelessWidget {
       context,
       controller: controller,
       isIncome: isIncome,
+      allowNegative: allowNegative,
+      zeroWhenEmpty: zeroWhenEmpty,
       labelOverride: keypadLabel ?? labelText,
     );
   }
@@ -111,7 +123,9 @@ FormFieldValidator<String> optionalAmountValidator(AppLocalizations loc) {
   return (value) {
     if (value == null || value.trim().isEmpty) return null;
     final amount = parseFormattedAmount(value);
-    if (amount > AppConstants.maxAmount) return loc.pleaseEnterValidAmount;
+    if (amount.abs() > AppConstants.maxAmount) {
+      return loc.pleaseEnterValidAmount;
+    }
     return null;
   };
 }

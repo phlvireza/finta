@@ -278,6 +278,8 @@
   "accountName": "Nama Akun",
   "accountType": "Jenis Akun",
   "openingBalance": "Saldo Awal",
+  "currentBalance": "Saldo Saat Ini",
+  "amountOwedLabel": "Jumlah Utang",
   "creditLimitOptional": "Limit Kartu Kredit (opsional)",
   "includeInTotal": "Sertakan dalam total",
   "includeInTotalDescription": "Dihitung dalam kekayaan bersih dan kas tersedia",

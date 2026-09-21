@@ -29,6 +29,7 @@ import '../l10n/app_localizations.dart';
 class AmountKeypad extends StatefulWidget {
   final TextEditingController controller;
   final bool isIncome;
+  final bool allowNegative;
   final String? labelOverride;
   final VoidCallback onDone;
 
@@ -37,20 +38,24 @@ class AmountKeypad extends StatefulWidget {
     required this.controller,
     required this.isIncome,
     required this.onDone,
+    this.allowNegative = false,
     this.labelOverride,
   });
 
   /// Opens the keypad as a near-full-height modal sheet. Tapping the scrim,
   /// swiping down, or the system back gesture all dismiss it the same as
-  /// Done — [_AmountKeypadState.dispose] finalizes whatever was typed
-  /// either way, so there's no path that discards it.
+  /// Done. Once the route closes, the shared controller is finalized so
+  /// there is no dismissal path that discards what was typed.
   static Future<void> show(
     BuildContext context, {
     required TextEditingController controller,
     required bool isIncome,
+    bool allowNegative = false,
+    bool zeroWhenEmpty = false,
     String? labelOverride,
-  }) {
-    return showModalBottomSheet<void>(
+  }) async {
+    final useDecimals = context.read<SettingsProvider>().currencyUseDecimals;
+    await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -60,10 +65,53 @@ class AmountKeypad extends StatefulWidget {
         child: AmountKeypad(
           controller: controller,
           isIncome: isIncome,
+          allowNegative: allowNegative,
           labelOverride: labelOverride,
           onDone: () => Navigator.of(sheetContext).pop(),
         ),
       ),
+    );
+    _finalizeController(
+      controller,
+      allowNegative: allowNegative,
+      zeroWhenEmpty: zeroWhenEmpty,
+      useDecimals: useDecimals,
+    );
+  }
+
+  static void _finalizeController(
+    TextEditingController controller, {
+    required bool allowNegative,
+    required bool zeroWhenEmpty,
+    required bool useDecimals,
+  }) {
+    var expr = controller.text.replaceAll(',', '');
+    while (expr.isNotEmpty &&
+        (expr.endsWith('.') || '+-*/'.contains(expr[expr.length - 1]))) {
+      expr = expr.substring(0, expr.length - 1);
+    }
+
+    if (expr.isNotEmpty && RegExp(r'[+\-*/]').hasMatch(expr)) {
+      final result = evaluateExpression(expr);
+      if (result != null &&
+          (allowNegative || result >= 0) &&
+          !result.isNaN &&
+          !result.isInfinite) {
+        expr = formatAmount(
+          result,
+          useDecimals: useDecimals,
+        ).replaceAll(',', '');
+      } else {
+        expr = RegExp(r'^-?\d+(\.\d+)?').stringMatch(expr) ?? '';
+      }
+    }
+
+    final text = expr.isEmpty && zeroWhenEmpty
+        ? '0'
+        : formatExpressionWithSeparators(expr);
+    controller.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
     );
   }
 
@@ -71,15 +119,12 @@ class AmountKeypad extends StatefulWidget {
   State<AmountKeypad> createState() => _AmountKeypadState();
 }
 
-class _AmountKeypadState extends State<AmountKeypad> with SingleTickerProviderStateMixin {
+class _AmountKeypadState extends State<AmountKeypad>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _fadeController;
 
-  // Captured once in initState rather than read via context in dispose —
-  // dispose() runs on the way out of the tree, and _finalizeOnClose() (the
-  // one thing that needs this on a swipe/scrim dismissal) runs there.
-  // Reading through `context.read` is documented as safe even in dispose,
-  // but this avoids relying on that and matches how the same concern was
-  // handled for the recap screen's AnalyticsProvider.
+  // Captured once in initState so expression evaluation remains consistent
+  // with the currency settings used when the keypad was opened.
   late final bool _useDecimals;
 
   String _expression = '';
@@ -155,11 +200,14 @@ class _AmountKeypadState extends State<AmountKeypad> with SingleTickerProviderSt
     setState(() {
       // A negative subtotal is not an amount. Keep the expression on screen
       // so the user can fix it rather than silently clamping to zero.
-      if (result < 0) {
+      if (result < 0 && !widget.allowNegative) {
         _invalid = true;
         return;
       }
-      _expression = formatAmount(result, useDecimals: _useDecimals).replaceAll(',', '');
+      _expression = formatAmount(
+        result,
+        useDecimals: _useDecimals,
+      ).replaceAll(',', '');
       _invalid = false;
       _syncController();
     });
@@ -173,49 +221,8 @@ class _AmountKeypadState extends State<AmountKeypad> with SingleTickerProviderSt
     widget.onDone();
   }
 
-  /// Best-effort finalize for every dismissal path that isn't Done — swipe
-  /// down, tapping the scrim, the system back gesture. Every keystroke is
-  /// mirrored straight into the shared controller as it's typed, so without
-  /// this an abandoned "500+" or an un-equals'd "500+500" would be read
-  /// back as 0 by `parseFormattedAmount` instead of 500 or 1000.
-  ///
-  /// Safe to run unconditionally, including after a normal Done: trimming
-  /// or evaluating an already-clean number is a no-op.
-  void _finalizeOnClose() {
-    var expr = _expression;
-    while (expr.isNotEmpty &&
-        (expr.endsWith('.') || '+-*/'.contains(expr[expr.length - 1]))) {
-      expr = expr.substring(0, expr.length - 1);
-    }
-    if (expr.isEmpty) {
-      widget.controller.value = const TextEditingValue(text: '');
-      return;
-    }
-
-    if (RegExp(r'[+\-*/]').hasMatch(expr)) {
-      final result = evaluateExpression(expr);
-      if (result != null && result >= 0 && !result.isNaN && !result.isInfinite) {
-        expr = formatAmount(result, useDecimals: _useDecimals).replaceAll(',', '');
-      } else {
-        // Division by zero or similar is the only way evaluation still
-        // fails here — `applyKeypadKey` never lets two operators or two
-        // decimal points land next to each other. Fall back to whatever
-        // complete leading number can be salvaged rather than losing the
-        // entry outright.
-        expr = RegExp(r'^-?\d+(\.\d+)?').stringMatch(expr) ?? '';
-      }
-    }
-
-    final text = formatExpressionWithSeparators(expr);
-    widget.controller.value = TextEditingValue(
-      text: text,
-      selection: TextSelection.collapsed(offset: text.length),
-    );
-  }
-
   @override
   void dispose() {
-    _finalizeOnClose();
     _fadeController.dispose();
     super.dispose();
   }
@@ -236,7 +243,9 @@ class _AmountKeypadState extends State<AmountKeypad> with SingleTickerProviderSt
       child: Material(
         color: theme.colorScheme.surface,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppConstants.radiusXl)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppConstants.radiusXl),
+          ),
         ),
         clipBehavior: Clip.antiAlias,
         child: SafeArea(
@@ -254,13 +263,20 @@ class _AmountKeypadState extends State<AmountKeypad> with SingleTickerProviderSt
               ),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.spacingLg,
+                  ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        widget.labelOverride ?? (widget.isIncome ? loc.incomeAmount : loc.expenseAmount),
-                        style: theme.textTheme.labelMedium?.copyWith(color: color),
+                        widget.labelOverride ??
+                            (widget.isIncome
+                                ? loc.incomeAmount
+                                : loc.expenseAmount),
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: color,
+                        ),
                       ),
                       const SizedBox(height: AppConstants.spacingSm),
                       ValueListenableBuilder<TextEditingValue>(
@@ -275,12 +291,16 @@ class _AmountKeypadState extends State<AmountKeypad> with SingleTickerProviderSt
                               children: [
                                 Text(
                                   settings.currencySymbol,
-                                  style: theme.textTheme.headlineMedium?.copyWith(color: color),
+                                  style: theme.textTheme.headlineMedium
+                                      ?.copyWith(color: color),
                                 ),
                                 const SizedBox(width: AppConstants.spacingXs),
                                 Text(
                                   value.text.isEmpty ? '0' : value.text,
-                                  style: AppTypography.amountStyle(color: color, fontSize: 40),
+                                  style: AppTypography.amountStyle(
+                                    color: color,
+                                    fontSize: 40,
+                                  ),
                                 ),
                               ],
                             ),
@@ -291,7 +311,10 @@ class _AmountKeypadState extends State<AmountKeypad> with SingleTickerProviderSt
                         const SizedBox(height: AppConstants.spacingSm),
                         Text(
                           loc.invalidExpression,
-                          style: TextStyle(color: theme.colorScheme.error, fontSize: 13),
+                          style: TextStyle(
+                            color: theme.colorScheme.error,
+                            fontSize: 13,
+                          ),
                         ),
                       ],
                     ],
@@ -317,14 +340,20 @@ class _AmountKeypadState extends State<AmountKeypad> with SingleTickerProviderSt
                         Expanded(
                           child: _KeypadButton(
                             onPressed: () => _press('backspace'),
-                            child: const Icon(Icons.backspace_outlined, size: 20),
+                            child: const Icon(
+                              Icons.backspace_outlined,
+                              size: 20,
+                            ),
                           ),
                         ),
                         const SizedBox(width: AppConstants.spacingXs),
                         Expanded(
                           child: _KeypadButton(
                             onPressed: () => _press('clear'),
-                            child: const Text('C', style: TextStyle(fontSize: 18)),
+                            child: const Text(
+                              'C',
+                              style: TextStyle(fontSize: 18),
+                            ),
                           ),
                         ),
                         const SizedBox(width: AppConstants.spacingXs),
@@ -332,7 +361,10 @@ class _AmountKeypadState extends State<AmountKeypad> with SingleTickerProviderSt
                           child: _KeypadButton(
                             onPressed: _evaluate,
                             isOperator: true,
-                            child: const Text('=', style: TextStyle(fontSize: 18)),
+                            child: const Text(
+                              '=',
+                              style: TextStyle(fontSize: 18),
+                            ),
                           ),
                         ),
                         const SizedBox(width: AppConstants.spacingXs),
@@ -341,7 +373,10 @@ class _AmountKeypadState extends State<AmountKeypad> with SingleTickerProviderSt
                           child: _KeypadButton(
                             onPressed: _done,
                             isPrimary: true,
-                            child: Text(loc.done, style: const TextStyle(fontSize: 16)),
+                            child: Text(
+                              loc.done,
+                              style: const TextStyle(fontSize: 16),
+                            ),
                           ),
                         ),
                       ],
@@ -408,23 +443,25 @@ class _KeypadButton extends StatelessWidget {
     final style = ButtonStyle(
       padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 18)),
       shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppConstants.radiusMd)),
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+        ),
       ),
       backgroundColor: WidgetStatePropertyAll(
-        isPrimary ? theme.colorScheme.primary : theme.colorScheme.surfaceContainerHighest,
+        isPrimary
+            ? theme.colorScheme.primary
+            : theme.colorScheme.surfaceContainerHighest,
       ),
       foregroundColor: WidgetStatePropertyAll(
         isPrimary
             ? theme.colorScheme.onPrimary
-            : (isOperator ? theme.colorScheme.primary : theme.colorScheme.onSurface),
+            : (isOperator
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurface),
       ),
       elevation: const WidgetStatePropertyAll(0),
     );
 
-    return TextButton(
-      onPressed: onPressed,
-      style: style,
-      child: child,
-    );
+    return TextButton(onPressed: onPressed, style: style, child: child);
   }
 }
