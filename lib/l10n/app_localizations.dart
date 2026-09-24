@@ -1112,6 +1112,12 @@ abstract class AppLocalizations {
   /// **'{percent}% vs last'**
   String percentVsLast(String percent);
 
+  /// No description provided for @percentVsSamePointLast.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% vs same point last cycle'**
+  String percentVsSamePointLast(String percent);
+
   /// No description provided for @filters.
   ///
   /// In en, this message translates to:

@@ -543,6 +543,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String percentVsSamePointLast(String percent) {
+    return '$percent% vs same point last cycle';
+  }
+
+  @override
   String get filters => 'Filters';
 
   @override

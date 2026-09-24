@@ -26,6 +26,8 @@ class TransactionProvider extends ChangeNotifier {
   double _totalExpense = 0;
   double _previousTotalIncome = 0;
   double _previousTotalExpense = 0;
+  double _comparableExpense = 0;
+  double _previousComparableExpense = 0;
   ({DateTime start, DateTime end})? _period;
   int _periodOffset = 0;
 
@@ -66,6 +68,8 @@ class TransactionProvider extends ChangeNotifier {
   double get totalExpense => _totalExpense;
   double get previousTotalIncome => _previousTotalIncome;
   double get previousTotalExpense => _previousTotalExpense;
+  double get comparableExpense => _comparableExpense;
+  double get previousComparableExpense => _previousComparableExpense;
   double get balance => _totalIncome - _totalExpense;
   ({DateTime start, DateTime end})? get period => _period;
 
@@ -128,6 +132,26 @@ class TransactionProvider extends ChangeNotifier {
         previousPeriod.start,
         previousPeriod.end,
       );
+      if (isViewingCurrentPeriod) {
+        final ends = AppDateUtils.getElapsedComparisonEnds(
+          period,
+          previousPeriod,
+          DateTime.now(),
+        );
+        _comparableExpense = await _repository.getSumByTypeAndDateRange(
+          'expense',
+          period.start,
+          ends.currentEnd,
+        );
+        _previousComparableExpense = await _repository.getSumByTypeAndDateRange(
+          'expense',
+          previousPeriod.start,
+          ends.previousEnd,
+        );
+      } else {
+        _comparableExpense = _totalExpense;
+        _previousComparableExpense = _previousTotalExpense;
+      }
     } catch (e) {
       _error = e.toString();
       rethrow;

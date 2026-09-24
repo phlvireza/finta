@@ -242,6 +242,12 @@
       "percent": { "type": "String" }
     }
   },
+  "percentVsSamePointLast": "{percent}% vs same point last cycle",
+  "@percentVsSamePointLast": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
   "filters": "Filters",
   "clearFilters": "Clear all",
   "dateRange": "Date range",

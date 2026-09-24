@@ -42,6 +42,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   late bool _isIncome;
   late TextEditingController _amountController;
   late TextEditingController _noteController;
+  final _noteFocusNode = FocusNode();
   late DateTime _date;
   String? _categoryId;
   String? _accountId;
@@ -93,6 +94,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   void dispose() {
     _amountController.dispose();
     _noteController.dispose();
+    _noteFocusNode.dispose();
     super.dispose();
   }
 
@@ -463,6 +465,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 isIncome: _isIncome,
                 selectedCategoryId: _categoryId,
                 onCategorySelected: (id) => setState(() => _categoryId = id),
+                nextFocusNode: _noteFocusNode,
                 validator: (val) {
                   if (val == null) return loc.pleaseSelectCategory;
                   return null;
@@ -481,6 +484,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     const SizedBox(height: AppConstants.spacingSm),
                     TextField(
                       controller: _noteController,
+                      focusNode: _noteFocusNode,
                       maxLength: AppConstants.maxNoteLength,
                       textCapitalization: TextCapitalization.sentences,
                       decoration: InputDecoration(

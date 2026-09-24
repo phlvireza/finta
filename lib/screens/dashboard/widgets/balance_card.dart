@@ -59,10 +59,7 @@ class BalanceCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppConstants.spacingLg),
-          Container(
-            height: 1,
-            color: onPrimary.withValues(alpha: 0.22),
-          ),
+          Container(height: 1, color: onPrimary.withValues(alpha: 0.22)),
           const SizedBox(height: AppConstants.spacingLg),
           Row(
             children: [
@@ -81,13 +78,19 @@ class BalanceCard extends StatelessWidget {
                 width: 1,
                 height: 32,
                 color: onPrimary.withValues(alpha: 0.22),
-                margin: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLg),
+                margin: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spacingLg,
+                ),
               ),
               Expanded(
                 child: _InlineStat(
                   label: loc.expense,
                   amount: transactions.totalExpense,
                   previousAmount: transactions.previousTotalExpense,
+                  comparisonAmount: transactions.comparableExpense,
+                  comparisonPreviousAmount:
+                      transactions.previousComparableExpense,
+                  compareElapsedDays: transactions.isViewingCurrentPeriod,
                   settings: settings,
                   loc: loc,
                   isIncome: false,
@@ -106,6 +109,9 @@ class _InlineStat extends StatelessWidget {
   final String label;
   final double amount;
   final double previousAmount;
+  final double? comparisonAmount;
+  final double? comparisonPreviousAmount;
+  final bool compareElapsedDays;
   final SettingsProvider settings;
   final AppLocalizations loc;
   final bool isIncome;
@@ -115,6 +121,9 @@ class _InlineStat extends StatelessWidget {
     required this.label,
     required this.amount,
     required this.previousAmount,
+    this.comparisonAmount,
+    this.comparisonPreviousAmount,
+    this.compareElapsedDays = false,
     required this.settings,
     required this.loc,
     required this.isIncome,
@@ -145,7 +154,7 @@ class _InlineStat extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        if (previousAmount > 0) ...[
+        if ((comparisonPreviousAmount ?? previousAmount) > 0) ...[
           const SizedBox(height: 2),
           _buildComparison(theme),
         ],
@@ -154,8 +163,10 @@ class _InlineStat extends StatelessWidget {
   }
 
   Widget _buildComparison(ThemeData theme) {
-    final diff = amount - previousAmount;
-    final percent = (diff.abs() / previousAmount) * 100;
+    final comparedAmount = comparisonAmount ?? amount;
+    final comparedPrevious = comparisonPreviousAmount ?? previousAmount;
+    final diff = comparedAmount - comparedPrevious;
+    final percent = (diff.abs() / comparedPrevious) * 100;
     final isMore = diff > 0;
 
     // Up is only "good" for income; for expense it flips. Both cases still
@@ -180,9 +191,18 @@ class _InlineStat extends StatelessWidget {
           color: displayColor,
         ),
         const SizedBox(width: 2),
-        Text(
-          loc.percentVsLast(percent.toStringAsFixed(0)),
-          style: theme.textTheme.labelSmall?.copyWith(color: displayColor, fontSize: 11),
+        Flexible(
+          child: Text(
+            compareElapsedDays
+                ? loc.percentVsSamePointLast(percent.toStringAsFixed(0))
+                : loc.percentVsLast(percent.toStringAsFixed(0)),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: displayColor,
+              fontSize: 11,
+            ),
+          ),
         ),
       ],
     );

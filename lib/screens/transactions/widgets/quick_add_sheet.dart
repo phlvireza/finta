@@ -98,6 +98,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
+  final _noteFocusNode = FocusNode();
   _EntryType _entryType = _EntryType.expense;
   late DateTime _date;
   String? _categoryId;
@@ -151,6 +152,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
   void dispose() {
     _amountController.dispose();
     _noteController.dispose();
+    _noteFocusNode.dispose();
     super.dispose();
   }
 
@@ -533,6 +535,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
               CategoryPicker(
                 isIncome: _isIncome,
                 selectedCategoryId: _categoryId,
+                nextFocusNode: _noteFocusNode,
                 validator: (val) =>
                     val == null ? loc.pleaseSelectCategory : null,
                 onCategorySelected: (id) => setState(() {
@@ -557,6 +560,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                     const SizedBox(height: AppConstants.spacingSm),
                     TextField(
                       controller: _noteController,
+                      focusNode: _noteFocusNode,
                       maxLength: AppConstants.maxNoteLength,
                       textCapitalization: TextCapitalization.sentences,
                       decoration: InputDecoration(

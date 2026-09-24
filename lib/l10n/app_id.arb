@@ -240,6 +240,12 @@
       "percent": { "type": "String" }
     }
   },
+  "percentVsSamePointLast": "{percent}% vs titik yang sama di periode lalu",
+  "@percentVsSamePointLast": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
   "filters": "Filter",
   "clearFilters": "Hapus semua",
   "dateRange": "Rentang tanggal",

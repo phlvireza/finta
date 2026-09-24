@@ -544,6 +544,11 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
+  String percentVsSamePointLast(String percent) {
+    return '$percent% vs titik yang sama di periode lalu';
+  }
+
+  @override
   String get filters => 'Filter';
 
   @override

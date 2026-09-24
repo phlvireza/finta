@@ -14,6 +14,7 @@ class CategoryPicker extends StatelessWidget {
   final String? selectedCategoryId;
   final ValueChanged<String> onCategorySelected;
   final FormFieldValidator<String>? validator;
+  final FocusNode? nextFocusNode;
 
   const CategoryPicker({
     super.key,
@@ -21,21 +22,25 @@ class CategoryPicker extends StatelessWidget {
     required this.selectedCategoryId,
     required this.onCategorySelected,
     this.validator,
+    this.nextFocusNode,
   });
 
-  void _openCategorySheet(BuildContext context, FormFieldState<String> state) {
-    PickerSheet.show<void>(
+  Future<void> _openCategorySheet(
+    BuildContext context,
+    FormFieldState<String> state,
+  ) async {
+    final selectedId = await PickerSheet.show<String>(
       context,
       builder: (_) => _CategorySearchSheet(
         isIncome: isIncome,
         selectedCategoryId: selectedCategoryId,
-        onSelected: (id) {
-          state.didChange(id);
-          onCategorySelected(id);
-          Navigator.of(context).pop();
-        },
+        onSelected: (id) => Navigator.of(context).pop(id),
       ),
     );
+    if (selectedId == null || !state.mounted) return;
+    state.didChange(selectedId);
+    onCategorySelected(selectedId);
+    nextFocusNode?.requestFocus();
   }
 
   @override
@@ -48,7 +53,9 @@ class CategoryPicker extends StatelessWidget {
 
     CategoryModel? selectedCategory;
     try {
-      selectedCategory = categories.firstWhere((c) => c.id == selectedCategoryId);
+      selectedCategory = categories.firstWhere(
+        (c) => c.id == selectedCategoryId,
+      );
     } catch (_) {}
 
     final loc = AppLocalizations.of(context)!;
@@ -58,10 +65,7 @@ class CategoryPicker extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            loc.category,
-            style: theme.textTheme.labelMedium,
-          ),
+          Text(loc.category, style: theme.textTheme.labelMedium),
           const SizedBox(height: AppConstants.spacingSm),
           FormField<String>(
             validator: validator,
@@ -76,7 +80,9 @@ class CategoryPicker extends StatelessWidget {
                       padding: const EdgeInsets.all(AppConstants.spacingMd),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppConstants.radiusMd,
+                        ),
                         border: Border.all(
                           color: state.hasError
                               ? theme.colorScheme.error
@@ -119,7 +125,9 @@ class CategoryPicker extends StatelessWidget {
                   if (state.hasError) ...[
                     const SizedBox(height: AppConstants.spacingXs),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingMd),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstants.spacingMd,
+                      ),
                       child: Text(
                         state.errorText!,
                         style: TextStyle(
@@ -176,10 +184,8 @@ class _CategorySearchSheetState extends State<_CategorySearchSheet> {
   Future<void> _createNewCategory({String? parentId}) async {
     final createdId = await FormSheet.show<String>(
       context,
-      builder: (_) => CategoryForm(
-        isIncome: widget.isIncome,
-        initialParentId: parentId,
-      ),
+      builder: (_) =>
+          CategoryForm(isIncome: widget.isIncome, initialParentId: parentId),
     );
     if (createdId == null || !mounted) return;
     widget.onSelected(createdId);
@@ -196,7 +202,9 @@ class _CategorySearchSheetState extends State<_CategorySearchSheet> {
     final query = _searchController.text.toLowerCase();
     final filtered = query.isEmpty
         ? allCategories
-        : allCategories.where((c) => c.name.toLowerCase().contains(query)).toList();
+        : allCategories
+              .where((c) => c.name.toLowerCase().contains(query))
+              .toList();
 
     final loc = AppLocalizations.of(context)!;
 
@@ -267,7 +275,9 @@ class _CategorySearchSheetState extends State<_CategorySearchSheet> {
     AppLocalizations loc,
   ) {
     final filteredIds = filtered.map((c) => c.id).toSet();
-    final topLevel = filtered.where((c) => c.parentId == null || !filteredIds.contains(c.parentId));
+    final topLevel = filtered.where(
+      (c) => c.parentId == null || !filteredIds.contains(c.parentId),
+    );
     final tiles = <Widget>[];
     for (final cat in topLevel) {
       tiles.add(_categoryTile(context, cat, theme, loc));
@@ -325,4 +335,3 @@ class _CategorySearchSheetState extends State<_CategorySearchSheet> {
     );
   }
 }
-

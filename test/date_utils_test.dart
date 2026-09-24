@@ -74,6 +74,18 @@ void main() {
   });
 
   group('getPreviousPeriod', () {
+    test('preserves payday 31 when February clamped the current start', () {
+      for (final year in [2024, 2026]) {
+        final current = AppDateUtils.getCurrentPeriod(
+          31,
+          referenceDate: DateTime(year, 3, 1),
+        );
+        final previous = AppDateUtils.getPreviousPeriod(current);
+        expect(previous.start, DateTime(year, 1, 31));
+        expect(previous.end, DateTime(year, 2, year == 2024 ? 28 : 27));
+      }
+    });
+
     test('steps back one calendar month for a payday-31 period', () {
       final current = AppDateUtils.getCurrentPeriod(
         31,
@@ -84,21 +96,56 @@ void main() {
       expect(previous.end, DateTime(2026, 1, 30));
     });
 
-    test('previous period always ends the day before the current one starts', () {
-      for (final payday in [1, 15, 28, 29, 30, 31]) {
-        for (var month = 1; month <= 12; month++) {
-          final current = AppDateUtils.getCurrentPeriod(
-            payday,
-            referenceDate: DateTime(2026, month, 10),
-          );
-          final previous = AppDateUtils.getPreviousPeriod(current);
-          expect(
-            previous.end.add(const Duration(days: 1)),
-            current.start,
-            reason: 'payday $payday, month $month',
-          );
+    test(
+      'previous period always ends the day before the current one starts',
+      () {
+        for (final payday in [1, 15, 28, 29, 30, 31]) {
+          for (var month = 1; month <= 12; month++) {
+            final current = AppDateUtils.getCurrentPeriod(
+              payday,
+              referenceDate: DateTime(2026, month, 10),
+            );
+            final previous = AppDateUtils.getPreviousPeriod(current);
+            expect(
+              previous.end.add(const Duration(days: 1)),
+              current.start,
+              reason: 'payday $payday, month $month',
+            );
+          }
         }
-      }
+      },
+    );
+  });
+
+  group('getElapsedComparisonEnds', () {
+    test('uses equal inclusive days after payday', () {
+      final current = AppDateUtils.getCurrentPeriod(
+        21,
+        referenceDate: DateTime(2026, 9, 24),
+      );
+      final previous = AppDateUtils.getPreviousPeriod(current);
+      final ends = AppDateUtils.getElapsedComparisonEnds(
+        current,
+        previous,
+        DateTime(2026, 9, 24, 23),
+      );
+      expect(ends.currentEnd, DateTime(2026, 9, 24));
+      expect(ends.previousEnd, DateTime(2026, 8, 24));
+    });
+
+    test('caps at the preceding cycle end when it is shorter', () {
+      final current = AppDateUtils.getCurrentPeriod(
+        1,
+        referenceDate: DateTime(2026, 3, 31),
+      );
+      final previous = AppDateUtils.getPreviousPeriod(current);
+      final ends = AppDateUtils.getElapsedComparisonEnds(
+        current,
+        previous,
+        DateTime(2026, 3, 31),
+      );
+      expect(ends.currentEnd, DateTime(2026, 3, 31));
+      expect(ends.previousEnd, DateTime(2026, 2, 28));
     });
   });
 
@@ -140,7 +187,10 @@ void main() {
       ];
       for (final payday in [1, 21, 28, 29, 30, 31]) {
         for (final reference in references) {
-          final current = AppDateUtils.getCurrentPeriod(payday, referenceDate: reference);
+          final current = AppDateUtils.getCurrentPeriod(
+            payday,
+            referenceDate: reference,
+          );
           final previous = AppDateUtils.getPreviousPeriod(current);
           final forward = next(previous, payday);
           expect(
@@ -148,13 +198,20 @@ void main() {
             current.start,
             reason: 'payday $payday from $reference',
           );
-          expect(forward.end, current.end, reason: 'payday $payday from $reference');
+          expect(
+            forward.end,
+            current.end,
+            reason: 'payday $payday from $reference',
+          );
         }
       }
     });
 
     test('lands on the period that directly abuts the one before it', () {
-      var period = AppDateUtils.getCurrentPeriod(21, referenceDate: DateTime(2026, 1, 5));
+      var period = AppDateUtils.getCurrentPeriod(
+        21,
+        referenceDate: DateTime(2026, 1, 5),
+      );
       for (var step = 0; step < 24; step++) {
         final forward = next(period, 21);
         expect(
@@ -171,14 +228,17 @@ void main() {
   // period type has to answer "which period contains this date?" — not just
   // "which period is it now?".
   group('referenceDate support', () {
-    test('getWeeklyPeriod returns the Monday–Sunday week containing the date', () {
-      // 2026-08-05 is a Wednesday.
-      final period = AppDateUtils.getWeeklyPeriod(
-        referenceDate: DateTime(2026, 8, 5),
-      );
-      expect(period.start, DateTime(2026, 8, 3));
-      expect(period.end, DateTime(2026, 8, 9));
-    });
+    test(
+      'getWeeklyPeriod returns the Monday–Sunday week containing the date',
+      () {
+        // 2026-08-05 is a Wednesday.
+        final period = AppDateUtils.getWeeklyPeriod(
+          referenceDate: DateTime(2026, 8, 5),
+        );
+        expect(period.start, DateTime(2026, 8, 3));
+        expect(period.end, DateTime(2026, 8, 9));
+      },
+    );
 
     test('getWeeklyPeriod handles a date that is already Monday', () {
       final period = AppDateUtils.getWeeklyPeriod(
@@ -222,13 +282,21 @@ void main() {
       final reference = DateTime(2026, 8, 5);
 
       expect(
-        AppDateUtils.getCurrentPeriodFor('weekly', 25, referenceDate: reference),
+        AppDateUtils.getCurrentPeriodFor(
+          'weekly',
+          25,
+          referenceDate: reference,
+        ),
         (start: DateTime(2026, 8, 3), end: DateTime(2026, 8, 9)),
       );
       // Monthly is the payday-anchored one: Aug 5 with payday 25 sits in
       // the cycle that opened on Jul 25.
       expect(
-        AppDateUtils.getCurrentPeriodFor('monthly', 25, referenceDate: reference),
+        AppDateUtils.getCurrentPeriodFor(
+          'monthly',
+          25,
+          referenceDate: reference,
+        ),
         (start: DateTime(2026, 7, 25), end: DateTime(2026, 8, 24)),
       );
     });
@@ -237,8 +305,11 @@ void main() {
       // Covers a row written by an older build, or a typo'd period string —
       // it degrades to the app's default cycle rather than throwing.
       expect(
-        AppDateUtils.getCurrentPeriodFor('fortnightly', 25,
-            referenceDate: DateTime(2026, 8, 5)),
+        AppDateUtils.getCurrentPeriodFor(
+          'fortnightly',
+          25,
+          referenceDate: DateTime(2026, 8, 5),
+        ),
         (start: DateTime(2026, 7, 25), end: DateTime(2026, 8, 24)),
       );
     });
@@ -250,28 +321,41 @@ void main() {
     // other branch below uses fixed dates.
     DateTime dayOffset(int days) {
       final now = DateTime.now();
-      return DateTime(now.year, now.month, now.day).subtract(Duration(days: days));
+      return DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(Duration(days: days));
     }
 
     test('uses the caller-supplied word for today', () {
       expect(
-        AppDateUtils.relativeLabel(dayOffset(0),
-            todayLabel: 'Hari ini', yesterdayLabel: 'Kemarin'),
+        AppDateUtils.relativeLabel(
+          dayOffset(0),
+          todayLabel: 'Hari ini',
+          yesterdayLabel: 'Kemarin',
+        ),
         'Hari ini',
       );
     });
 
     test('uses the caller-supplied word for yesterday', () {
       expect(
-        AppDateUtils.relativeLabel(dayOffset(1),
-            todayLabel: 'Hari ini', yesterdayLabel: 'Kemarin'),
+        AppDateUtils.relativeLabel(
+          dayOffset(1),
+          todayLabel: 'Hari ini',
+          yesterdayLabel: 'Kemarin',
+        ),
         'Kemarin',
       );
     });
 
     test('falls through to a formatted date once the day is old enough', () {
-      final label = AppDateUtils.relativeLabel(dayOffset(30),
-          todayLabel: 'Hari ini', yesterdayLabel: 'Kemarin');
+      final label = AppDateUtils.relativeLabel(
+        dayOffset(30),
+        todayLabel: 'Hari ini',
+        yesterdayLabel: 'Kemarin',
+      );
       expect(label, isNot('Hari ini'));
       expect(label, isNot('Kemarin'));
       expect(label, isNotEmpty);
@@ -293,14 +377,16 @@ void main() {
       expect(grouped[DateTime(2026, 8, 17)], hasLength(1));
     });
 
-    test('keys are stripped to midnight so the time of day never splits a group', () {
-      final grouped = AppDateUtils.groupByDate(
-        [DateTime(2026, 8, 18, 23, 59, 59)],
-        (d) => d,
-      );
+    test(
+      'keys are stripped to midnight so the time of day never splits a group',
+      () {
+        final grouped = AppDateUtils.groupByDate([
+          DateTime(2026, 8, 18, 23, 59, 59),
+        ], (d) => d);
 
-      expect(grouped.keys.single, DateTime(2026, 8, 18));
-    });
+        expect(grouped.keys.single, DateTime(2026, 8, 18));
+      },
+    );
 
     // The list screens render groups in map order, so a sorted input has to
     // stay sorted on the way through.

@@ -26,7 +26,9 @@ class AppDateUtils {
     if (diff == 0) return todayLabel;
     if (diff == 1) return yesterdayLabel;
     if (diff < 7) return DateFormat('EEEE').format(date); // e.g. "Wednesday"
-    if (date.year == now.year) return DateFormat('MMM d').format(date); // e.g. "Jul 20"
+    if (date.year == now.year) {
+      return DateFormat('MMM d').format(date); // e.g. "Jul 20"
+    }
     return DateFormat('MMM d, yyyy').format(date); // e.g. "Jul 20, 2025"
   }
 
@@ -58,7 +60,12 @@ class AppDateUtils {
     final today = DateTime.now();
     final totalDays = period.end.difference(period.start).inDays + 1;
     final elapsedDays =
-        DateTime(today.year, today.month, today.day).difference(period.start).inDays + 1;
+        DateTime(
+          today.year,
+          today.month,
+          today.day,
+        ).difference(period.start).inDays +
+        1;
     if (totalDays <= 0) return 1.0;
     return (elapsedDays / totalDays).clamp(0.0, 1.0);
   }
@@ -101,13 +108,18 @@ class AppDateUtils {
 
     // End is always the day before the NEXT anchor — guarantees
     // contiguous, non-overlapping periods for every payday value.
-    final periodEnd = _anchor(periodStart.year, periodStart.month + 1, payday)
-        .subtract(const Duration(days: 1));
+    final periodEnd = _anchor(
+      periodStart.year,
+      periodStart.month + 1,
+      payday,
+    ).subtract(const Duration(days: 1));
 
     return (start: periodStart, end: periodEnd);
   }
 
-  static ({DateTime start, DateTime end}) getWeeklyPeriod({DateTime? referenceDate}) {
+  static ({DateTime start, DateTime end}) getWeeklyPeriod({
+    DateTime? referenceDate,
+  }) {
     final now = referenceDate ?? DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     // Assuming week starts on Monday
@@ -116,18 +128,20 @@ class AppDateUtils {
     return (start: start, end: end);
   }
 
-  static ({DateTime start, DateTime end}) getBiweeklyPeriod({DateTime? referenceDate}) {
+  static ({DateTime start, DateTime end}) getBiweeklyPeriod({
+    DateTime? referenceDate,
+  }) {
     final now = referenceDate ?? DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     if (today.day <= 15) {
       return (
         start: DateTime(now.year, now.month, 1),
-        end: DateTime(now.year, now.month, 15)
+        end: DateTime(now.year, now.month, 15),
       );
     } else {
       return (
         start: DateTime(now.year, now.month, 16),
-        end: DateTime(now.year, now.month + 1, 0)
+        end: DateTime(now.year, now.month + 1, 0),
       );
     }
   }
@@ -193,7 +207,9 @@ class AppDateUtils {
     }
   }
 
-  static ({DateTime start, DateTime end}) getPreviousPeriod(({DateTime start, DateTime end}) current) {
+  static ({DateTime start, DateTime end}) getPreviousPeriod(
+    ({DateTime start, DateTime end}) current,
+  ) {
     // Inclusive day count: a payday-anchored monthly period is always
     // 28 (Feb, non-leap) to 31 days long. Weekly (7) and biweekly (13-16)
     // never land in this range, so this reliably tells them apart.
@@ -204,10 +220,18 @@ class AppDateUtils {
       // re-derive the end the same way getCurrentPeriod does, so a short
       // month (e.g. stepping from Mar 31 back to Feb) doesn't drift the
       // anchor day permanently.
-      final anchorDay = current.start.day;
-      final prevStart = _anchor(current.start.year, current.start.month - 1, anchorDay);
-      final prevEnd = _anchor(prevStart.year, prevStart.month + 1, anchorDay)
-          .subtract(const Duration(days: 1));
+      // Either boundary may have been clamped in a short month. The larger
+      // day retains the configured payday (e.g. Feb 28–Mar 30 means day 31).
+      final anchorDay =
+          current.start.day > current.end.add(const Duration(days: 1)).day
+          ? current.start.day
+          : current.end.add(const Duration(days: 1)).day;
+      final prevStart = _anchor(
+        current.start.year,
+        current.start.month - 1,
+        anchorDay,
+      );
+      final prevEnd = current.start.subtract(const Duration(days: 1));
       return (start: prevStart, end: prevEnd);
     }
 
@@ -215,6 +239,44 @@ class AppDateUtils {
     final prevEnd = current.start.subtract(const Duration(days: 1));
     final prevStart = prevEnd.subtract(duration);
     return (start: prevStart, end: prevEnd);
+  }
+
+  /// Inclusive ends for comparing elapsed days of the current payday cycle
+  /// with the same number of days in the preceding cycle. Shorter preceding
+  /// cycles stop at their own end rather than spilling into another cycle.
+  static ({DateTime currentEnd, DateTime previousEnd}) getElapsedComparisonEnds(
+    ({DateTime start, DateTime end}) current,
+    ({DateTime start, DateTime end}) previous,
+    DateTime referenceDate,
+  ) {
+    final today = DateTime(
+      referenceDate.year,
+      referenceDate.month,
+      referenceDate.day,
+    );
+    final currentEnd = today.isBefore(current.end) ? today : current.end;
+    final elapsedDays =
+        DateTime.utc(currentEnd.year, currentEnd.month, currentEnd.day)
+            .difference(
+              DateTime.utc(
+                current.start.year,
+                current.start.month,
+                current.start.day,
+              ),
+            )
+            .inDays +
+        1;
+    final matchingEnd = DateTime(
+      previous.start.year,
+      previous.start.month,
+      previous.start.day + elapsedDays - 1,
+    );
+    return (
+      currentEnd: currentEnd,
+      previousEnd: matchingEnd.isBefore(previous.end)
+          ? matchingEnd
+          : previous.end,
+    );
   }
 
   /// Group a list of items by the calendar day they fall on.
